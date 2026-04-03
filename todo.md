@@ -81,3 +81,6 @@
 
 ## Refinamentos v3
 - [x] Transição animada de página (wipe overlay) ao navegar entre landing e módulos
+
+## Bugs v3
+- [x] Erro "Failed to fetch" na geração de imagem Freepik (CORS — chamadas diretas do browser bloqueadas)

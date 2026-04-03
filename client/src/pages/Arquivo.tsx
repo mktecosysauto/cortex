@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { GrainOverlay, CustomCursor } from "@/components/CortexShell";
 import { usePageTransition } from "@/contexts/PageTransitionContext";
+import { trpc } from "@/lib/trpc";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface PromptItem {
@@ -178,6 +179,7 @@ function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: 
   const [loading, setLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const anthropicMut = trpc.anthropic.messages.useMutation();
 
   const handleFile = (file: File) => {
     const reader = new FileReader();
@@ -197,29 +199,21 @@ function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: 
     try {
       const base64 = imageData.split(",")[1];
       const mediaType = imageData.split(";")[0].split(":")[1] || "image/jpeg";
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": key,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true",
-        },
-        body: JSON.stringify({
-          model: "claude-opus-4-5",
-          max_tokens: 1000,
-          messages: [{
-            role: "user",
-            content: [
-              { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } },
-              { type: "text", text: "Analyze this image and write a detailed image generation prompt that would reproduce this scene. Include: camera angle, lighting, atmosphere, subject details, background, color palette, depth of field, and photographic style. Write in English. Return ONLY the prompt, no explanation." },
-            ],
-          }],
-        }),
+      const data = await anthropicMut.mutateAsync({
+        apiKey: key,
+        model: "claude-opus-4-5",
+        maxTokens: 1000,
+        messages: [{
+          role: "user",
+          content: [
+            { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } },
+            { type: "text", text: "Analyze this image and write a detailed image generation prompt that would reproduce this scene. Include: camera angle, lighting, atmosphere, subject details, background, color palette, depth of field, and photographic style. Write in English. Return ONLY the prompt, no explanation." },
+          ],
+        }],
       });
-      const data = await res.json();
-      if (!data.error) {
-        setPrompt(data.content?.[0]?.text || "");
+      const resp = data as { content?: { text?: string }[]; error?: { message?: string } };
+      if (!resp.error) {
+        setPrompt(resp.content?.[0]?.text || "");
         showToast("Prompt gerado automaticamente", "success");
       }
     } catch { /* silent */ } finally {
@@ -243,31 +237,21 @@ function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: 
     try {
       const base64 = imgData.split(",")[1];
       const mediaType = imgData.split(";")[0].split(":")[1] || "image/jpeg";
-
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": key,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true",
-        },
-        body: JSON.stringify({
-          model: "claude-opus-4-5",
-          max_tokens: 1000,
-          messages: [{
-            role: "user",
-            content: [
-              { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } },
-              { type: "text", text: "Analyze this image and write a detailed image generation prompt that would reproduce this scene. Include: camera angle, lighting, atmosphere, subject details, background, color palette, depth of field, and photographic style. Write in English. Return ONLY the prompt, no explanation." },
-            ],
-          }],
-        }),
+      const data = await anthropicMut.mutateAsync({
+        apiKey: key,
+        model: "claude-opus-4-5",
+        maxTokens: 1000,
+        messages: [{
+          role: "user",
+          content: [
+            { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } },
+            { type: "text", text: "Analyze this image and write a detailed image generation prompt that would reproduce this scene. Include: camera angle, lighting, atmosphere, subject details, background, color palette, depth of field, and photographic style. Write in English. Return ONLY the prompt, no explanation." },
+          ],
+        }],
       });
-
-      const data = await res.json();
-      if (data.error) throw new Error(data.error.message);
-      setPrompt(data.content?.[0]?.text || "");
+      const resp = data as { content?: { text?: string }[]; error?: { message?: string } };
+      if (resp.error) throw new Error(resp.error.message);
+      setPrompt(resp.content?.[0]?.text || "");
       showToast("Prompt gerado com sucesso", "success");
     } catch (err: unknown) {
       showToast(`Erro: ${err instanceof Error ? err.message : String(err)}`, "error");
@@ -398,6 +382,11 @@ function FreepikPanel({ type, prompt, imgData, onUseImage }: FreepikPanelProps) 
   const [result, setResult] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState("");
 
+  const improvePromptMut = trpc.freepik.improvePrompt.useMutation();
+  const generateImageMut = trpc.freepik.generateImage.useMutation();
+  const upscaleImageMut = trpc.freepik.upscaleImage.useMutation();
+  const animateImageMut = trpc.freepik.animateImage.useMutation();
+
   const run = async () => {
     const key = getFpKey();
     if (!key) { showToast("Configure a Freepik API Key nas configurações", "error"); return; }
@@ -406,71 +395,40 @@ function FreepikPanel({ type, prompt, imgData, onUseImage }: FreepikPanelProps) 
 
     try {
       if (type === "improve") {
-        setStatusMsg("Melhorando prompt...");
-        const res = await fetch("https://api.freepik.com/v1/ai/improve-prompt", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "x-freepik-api-key": key },
-          body: JSON.stringify({ prompt }),
-        });
-        const data = await res.json();
-        const taskId = data.data?.task_id || data.task_id;
-        if (taskId) {
-          setStatusMsg("Aguardando resultado...");
-          const done = await fpPoll(`https://api.freepik.com/v1/ai/improve-prompt/${taskId}`, key);
-          setResult(done.prompt || done.data?.prompt || "");
-        } else {
-          setResult(data.data?.prompt || data.prompt || "");
-        }
+        setStatusMsg("Melhorando prompt via servidor...");
+        const data = await improvePromptMut.mutateAsync({ apiKey: key, prompt });
+        const improved = (data as { prompt?: string; data?: { prompt?: string } }).prompt
+          || (data as { data?: { prompt?: string } }).data?.prompt || "";
+        setResult(improved);
         showToast("Prompt melhorado!", "success");
       }
 
       else if (type === "generate") {
-        setStatusMsg("Gerando imagem...");
-        const res = await fetch("https://api.freepik.com/v1/ai/mystic", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "x-freepik-api-key": key },
-          body: JSON.stringify({ prompt, aspect_ratio: "3:4", realism: true }),
-        });
-        const data = await res.json();
-        const taskId = data.data?.task_id || data.task_id;
-        setStatusMsg("Renderizando...");
-        const done = await fpPoll(`https://api.freepik.com/v1/ai/mystic/${taskId}`, key);
-        const imgUrl = done.images?.[0]?.url || done.url || "";
+        setStatusMsg("Gerando imagem (pode levar 30-60s)...");
+        const data = await generateImageMut.mutateAsync({ apiKey: key, prompt, aspectRatio: "3:4", realism: true });
+        const imgUrl = (data as { images?: { url: string }[]; url?: string }).images?.[0]?.url
+          || (data as { url?: string }).url || "";
         setResult(imgUrl);
         showToast("Imagem gerada!", "success");
       }
 
       else if (type === "upscale") {
         if (!imgData) { showToast("Sem imagem para upscale", "error"); setLoading(false); return; }
-        setStatusMsg("Fazendo upscale...");
+        setStatusMsg("Fazendo upscale via servidor...");
         const base64 = imgData.includes(",") ? imgData.split(",")[1] : imgData;
-        const res = await fetch("https://api.freepik.com/v1/ai/image-upscaler", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "x-freepik-api-key": key },
-          body: JSON.stringify({ image: base64 }),
-        });
-        const data = await res.json();
-        const taskId = data.data?.task_id || data.task_id;
-        setStatusMsg("Processando...");
-        const done = await fpPoll(`https://api.freepik.com/v1/ai/image-upscaler/${taskId}`, key);
-        setResult(done.images?.[0]?.url || done.url || "");
+        const data = await upscaleImageMut.mutateAsync({ apiKey: key, imageBase64: base64 });
+        setResult((data as { images?: { url: string }[]; url?: string }).images?.[0]?.url
+          || (data as { url?: string }).url || "");
         showToast("Upscale concluído!", "success");
       }
 
       else if (type === "animate") {
         if (!imgData) { showToast("Sem imagem para animar", "error"); setLoading(false); return; }
-        setStatusMsg("Iniciando animação...");
-        const base64 = imgData.includes(",") ? imgData.split(",")[1] : imgData;
-        const res = await fetch("https://api.freepik.com/v1/ai/image-to-video/kling-v2-5-pro", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "x-freepik-api-key": key },
-          body: JSON.stringify({ image: base64, prompt, duration: 5, aspect_ratio: "3:4" }),
-        });
-        const data = await res.json();
-        const taskId = data.data?.task_id || data.task_id;
         setStatusMsg("Gerando vídeo (pode levar até 4 min)...");
-        const done = await fpPoll(`https://api.freepik.com/v1/ai/image-to-video/kling-v2-5-pro/${taskId}`, key, 240000);
-        setResult(done.video_url || done.url || "");
+        const base64 = imgData.includes(",") ? imgData.split(",")[1] : imgData;
+        const data = await animateImageMut.mutateAsync({ apiKey: key, imageBase64: base64, prompt, duration: 5, aspectRatio: "3:4" });
+        setResult((data as { video_url?: string; url?: string }).video_url
+          || (data as { url?: string }).url || "");
         showToast("Vídeo gerado!", "success");
       }
     } catch (err: unknown) {
@@ -583,6 +541,8 @@ function PromptCard({ item, index, onDelete, onUpdateImg }: CardProps) {
     setEditOpen(false);
   };
 
+  const anthropicEditMut = trpc.anthropic.messages.useMutation();
+
   const generatePrompt = async () => {
     const key = getAnthKey();
     if (!key) { showToast("Configure a Anthropic API Key nas configurações", "error"); return; }
@@ -590,24 +550,16 @@ function PromptCard({ item, index, onDelete, onUpdateImg }: CardProps) {
 
     setEditLoading(true);
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": key,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true",
-        },
-        body: JSON.stringify({
-          model: "claude-opus-4-5",
-          max_tokens: 1000,
-          system: "You are an expert at writing image generation prompts. Edit the prompt based on the user's request. Return ONLY the updated prompt, no explanation.",
-          messages: [{ role: "user", content: `Original prompt: ${editPrompt}\nRequest: ${editRequest}` }],
-        }),
+      const data = await anthropicEditMut.mutateAsync({
+        apiKey: key,
+        model: "claude-opus-4-5",
+        maxTokens: 1000,
+        system: "You are an expert at writing image generation prompts. Edit the prompt based on the user's request. Return ONLY the updated prompt, no explanation.",
+        messages: [{ role: "user", content: `Original prompt: ${editPrompt}\nRequest: ${editRequest}` }],
       });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error.message);
-      setEditResult(data.content?.[0]?.text || "");
+      const resp = data as { content?: { text?: string }[]; error?: { message?: string } };
+      if (resp.error) throw new Error(resp.error.message);
+      setEditResult(resp.content?.[0]?.text || "");
       showToast("Prompt atualizado!", "success");
     } catch (err: unknown) {
       showToast(`Erro: ${err instanceof Error ? err.message : String(err)}`, "error");
