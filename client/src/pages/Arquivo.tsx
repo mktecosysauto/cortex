@@ -181,8 +181,50 @@ function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: 
 
   const handleFile = (file: File) => {
     const reader = new FileReader();
-    reader.onload = (e) => setImgData(e.target?.result as string);
+    reader.onload = (e) => {
+      const data = e.target?.result as string;
+      setImgData(data);
+      // Auto-generate prompt after image is loaded
+      setTimeout(() => autoGeneratePrompt(data), 100);
+    };
     reader.readAsDataURL(file);
+  };
+
+  const autoGeneratePrompt = async (imageData: string) => {
+    const key = getAnthKey();
+    if (!key) return; // Silent: user can still generate manually
+    setLoading(true);
+    try {
+      const base64 = imageData.split(",")[1];
+      const mediaType = imageData.split(";")[0].split(":")[1] || "image/jpeg";
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": key,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true",
+        },
+        body: JSON.stringify({
+          model: "claude-opus-4-5",
+          max_tokens: 1000,
+          messages: [{
+            role: "user",
+            content: [
+              { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } },
+              { type: "text", text: "Analyze this image and write a detailed image generation prompt that would reproduce this scene. Include: camera angle, lighting, atmosphere, subject details, background, color palette, depth of field, and photographic style. Write in English. Return ONLY the prompt, no explanation." },
+            ],
+          }],
+        }),
+      });
+      const data = await res.json();
+      if (!data.error) {
+        setPrompt(data.content?.[0]?.text || "");
+        showToast("Prompt gerado automaticamente", "success");
+      }
+    } catch { /* silent */ } finally {
+      setLoading(false);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -271,9 +313,15 @@ function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: 
             onClick={() => fileRef.current?.click()}
           >
             <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
+            <div style={{ fontSize: 24, color: "rgba(255,255,255,0.1)", marginBottom: 8 }}>↑</div>
             <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#666" }}>
               Arraste uma imagem ou clique para selecionar
             </p>
+            {!getAnthKey() && (
+              <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#444", marginTop: 8 }}>
+                ⚠ Configure a Anthropic API Key para gerar prompt automaticamente
+              </p>
+            )}
           </div>
         ) : (
           <div style={{ marginBottom: 20, position: "relative" }}>
@@ -294,9 +342,17 @@ function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: 
           />
         </div>
 
-        <button className="btn-cortex" style={{ width: "100%", justifyContent: "center", marginBottom: 16 }} onClick={generatePrompt} disabled={loading}>
-          {loading ? <ThinkingDots label="Analisando imagem..." /> : "→ Gerar Prompt com IA"}
-        </button>
+        {loading && (
+          <div style={{ marginBottom: 16, padding: "12px 0", borderTop: "1px solid #1a1a1a", borderBottom: "1px solid #1a1a1a" }}>
+            <ThinkingDots label="Analisando imagem e gerando prompt..." />
+          </div>
+        )}
+
+        {!loading && (
+          <button className="btn-cortex" style={{ width: "100%", justifyContent: "center", marginBottom: 16 }} onClick={generatePrompt} disabled={loading}>
+            → {prompt ? "Regerar Prompt" : "Gerar Prompt com IA"}
+          </button>
+        )}
 
         {prompt && (
           <>
@@ -840,10 +896,18 @@ export default function Arquivo() {
       <main style={{ background: "#000", minHeight: "100vh", padding: "24px" }}>
         <div style={{ maxWidth: 1400, margin: "0 auto" }}>
           {/* Gallery label */}
-          <div style={{ marginBottom: 16 }}>
+          <div style={{ marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
             <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#444", letterSpacing: 1 }}>
               galeria de referências · edite qualquer prompt em linguagem natural
             </span>
+            <button
+              className="btn-cortex sm"
+              onClick={() => setShowUpload(true)}
+              data-hover
+              style={{ display: "flex", alignItems: "center", gap: 6 }}
+            >
+              <span style={{ fontSize: 12 }}>+</span> Adicionar imagem
+            </button>
           </div>
 
           {/* Grid */}
@@ -852,6 +916,47 @@ export default function Arquivo() {
             gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))",
             gap: 2,
           }}>
+            {/* Add card — always first */}
+            <div
+              onClick={() => setShowUpload(true)}
+              data-hover
+              style={{
+                background: "#080808",
+                border: "1px dashed #2a2a2a",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                aspectRatio: "3/4",
+                cursor: "none",
+                transition: "border-color 0.2s, background 0.2s",
+                gap: 12,
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.3)";
+                (e.currentTarget as HTMLDivElement).style.background = "#0d0d0d";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLDivElement).style.borderColor = "#2a2a2a";
+                (e.currentTarget as HTMLDivElement).style.background = "#080808";
+              }}
+            >
+              <div style={{
+                width: 40, height: 40,
+                border: "1px solid #2a2a2a",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 20, color: "rgba(255,255,255,0.2)",
+              }}>+</div>
+              <div style={{ textAlign: "center" }}>
+                <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#444", letterSpacing: 1 }}>
+                  Adicionar imagem
+                </p>
+                <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#2a2a2a", marginTop: 4, letterSpacing: 0.5 }}>
+                  prompt gerado automaticamente
+                </p>
+              </div>
+            </div>
+
             {allItems.map((item, index) => (
               <PromptCard
                 key={item.id}

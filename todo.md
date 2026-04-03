@@ -69,3 +69,12 @@
 ## Testes
 - [x] Vitest: rotas de proxy Anthropic e Freepik
 - [x] Vitest: funções utilitárias de localStorage
+
+## Refinamentos v2
+- [x] Hero menor (70vh) com frase "Ferramentas para quem cria..." mais acima
+- [x] Coluna vertebral visível e mais chamativa no fundo da landing page
+- [x] Módulos revelados progressivamente por scroll (um de cada vez, não todos visíveis)
+- [x] Design mais impactante: mais contraste, elementos visuais mais presentes
+- [x] Botão "Adicionar Imagem" dentro da galeria ARQUIVO
+- [x] Upload de imagem com geração automática de prompt via Anthropic Vision
+- [x] Card adicionado aparece imediatamente na galeria após upload

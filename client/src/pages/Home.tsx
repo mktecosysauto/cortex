@@ -2,15 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { GrainOverlay, CustomCursor } from "@/components/CortexShell";
 
-// ─── Toast System ─────────────────────────────────────────────────────────────
+// ─── Toast ────────────────────────────────────────────────────────────────────
 let _toastSetter: ((t: { msg: string; type: string; id: number }) => void) | null = null;
 export function showToast(msg: string, type: "success" | "error" | "info" = "info") {
   _toastSetter?.({ msg, type, id: Date.now() });
 }
-
 function ToastContainer() {
   const [toasts, setToasts] = useState<{ msg: string; type: string; id: number }[]>([]);
-
   useEffect(() => {
     _toastSetter = (t) => {
       setToasts((prev) => [...prev, t]);
@@ -18,57 +16,138 @@ function ToastContainer() {
     };
     return () => { _toastSetter = null; };
   }, []);
-
   return (
     <div className="toast-wrap">
       {toasts.map((t) => (
-        <div key={t.id} className={`toast-item ${t.type}`}>
-          {t.msg}
-        </div>
+        <div key={t.id} className={`toast-item ${t.type}`}>{t.msg}</div>
       ))}
     </div>
   );
 }
 
-// ─── Scroll Indicator ─────────────────────────────────────────────────────────
-function ScrollIndicator() {
+// ─── Spine (coluna vertebral) ─────────────────────────────────────────────────
+// Runs full height of the page, visible at all times as background element
+function GlobalSpine() {
+  const lineRef = useRef<HTMLDivElement>(null);
+  const markerRef = useRef<HTMLDivElement>(null);
+  const glowRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const marker = markerRef.current;
+      const glow = glowRef.current;
+      const line = lineRef.current;
+      if (!marker || !line) return;
+
+      const docH = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = docH > 0 ? Math.min(1, window.scrollY / docH) : 0;
+      const lineH = line.offsetHeight;
+
+      marker.style.top = `${progress * (lineH - 10)}px`;
+      if (glow) glow.style.top = `${progress * (lineH - 40)}px`;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <div className="flex flex-col items-center gap-2 absolute bottom-10 left-1/2 -translate-x-1/2">
+    <div
+      style={{
+        position: "fixed",
+        left: "50%",
+        top: 0,
+        bottom: 0,
+        width: 1,
+        transform: "translateX(-50%)",
+        pointerEvents: "none",
+        zIndex: 1,
+      }}
+    >
+      {/* Main line */}
       <div
+        ref={lineRef}
         style={{
-          width: 1,
-          height: 40,
-          background: "rgba(255,255,255,0.3)",
-          animation: "pulseDot 1.8s ease-in-out infinite",
+          position: "absolute",
+          inset: 0,
+          background: "linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.18) 10%, rgba(255,255,255,0.18) 90%, transparent 100%)",
         }}
       />
+      {/* Glow blob that follows scroll */}
+      <div
+        ref={glowRef}
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: 0,
+          width: 120,
+          height: 80,
+          transform: "translateX(-50%)",
+          background: "radial-gradient(ellipse at center, rgba(255,255,255,0.07) 0%, transparent 70%)",
+          transition: "top 0.1s linear",
+          pointerEvents: "none",
+        }}
+      />
+      {/* Diamond marker */}
+      <div
+        ref={markerRef}
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: 0,
+          width: 9,
+          height: 9,
+          border: "1px solid rgba(255,255,255,0.8)",
+          transform: "translateX(-50%) rotate(45deg)",
+          background: "#000",
+          transition: "top 0.08s linear",
+          boxShadow: "0 0 8px rgba(255,255,255,0.4)",
+        }}
+      />
+      {/* Tick marks at thirds */}
+      {[0.33, 0.66].map((p) => (
+        <div
+          key={p}
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: `${p * 100}%`,
+            width: 5,
+            height: 1,
+            background: "rgba(255,255,255,0.25)",
+            transform: "translateX(-50%)",
+          }}
+        />
+      ))}
     </div>
   );
 }
 
-// ─── Module Frame ─────────────────────────────────────────────────────────────
+// ─── Module Frame (scroll-triggered, one at a time) ───────────────────────────
 interface ModuleFrameProps {
   number: string;
   name: string;
   subtitle: string;
+  description: string;
   route?: string;
   comingSoon?: boolean;
   reverse?: boolean;
+  accent?: string;
 }
 
-function ModuleFrame({ number, name, subtitle, route, comingSoon, reverse }: ModuleFrameProps) {
+function ModuleFrame({ number, name, subtitle, description, route, comingSoon, reverse, accent = "#fff" }: ModuleFrameProps) {
   const frameRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const el = frameRef.current;
     if (!el) return;
     const obs = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          el.querySelectorAll(".reveal").forEach((r) => r.classList.add("visible"));
-        }
+        if (entry.isIntersecting) setVisible(true);
       },
-      { threshold: 0.2 }
+      { threshold: 0.25, rootMargin: "0px 0px -80px 0px" }
     );
     obs.observe(el);
     return () => obs.disconnect();
@@ -77,216 +156,291 @@ function ModuleFrame({ number, name, subtitle, route, comingSoon, reverse }: Mod
   return (
     <div
       ref={frameRef}
-      className={`module-frame${reverse ? " reverse" : ""}`}
-      style={{ opacity: comingSoon ? 0.4 : 1 }}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(60px)",
+        transition: "opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1)",
+        position: "relative",
+        zIndex: 2,
+      }}
     >
-      {/* Text side */}
-      <div className="flex flex-col gap-5">
-        <div className="reveal">
-          <span
+      <div
+        className={`module-frame${reverse ? " reverse" : ""}`}
+        style={{ opacity: comingSoon ? 0.45 : 1 }}
+      >
+        {/* Text side */}
+        <div className="flex flex-col gap-6">
+          <div
             style={{
-              fontFamily: "'DM Mono', monospace",
-              fontSize: 11,
-              color: "#666",
-              letterSpacing: 3,
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              opacity: visible ? 1 : 0,
+              transition: "opacity 0.6s ease 0.1s",
             }}
           >
-            {number}
-          </span>
-        </div>
-
-        <div className="reveal reveal-d1">
-          <h2
-            style={{
-              fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: "clamp(48px, 8vw, 80px)",
-              lineHeight: 1,
-              letterSpacing: 2,
-              color: "#fff",
-            }}
-          >
-            {name}
-          </h2>
-          <p
-            style={{
-              fontFamily: "'DM Mono', monospace",
-              fontSize: 11,
-              color: "#666",
-              marginTop: 8,
-              letterSpacing: 1,
-            }}
-          >
-            {subtitle}
-          </p>
-        </div>
-
-        <div className="reveal reveal-d2">
-          {comingSoon ? (
             <span
               style={{
                 fontFamily: "'DM Mono', monospace",
-                fontSize: 9,
-                letterSpacing: 2,
-                padding: "4px 10px",
-                border: "1px solid #2a2a2a",
-                color: "#666",
-                textTransform: "uppercase",
+                fontSize: 10,
+                color: accent === "#fff" ? "rgba(255,255,255,0.3)" : accent,
+                letterSpacing: 4,
+                border: `1px solid ${accent === "#fff" ? "rgba(255,255,255,0.12)" : accent}`,
+                padding: "3px 8px",
               }}
             >
-              EM BREVE
+              {number}
             </span>
-          ) : (
-            <Link href={route || "/"}>
-              <button className="btn-cortex" data-hover>
-                → Acessar
-              </button>
-            </Link>
-          )}
-        </div>
-      </div>
+            {comingSoon && (
+              <span
+                style={{
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: 8,
+                  letterSpacing: 2,
+                  color: "#444",
+                  border: "1px solid #222",
+                  padding: "2px 7px",
+                  textTransform: "uppercase",
+                }}
+              >
+                EM BREVE
+              </span>
+            )}
+          </div>
 
-      {/* Preview side */}
-      <div className="reveal reveal-d3">
-        <div
-          style={{
-            aspectRatio: "16/9",
-            background: "#0d0d0d",
-            border: "1px solid #2a2a2a",
-            position: "relative",
-            overflow: "hidden",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {/* Diagonal pattern */}
           <div
             style={{
-              position: "absolute",
-              inset: 0,
-              backgroundImage:
-                "repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.015) 20px, rgba(255,255,255,0.015) 21px)",
-            }}
-          />
-          <span
-            style={{
-              fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: 40,
-              color: "rgba(255,255,255,0.06)",
-              letterSpacing: 8,
-              position: "relative",
-              zIndex: 1,
+              opacity: visible ? 1 : 0,
+              transition: "opacity 0.6s ease 0.2s",
             }}
           >
-            {name}
-          </span>
+            <h2
+              style={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: "clamp(52px, 9vw, 96px)",
+                lineHeight: 0.95,
+                letterSpacing: 3,
+                color: "#fff",
+              }}
+            >
+              {name}
+            </h2>
+            <p
+              style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 11,
+                color: "#555",
+                marginTop: 10,
+                letterSpacing: 1,
+              }}
+            >
+              {subtitle}
+            </p>
+          </div>
+
+          <p
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 14,
+              color: "#888",
+              lineHeight: 1.7,
+              maxWidth: 380,
+              opacity: visible ? 1 : 0,
+              transition: "opacity 0.6s ease 0.3s",
+            }}
+          >
+            {description}
+          </p>
+
+          <div
+            style={{
+              opacity: visible ? 1 : 0,
+              transition: "opacity 0.6s ease 0.4s",
+            }}
+          >
+            {!comingSoon ? (
+              <Link href={route || "/"}>
+                <button className="btn-cortex" data-hover>
+                  → Acessar módulo
+                </button>
+              </Link>
+            ) : (
+              <span
+                style={{
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: 9,
+                  letterSpacing: 2,
+                  color: "#333",
+                  textTransform: "uppercase",
+                }}
+              >
+                — em desenvolvimento
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Visual side */}
+        <div
+          style={{
+            opacity: visible ? 1 : 0,
+            transition: "opacity 0.9s ease 0.35s",
+          }}
+        >
+          <div
+            style={{
+              aspectRatio: "4/3",
+              background: "#080808",
+              border: `1px solid ${comingSoon ? "#1a1a1a" : "rgba(255,255,255,0.1)"}`,
+              position: "relative",
+              overflow: "hidden",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {/* Grid pattern */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                backgroundImage:
+                  "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
+                backgroundSize: "40px 40px",
+              }}
+            />
+            {/* Corner marks */}
+            {[
+              { top: 12, left: 12 },
+              { top: 12, right: 12 },
+              { bottom: 12, left: 12 },
+              { bottom: 12, right: 12 },
+            ].map((pos, i) => (
+              <div
+                key={i}
+                style={{
+                  position: "absolute",
+                  width: 12,
+                  height: 12,
+                  borderTop: i < 2 ? `1px solid rgba(255,255,255,0.2)` : "none",
+                  borderBottom: i >= 2 ? `1px solid rgba(255,255,255,0.2)` : "none",
+                  borderLeft: i % 2 === 0 ? `1px solid rgba(255,255,255,0.2)` : "none",
+                  borderRight: i % 2 === 1 ? `1px solid rgba(255,255,255,0.2)` : "none",
+                  ...pos,
+                }}
+              />
+            ))}
+            {/* Module name watermark */}
+            <span
+              style={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: "clamp(32px, 6vw, 56px)",
+                color: "rgba(255,255,255,0.04)",
+                letterSpacing: 10,
+                position: "relative",
+                zIndex: 1,
+                userSelect: "none",
+              }}
+            >
+              {name}
+            </span>
+            {/* Scan line effect */}
+            {!comingSoon && (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.015) 50%, transparent 100%)",
+                  animation: "scanLine 4s ease-in-out infinite",
+                }}
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// ─── Spine (coluna vertebral) ─────────────────────────────────────────────────
-function Spine() {
-  const markerRef = useRef<HTMLDivElement>(null);
-  const spineRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const spine = spineRef.current;
-      const marker = markerRef.current;
-      if (!spine || !marker) return;
-
-      const rect = spine.getBoundingClientRect();
-      const spineTop = spine.offsetTop;
-      const spineHeight = spine.offsetHeight;
-      const scrollY = window.scrollY;
-
-      const progress = Math.max(
-        0,
-        Math.min(1, (scrollY - spineTop + window.innerHeight * 0.5) / spineHeight)
-      );
-      marker.style.top = `${progress * (spineHeight - 8)}px`;
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  return (
-    <div
-      ref={spineRef}
-      style={{
-        position: "absolute",
-        left: "50%",
-        top: 0,
-        bottom: 0,
-        width: 1,
-        transform: "translateX(-50%)",
-        pointerEvents: "none",
-      }}
-    >
-      {/* Vertical line */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "rgba(255,255,255,0.12)",
-        }}
-      />
-      {/* Animated diamond marker */}
-      <div
-        ref={markerRef}
-        style={{
-          position: "absolute",
-          left: "50%",
-          top: 0,
-          width: 7,
-          height: 7,
-          border: "1px solid rgba(255,255,255,0.5)",
-          transform: "translateX(-50%) rotate(45deg)",
-          background: "#000",
-          transition: "top 0.08s linear",
-        }}
-      />
-    </div>
-  );
-}
-
-// ─── Parallax wrapper ─────────────────────────────────────────────────────────
-function ParallaxSection({ children }: { children: React.ReactNode }) {
+// ─── Divider ──────────────────────────────────────────────────────────────────
+function ModuleDivider({ index }: { index: number }) {
   const ref = useRef<HTMLDivElement>(null);
-
+  const [visible, setVisible] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-
-    const handleScroll = () => {
-      const rect = el.getBoundingClientRect();
-      const offset = (rect.top / window.innerHeight) * 20;
-      el.style.transform = `translateY(${offset}px)`;
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0.5 });
+    obs.observe(el);
+    return () => obs.disconnect();
   }, []);
-
-  return <div ref={ref}>{children}</div>;
+  return (
+    <div
+      ref={ref}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 16,
+        padding: "0 0",
+        position: "relative",
+        zIndex: 2,
+      }}
+    >
+      <div
+        style={{
+          flex: 1,
+          height: 1,
+          background: visible
+            ? "linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent)"
+            : "transparent",
+          transition: "background 0.8s ease",
+        }}
+      />
+      <span
+        style={{
+          fontFamily: "'DM Mono', monospace",
+          fontSize: 8,
+          color: "#2a2a2a",
+          letterSpacing: 3,
+          opacity: visible ? 1 : 0,
+          transition: "opacity 0.6s ease 0.2s",
+        }}
+      >
+        {String(index).padStart(2, "0")}
+      </span>
+      <div
+        style={{
+          flex: 1,
+          height: 1,
+          background: visible
+            ? "linear-gradient(to left, transparent, rgba(255,255,255,0.08), transparent)"
+            : "transparent",
+          transition: "background 0.8s ease",
+        }}
+      />
+    </div>
+  );
 }
 
 // ─── Main Landing Page ────────────────────────────────────────────────────────
 export default function Home() {
-  const manifestoRef = useRef<HTMLDivElement>(null);
+  const phraseRef = useRef<HTMLDivElement>(null);
+  const [scrollPct, setScrollPct] = useState(0);
 
   useEffect(() => {
-    // Manifesto reveal
-    const el = manifestoRef.current;
+    const onScroll = () => {
+      const docH = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollPct(docH > 0 ? Math.min(1, window.scrollY / docH) : 0);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const el = phraseRef.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) el.classList.add("visible");
-      },
-      { threshold: 0.3 }
+      ([entry]) => { if (entry.isIntersecting) el.classList.add("visible"); },
+      { threshold: 0.4 }
     );
     obs.observe(el);
     return () => obs.disconnect();
@@ -296,88 +450,85 @@ export default function Home() {
     <>
       <GrainOverlay />
       <CustomCursor />
+      <GlobalSpine />
       <ToastContainer />
 
-      {/* ── HERO ─────────────────────────────────────────────────────────── */}
+      {/* ── HERO (70vh) ──────────────────────────────────────────────────── */}
       <section
         style={{
-          minHeight: "100vh",
+          minHeight: "70vh",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: "flex-start",
+          paddingTop: "clamp(80px, 14vh, 140px)",
           position: "relative",
           background: "#000",
-          padding: "0 24px",
+          padding: "clamp(80px, 14vh, 140px) 24px 0",
+          zIndex: 2,
         }}
       >
-        <div style={{ textAlign: "center" }}>
-          <h1
-            style={{
-              fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: "clamp(64px, 12vw, 130px)",
-              lineHeight: 1,
-              letterSpacing: 4,
-              color: "#fff",
-              animation: "fadeUp 1s ease forwards",
-            }}
-          >
-            CÓRTEX
-          </h1>
-
-          <p
-            style={{
-              fontFamily: "'DM Mono', monospace",
-              fontSize: 13,
-              letterSpacing: 6,
-              color: "#555",
-              marginTop: 16,
-              textTransform: "uppercase",
-              animation: "fadeUp 1s ease 0.2s both",
-            }}
-          >
-            O sistema central de design
-          </p>
-
-          {/* Horizontal line */}
-          <div
-            style={{
-              width: "40%",
-              height: 1,
-              background: "rgba(255,255,255,0.2)",
-              margin: "28px auto 0",
-              animation: "fadeIn 1.2s ease 0.4s both",
-            }}
-          />
+        {/* Top label */}
+        <div
+          style={{
+            fontFamily: "'DM Mono', monospace",
+            fontSize: 9,
+            letterSpacing: 5,
+            color: "#333",
+            textTransform: "uppercase",
+            marginBottom: 24,
+            animation: "fadeIn 1s ease 0.1s both",
+          }}
+        >
+          Sistema Central de Design
         </div>
 
-        <ScrollIndicator />
-      </section>
+        {/* Main title */}
+        <h1
+          style={{
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: "clamp(72px, 14vw, 160px)",
+            lineHeight: 0.92,
+            letterSpacing: 6,
+            color: "#fff",
+            animation: "fadeUp 0.9s ease 0.15s both",
+            textAlign: "center",
+            position: "relative",
+          }}
+        >
+          CÓRTEX
+          {/* Glitch underline */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: -6,
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "60%",
+              height: 1,
+              background: "linear-gradient(to right, transparent, rgba(255,255,255,0.5), transparent)",
+              animation: "fadeIn 1s ease 0.5s both",
+            }}
+          />
+        </h1>
 
-      {/* ── MANIFESTO ────────────────────────────────────────────────────── */}
-      <section
-        style={{
-          padding: "80px 24px",
-          display: "flex",
-          justifyContent: "center",
-          background: "#000",
-        }}
-      >
+        {/* Phrase — right below the title */}
         <div
-          ref={manifestoRef}
+          ref={phraseRef}
           className="reveal"
           style={{
-            maxWidth: 480,
+            marginTop: 40,
             textAlign: "center",
           }}
         >
           <p
             style={{
               fontFamily: "'DM Mono', monospace",
-              fontSize: 12,
-              color: "#555",
-              lineHeight: 1.9,
-              letterSpacing: 1,
+              fontSize: "clamp(11px, 1.4vw, 14px)",
+              color: "#666",
+              lineHeight: 1.8,
+              letterSpacing: 2,
+              maxWidth: 420,
             }}
           >
             "Ferramentas para quem cria.
@@ -385,111 +536,186 @@ export default function Home() {
             Não um produto. Um sistema."
           </p>
         </div>
-      </section>
 
-      {/* ── MODULES SECTION (with spine) ─────────────────────────────────── */}
-      <section
-        style={{
-          background: "#000",
-          position: "relative",
-          padding: "0 0 120px",
-        }}
-      >
-        {/* Label */}
+        {/* Scroll indicator */}
         <div
           style={{
-            textAlign: "center",
-            padding: "0 24px 40px",
+            marginTop: 48,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 6,
+            animation: "fadeIn 1.5s ease 0.8s both",
           }}
         >
           <span
             style={{
               fontFamily: "'DM Mono', monospace",
-              fontSize: 9,
-              letterSpacing: 4,
+              fontSize: 8,
+              letterSpacing: 3,
               color: "#333",
               textTransform: "uppercase",
             }}
           >
-            módulos do sistema
+            scroll
           </span>
-        </div>
-
-        {/* Spine container */}
-        <div style={{ position: "relative" }}>
-          <Spine />
-
-          {/* Module frames */}
           <div
             style={{
-              maxWidth: 1100,
-              margin: "0 auto",
-              padding: "0 40px",
+              width: 1,
+              height: 32,
+              background: "rgba(255,255,255,0.2)",
+              animation: "pulseDot 2s ease-in-out infinite",
+            }}
+          />
+        </div>
+      </section>
+
+      {/* ── MODULES SECTION ──────────────────────────────────────────────── */}
+      <section
+        style={{
+          background: "#000",
+          position: "relative",
+          padding: "120px 0 160px",
+          zIndex: 2,
+        }}
+      >
+        {/* Section label */}
+        <div
+          style={{
+            textAlign: "center",
+            marginBottom: 80,
+            position: "relative",
+            zIndex: 2,
+          }}
+        >
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 16,
             }}
           >
-            <ParallaxSection>
-              <ModuleFrame
-                number="01"
-                name="ARQUIVO"
-                subtitle="Galeria de prompts para geração de imagens com IA"
-                route="/arquivo"
-              />
-            </ParallaxSection>
-
-            <div
+            <div style={{ width: 40, height: 1, background: "rgba(255,255,255,0.1)" }} />
+            <span
               style={{
-                height: 1,
-                background: "rgba(255,255,255,0.05)",
-                margin: "0 0",
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 9,
+                letterSpacing: 5,
+                color: "#333",
+                textTransform: "uppercase",
               }}
-            />
-
-            <ParallaxSection>
-              <ModuleFrame
-                number="02"
-                name="PALCO"
-                subtitle="Templates e prompts para apresentações profissionais"
-                comingSoon
-                reverse
-              />
-            </ParallaxSection>
-
-            <div
-              style={{
-                height: 1,
-                background: "rgba(255,255,255,0.05)",
-                margin: "0 0",
-              }}
-            />
-
-            <ParallaxSection>
-              <ModuleFrame
-                number="03"
-                name="???"
-                subtitle="Em desenvolvimento"
-                comingSoon
-              />
-            </ParallaxSection>
+            >
+              módulos do sistema
+            </span>
+            <div style={{ width: 40, height: 1, background: "rgba(255,255,255,0.1)" }} />
           </div>
+        </div>
+
+        {/* Modules container */}
+        <div
+          style={{
+            maxWidth: 1100,
+            margin: "0 auto",
+            padding: "0 40px",
+          }}
+        >
+          <ModuleFrame
+            number="01"
+            name="ARQUIVO"
+            subtitle="Galeria de prompts automotivos para IA"
+            description="Uma biblioteca editorial de prompts de alta precisão para geração de imagens automotivas. Edite, melhore e gere com Anthropic e Freepik."
+            route="/arquivo"
+          />
+
+          <ModuleDivider index={1} />
+
+          <ModuleFrame
+            number="02"
+            name="PALCO"
+            subtitle="Templates para apresentações profissionais"
+            description="Composições visuais para apresentar projetos, moodboards e conceitos criativos com precisão editorial."
+            comingSoon
+            reverse
+          />
+
+          <ModuleDivider index={2} />
+
+          <ModuleFrame
+            number="03"
+            name="ESTÚDIO"
+            subtitle="Ferramentas de composição visual"
+            description="Ambiente de criação para composições complexas com múltiplas referências, camadas e estilos."
+            comingSoon
+          />
+        </div>
+
+        {/* Progress indicator */}
+        <div
+          style={{
+            position: "absolute",
+            right: 32,
+            top: "50%",
+            transform: "translateY(-50%)",
+            display: "flex",
+            flexDirection: "column",
+            gap: 4,
+            alignItems: "center",
+            zIndex: 2,
+          }}
+        >
+          <div
+            style={{
+              width: 1,
+              height: 80,
+              background: "#111",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: `${scrollPct * 100}%`,
+                background: "rgba(255,255,255,0.4)",
+                transition: "height 0.1s linear",
+              }}
+            />
+          </div>
+          <span
+            style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: 8,
+              color: "#333",
+              letterSpacing: 1,
+              writingMode: "vertical-rl",
+              marginTop: 6,
+            }}
+          >
+            {Math.round(scrollPct * 100)}%
+          </span>
         </div>
       </section>
 
       {/* ── FOOTER ───────────────────────────────────────────────────────── */}
       <footer
         style={{
-          borderTop: "1px solid rgba(255,255,255,0.08)",
-          padding: "40px 24px",
+          borderTop: "1px solid rgba(255,255,255,0.05)",
+          padding: "48px 24px",
           textAlign: "center",
           background: "#000",
+          position: "relative",
+          zIndex: 2,
         }}
       >
         <p
           style={{
-            fontFamily: "'DM Mono', monospace",
-            fontSize: 10,
-            letterSpacing: 3,
-            color: "#333",
-            textTransform: "uppercase",
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: 20,
+            letterSpacing: 6,
+            color: "rgba(255,255,255,0.15)",
           }}
         >
           CÓRTEX
@@ -497,10 +723,10 @@ export default function Home() {
         <p
           style={{
             fontFamily: "'DM Mono', monospace",
-            fontSize: 10,
-            letterSpacing: 2,
+            fontSize: 9,
+            letterSpacing: 3,
             color: "#2a2a2a",
-            marginTop: 6,
+            marginTop: 8,
             textTransform: "uppercase",
           }}
         >
