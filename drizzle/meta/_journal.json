@@ -1,5 +1,13 @@
 {
   "version": "7",
   "dialect": "mysql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1775178089598,
+      "tag": "0000_sturdy_callisto",
+      "breakpoints": true
+    }
+  ]
 }
