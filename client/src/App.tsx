@@ -4,6 +4,7 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { PageTransitionProvider } from "./contexts/PageTransitionContext";
 import Home from "./pages/Home";
 import Arquivo from "./pages/Arquivo";
 
@@ -23,7 +24,11 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
         <TooltipProvider>
-          <Router />
+          {/* PageTransitionProvider must be inside Router context (wouter) */}
+          <PageTransitionProvider>
+            <Toaster />
+            <Router />
+          </PageTransitionProvider>
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

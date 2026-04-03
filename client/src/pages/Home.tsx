@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "wouter";
 import { GrainOverlay, CustomCursor } from "@/components/CortexShell";
+import { usePageTransition } from "@/contexts/PageTransitionContext";
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 let _toastSetter: ((t: { msg: string; type: string; id: number }) => void) | null = null;
@@ -139,6 +139,7 @@ interface ModuleFrameProps {
 function ModuleFrame({ number, name, subtitle, description, route, comingSoon, reverse, accent = "#fff" }: ModuleFrameProps) {
   const frameRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
+  const { navigateTo } = usePageTransition();
 
   useEffect(() => {
     const el = frameRef.current;
@@ -259,11 +260,13 @@ function ModuleFrame({ number, name, subtitle, description, route, comingSoon, r
             }}
           >
             {!comingSoon ? (
-              <Link href={route || "/"}>
-                <button className="btn-cortex" data-hover>
-                  → Acessar módulo
-                </button>
-              </Link>
+              <button
+                className="btn-cortex"
+                data-hover
+                onClick={() => navigateTo(route || "/")}
+              >
+                → Acessar módulo
+              </button>
             ) : (
               <span
                 style={{

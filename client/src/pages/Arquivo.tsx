@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Link } from "wouter";
 import { GrainOverlay, CustomCursor } from "@/components/CortexShell";
+import { usePageTransition } from "@/contexts/PageTransitionContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface PromptItem {
@@ -800,6 +800,7 @@ export default function Arquivo() {
   const [userItems, setUserItems] = useState<PromptItem[]>(() => loadUserItems());
   const [showSettings, setShowSettings] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
+  const { navigateTo } = usePageTransition();
 
   const allItems = [...BASE_PROMPTS, ...userItems];
 
@@ -852,11 +853,13 @@ export default function Arquivo() {
         <div style={{ maxWidth: 1400, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 56 }}>
           {/* Left: back + title */}
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-            <Link href="/">
-              <button style={{ background: "none", border: "none", color: "#666", fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 1, cursor: "none", display: "flex", alignItems: "center", gap: 6 }} data-hover>
-                ← CÓRTEX
-              </button>
-            </Link>
+            <button
+              style={{ background: "none", border: "none", color: "#666", fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 1, cursor: "none", display: "flex", alignItems: "center", gap: 6 }}
+              data-hover
+              onClick={() => navigateTo("/")}
+            >
+              ← CÓRTEX
+            </button>
             <div style={{ width: 1, height: 20, background: "#2a2a2a" }} />
             <div>
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, letterSpacing: 2, color: "#fff", lineHeight: 1 }}>

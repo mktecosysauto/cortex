@@ -78,3 +78,6 @@
 - [x] Botão "Adicionar Imagem" dentro da galeria ARQUIVO
 - [x] Upload de imagem com geração automática de prompt via Anthropic Vision
 - [x] Card adicionado aparece imediatamente na galeria após upload
+
+## Refinamentos v3
+- [x] Transição animada de página (wipe overlay) ao navegar entre landing e módulos
