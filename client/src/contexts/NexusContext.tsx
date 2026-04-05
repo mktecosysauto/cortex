@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode, useRef } from "react";
+import { trpc } from "@/lib/trpc";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface NexusStats {
@@ -195,13 +196,59 @@ interface NexusContextValue {
   updateNexus: (updater: (prev: NexusState) => NexusState) => void;
   getCurrentRankData: () => Rank;
   getProgress: () => number;
-  onRankUp?: (rank: Rank) => void;
+  syncWithDB: () => void;
 }
 
 const NexusContext = createContext<NexusContextValue | null>(null);
 
 export function NexusProvider({ children }: { children: ReactNode }) {
   const [nexus, setNexus] = useState<NexusState>(() => loadNexusFromStorage());
+  const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // tRPC hooks for DB sync
+  const profileQuery = trpc.cortex.nexus.getProfile.useQuery(undefined, {
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+  const updateProfileMut = trpc.cortex.nexus.updateProfile.useMutation();
+
+  // Load from DB when profile arrives (overrides localStorage)
+  useEffect(() => {
+    if (profileQuery.data) {
+      const p = profileQuery.data;
+      setNexus((prev) => {
+        const merged: NexusState = {
+          ...prev,
+          agentName: p.agentName ?? prev.agentName,
+          agentAppearance: (p.agentAppearance as AgentAppearance | null) ?? prev.agentAppearance,
+          xp: p.xp ?? prev.xp,
+          glifos: p.glifos ?? prev.glifos,
+          rankId: p.rankId ?? prev.rankId,
+          purchases: (p.purchases as string[] | null) ?? prev.purchases,
+        };
+        saveNexusToStorage(merged);
+        return merged;
+      });
+    }
+  }, [profileQuery.data]);
+
+  // Debounced DB sync
+  const syncWithDB = useCallback(() => {
+    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+    syncTimeoutRef.current = setTimeout(() => {
+      setNexus((current) => {
+        updateProfileMut.mutate({
+          agentName: current.agentName,
+          agentAppearance: current.agentAppearance,
+          xp: current.xp,
+          glifos: current.glifos,
+          rankId: current.rankId,
+          purchases: current.purchases,
+        });
+        return current;
+      });
+    }, 2000);
+  }, [updateProfileMut]);
 
   const updateNexus = useCallback((updater: (prev: NexusState) => NexusState) => {
     setNexus((prev) => {
@@ -209,7 +256,8 @@ export function NexusProvider({ children }: { children: ReactNode }) {
       saveNexusToStorage(next);
       return next;
     });
-  }, []);
+    syncWithDB();
+  }, [syncWithDB]);
 
   const addXP = useCallback((type: string, isFocused = false) => {
     setNexus((prev) => {
@@ -245,7 +293,19 @@ export function NexusProvider({ children }: { children: ReactNode }) {
       saveNexusToStorage(next);
       return next;
     });
-  }, []);
+    // Sync to DB after XP update
+    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+    syncTimeoutRef.current = setTimeout(() => {
+      setNexus((current) => {
+        updateProfileMut.mutate({
+          xp: current.xp,
+          glifos: current.glifos,
+          rankId: current.rankId,
+        });
+        return current;
+      });
+    }, 3000);
+  }, [updateProfileMut]);
 
   const getCurrentRankData = useCallback(() => getCurrentRank(nexus.xp), [nexus.xp]);
   const getProgress = useCallback(() => getXpProgress(nexus.xp), [nexus.xp]);
@@ -258,7 +318,7 @@ export function NexusProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <NexusContext.Provider value={{ nexus, addXP, updateNexus, getCurrentRankData, getProgress }}>
+    <NexusContext.Provider value={{ nexus, addXP, updateNexus, getCurrentRankData, getProgress, syncWithDB }}>
       {children}
     </NexusContext.Provider>
   );

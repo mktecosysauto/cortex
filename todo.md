@@ -100,3 +100,43 @@
 - [x] Multiplicador ×1.2 quando PULSO ativo durante uso de ferramenta
 - [x] Rota /nexus no App.tsx
 - [x] Responsividade mobile do widget PULSO (bottom sheet)
+
+## Auth + Admin + Dashboard (v6)
+
+### Banco de Dados
+- [x] Tabela `cortex_sessions` (sessões Pomodoro)
+- [x] Tabela `cortex_tasks` (tarefas criadas)
+- [x] Tabela `cortex_tool_events` (log de uso das ferramentas)
+- [x] Tabela `cortex_weekly_insights` (cache de insights IA)
+- [x] Estender tabela `users` com campos NEXUS (xp, glifos, rank_id, agent_name, etc.)
+
+### Auth & Rotas Protegidas
+- [x] Página /login com Manus OAuth (usa OAuth nativo do Manus)
+- [x] Rota /dashboard protegida (requireAuth)
+- [x] Rota /admin protegida (requireAdmin — role=admin)
+- [x] Sincronizar estado NEXUS com banco ao login
+
+### Dashboard (/dashboard)
+- [x] Header com navegação de semana (← →)
+- [x] Cards de resumo: foco, sessões, tarefas, XP
+- [x] Gráfico de barras SVG por dia da semana
+- [x] Mapa de calor (30 dias)
+- [x] Linha do tempo de sessões
+- [x] Foco por ferramenta (ARQUIVO, PALCO)
+- [x] Insight IA semanal (Anthropic, discreto, com cache)
+- [x] Ranking com toggle de visibilidade
+- [ ] Modo Sprint (meta semanal + progresso) — próxima iteração
+- [ ] Metas de foco (diária + semanal editáveis) — próxima iteração
+- [ ] Exportação PDF do relatório mensal (jsPDF) — próxima iteração
+
+### Painel Admin (/admin)
+- [x] Seção: manipulação de XP e Glifos (manual + botões rápidos)
+- [x] Simulação de sessões em lote (1, 5, 20)
+- [x] Tabela de usuários com ações (resetar XP)
+- [x] Painel de estatísticas gerais do sistema
+
+### Integração NEXUS ↔ Banco
+- [x] saveSession() ao completar/abandonar PULSO (via tRPC)
+- [x] saveToolEvent() ao gerar prompt/imagem no ARQUIVO (via tRPC)
+- [x] loadUserProfile() ao iniciar sessão (sobrescreve localStorage)
+- [x] saveUserProgress() ao atualizar XP/glifos (sync background debounced)

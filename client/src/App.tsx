@@ -10,6 +10,8 @@ import PulsoWidget from "./components/PulsoWidget";
 import Home from "./pages/Home";
 import Arquivo from "./pages/Arquivo";
 import Nexus from "./pages/Nexus";
+import Dashboard from "./pages/Dashboard";
+import Admin from "./pages/Admin";
 
 function Router() {
   return (
@@ -17,6 +19,8 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/arquivo"} component={Arquivo} />
       <Route path={"/nexus"} component={Nexus} />
+      <Route path={"/dashboard"} component={Dashboard} />
+      <Route path={"/admin"} component={Admin} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

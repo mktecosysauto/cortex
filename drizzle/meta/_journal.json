@@ -8,6 +8,20 @@
       "when": 1775178089598,
       "tag": "0000_sturdy_callisto",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1775424759689,
+      "tag": "0001_solid_santa_claus",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1775424815499,
+      "tag": "0002_chemical_obadiah_stane",
+      "breakpoints": true
     }
   ]
 }

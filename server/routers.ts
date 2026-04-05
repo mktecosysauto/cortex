@@ -3,6 +3,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
+import { cortexRouter } from "./routers/cortex";
 
 // ─── Proxy helpers ────────────────────────────────────────────────────────────
 async function proxyAnthropicRequest(body: Record<string, unknown>, apiKey: string) {
@@ -92,6 +93,9 @@ export const appRouter = router({
         return proxyAnthropicRequest(body, input.apiKey);
       }),
   }),
+
+  // ── CÓRTEX Features ──────────────────────────────────────────────────────────
+  cortex: cortexRouter,
 
   // ── Freepik Proxy ────────────────────────────────────────────────────────────
   freepik: router({
