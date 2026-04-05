@@ -4,14 +4,31 @@ import { GlobalHeader } from "@/components/GlobalHeader";
 import { usePageTransition } from "@/contexts/PageTransitionContext";
 import {
   useNexus,
-  renderAgentSVG,
   RANKS,
   getXpProgress,
-  loadNexusFromStorage,
 } from "@/contexts/NexusContext";
+import SapoAgent, { useSapoState, type SapoSkin } from "@/components/SapoAgent";
 
 // ─── Shop items ───────────────────────────────────────────────────────────────
 const SHOP_ITEMS = {
+  skins: [
+    {
+      id: "skin-espada",
+      name: "Guerreiro",
+      desc: "SAPO equipado com espada e capa. Pele exclusiva do agente.",
+      price: 600,
+      type: "skin",
+      skinKey: "skin-espada" as SapoSkin,
+    },
+    {
+      id: "skin-mago",
+      name: "Mago",
+      desc: "SAPO com chapéu pontudo e cajado arcano. Pele exclusiva do agente.",
+      price: 600,
+      type: "skin",
+      skinKey: "skin-mago" as SapoSkin,
+    },
+  ],
   appearance: [
     { id: "palette_warm",       name: "Paleta Quente",         desc: "Tons âmbar e terracota para o seu AGENTE.",                price: 150, type: "palette" },
     { id: "palette_cold",       name: "Paleta Fria",           desc: "Tons azul profundo e ciano para o seu AGENTE.",            price: 150, type: "palette" },
@@ -26,6 +43,13 @@ const SHOP_ITEMS = {
     { id: "feature_pulso_custom",    name: "PULSO Livre",         desc: "Duração customizável para o timer: de 5 a 120 minutos.",     price: 180, type: "feature" },
   ],
 };
+
+// Flat list of all items for lookups
+const ALL_ITEMS = [
+  ...SHOP_ITEMS.skins,
+  ...SHOP_ITEMS.appearance,
+  ...SHOP_ITEMS.features,
+];
 
 // ─── Achievements ─────────────────────────────────────────────────────────────
 const ACHIEVEMENTS = [
@@ -84,23 +108,36 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
+// ─── CDN URLs (for skin preview in shop) ─────────────────────────────────────
+const SKIN_PREVIEW_URLS: Record<string, string> = {
+  "skin-espada": "https://d2xsxph8kpxj0f.cloudfront.net/310519663331012459/4RjPzBcDcvCdjPKo6zdctY/skin-espada_a1dbf67e.png",
+  "skin-mago":   "https://d2xsxph8kpxj0f.cloudfront.net/310519663331012459/4RjPzBcDcvCdjPKo6zdctY/skin-mago_98b68b94.png",
+};
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Nexus() {
-  const { nexus, updateNexus, getCurrentRankData, getProgress, buyItem, toggleItem, isActive, isPurchased } = useNexus();
+  const {
+    nexus, updateNexus, getCurrentRankData, getProgress,
+    buyItem, toggleItem, isActive, isPurchased, activeSkin,
+  } = useNexus();
   const { navigateTo } = usePageTransition();
-  const [shopTab, setShopTab] = useState<"appearance" | "features">("appearance");
+  const [shopTab, setShopTab] = useState<"skins" | "appearance" | "features">("skins");
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(nexus.agentName);
+
+  // SAPO animation state
+  const { sapoState, celebrate, handleCelebrateEnd } = useSapoState("idle");
 
   const rank = getCurrentRankData();
   const pct = getProgress();
   const nextRank = RANKS.find((r) => r.id === rank.id + 1);
 
-  const agentSvgFull = renderAgentSVG("full", rank.color, nexus.agentAppearance.effectId, nexus.agentAppearance.silhouetteId);
-
   const titleItem = nexus.agentAppearance.titleId
-    ? [...SHOP_ITEMS.appearance, ...SHOP_ITEMS.features].find((i) => i.id === nexus.agentAppearance.titleId)
+    ? ALL_ITEMS.find((i) => i.id === nexus.agentAppearance.titleId)
     : null;
+
+  // Determine current skin for SapoAgent
+  const currentSkin: SapoSkin = (activeSkin as SapoSkin) ?? "base";
 
   const saveName = () => {
     const name = nameInput.trim().toUpperCase() || "AGENTE";
@@ -109,15 +146,19 @@ export default function Nexus() {
   };
 
   const shopBuy = (itemId: string) => {
-    const item = [...SHOP_ITEMS.appearance, ...SHOP_ITEMS.features].find((i) => i.id === itemId);
+    const item = ALL_ITEMS.find((i) => i.id === itemId);
     if (!item) return;
     const ok = buyItem(itemId, item.type, item.price, item.name);
-    if (ok) showToast(`${item.name} adquirido — ⬡ ${item.price} glifos. Ative na loja.`, "success");
-    else if (nexus.glifos < item.price) showToast("Glifos insuficientes", "error");
+    if (ok) {
+      showToast(`${item.name} adquirido — ⬡ ${item.price} glifos. Ative na loja.`, "success");
+      celebrate(); // SAPO celebrates on purchase!
+    } else if (nexus.glifos < item.price) {
+      showToast("Glifos insuficientes", "error");
+    }
   };
 
   const shopToggle = (itemId: string) => {
-    const item = [...SHOP_ITEMS.appearance, ...SHOP_ITEMS.features].find((i) => i.id === itemId);
+    const item = ALL_ITEMS.find((i) => i.id === itemId);
     if (!item) return;
     const wasActive = isActive(itemId);
     toggleItem(itemId, item.type);
@@ -171,12 +212,25 @@ export default function Nexus() {
 
           {/* ── AGENT section ── */}
           <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 40, alignItems: "start", marginBottom: 64 }}>
-            {/* SVG */}
+
+            {/* SAPO Agent */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-              <div
-                style={{ width: 100, height: 100 }}
-                dangerouslySetInnerHTML={{ __html: agentSvgFull.replace('width="200" height="200"', 'width="100" height="100"') }}
+              <SapoAgent
+                skin={currentSkin}
+                state={sapoState}
+                size={160}
+                onCelebrateEnd={handleCelebrateEnd}
               />
+              {/* Skin label */}
+              <span style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 8,
+                letterSpacing: 3,
+                color: "#333",
+                textTransform: "uppercase" as const,
+              }}>
+                {currentSkin === "base" ? "SAPO BASE" : currentSkin === "skin-espada" ? "GUERREIRO" : "MAGO"}
+              </span>
             </div>
 
             {/* Info */}
@@ -340,7 +394,7 @@ export default function Nexus() {
 
             {/* Tabs */}
             <div style={{ display: "flex", gap: 4, marginBottom: 24 }}>
-              {(["appearance", "features"] as const).map((tab) => (
+              {(["skins", "appearance", "features"] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setShopTab(tab)}
@@ -357,7 +411,7 @@ export default function Nexus() {
                     textTransform: "uppercase" as const,
                   }}
                 >
-                  {tab === "appearance" ? "Aparência" : "Funcionalidades"}
+                  {tab === "skins" ? "Skins" : tab === "appearance" ? "Aparência" : "Funcionalidades"}
                 </button>
               ))}
             </div>
@@ -368,7 +422,7 @@ export default function Nexus() {
                 <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 3, color: "#444", marginBottom: 10, textTransform: "uppercase" as const }}>Equipado agora</div>
                 <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
                   {nexus.activeItems.map((id) => {
-                    const item = [...SHOP_ITEMS.appearance, ...SHOP_ITEMS.features].find((i) => i.id === id);
+                    const item = ALL_ITEMS.find((i) => i.id === id);
                     if (!item) return null;
                     return (
                       <button
@@ -399,102 +453,262 @@ export default function Nexus() {
               </div>
             )}
 
-            {/* Items grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 2 }}>
-              {SHOP_ITEMS[shopTab].map((item) => {
-                const owned = isPurchased(item.id);
-                const active = isActive(item.id);
-                const canBuy = nexus.glifos >= item.price && !owned;
-
-                // Border & accent color based on state
-                const borderColor = active ? "rgba(255,255,255,0.35)" : owned ? "#2a2a2a" : "#1a1a1a";
-                const bgColor = active ? "rgba(255,255,255,0.04)" : "#0d0d0d";
-
-                return (
-                  <div
-                    key={item.id}
-                    style={{
-                      background: bgColor,
-                      border: `1px solid ${borderColor}`,
-                      padding: 16,
-                      display: "flex",
-                      flexDirection: "column" as const,
-                      gap: 8,
-                      transition: "border-color 0.2s, background 0.2s",
-                      position: "relative" as const,
-                    }}
-                  >
-                    {/* Active indicator dot */}
-                    {active && (
-                      <div style={{
-                        position: "absolute" as const, top: 10, right: 10,
-                        width: 6, height: 6, borderRadius: "50%",
-                        background: "#fff",
-                        boxShadow: "0 0 6px rgba(255,255,255,0.6)",
-                      }} />
-                    )}
-
-                    <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 2, color: active ? "#fff" : owned ? "#888" : "#666", textTransform: "uppercase" as const }}>
-                      {item.name}
-                    </span>
-                    <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "#444", lineHeight: 1.5 }}>
-                      {item.desc}
-                    </span>
-
-                    {!owned && (
-                      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: canBuy ? "#666" : "#333", letterSpacing: 1 }}>
-                        ⬡ {item.price}
-                      </span>
-                    )}
-
-                    <div style={{ marginTop: "auto", display: "flex", gap: 4 }}>
-                      {!owned ? (
-                        /* Not purchased — show buy button */
-                        <button
-                          onClick={() => shopBuy(item.id)}
-                          disabled={!canBuy}
-                          style={{
-                            flex: 1,
-                            background: "none",
-                            border: `1px solid ${canBuy ? "#444" : "#1a1a1a"}`,
-                            color: canBuy ? "#888" : "#2a2a2a",
-                            fontFamily: "'DM Mono', monospace",
-                            fontSize: 9,
-                            letterSpacing: 2,
-                            padding: "8px 0",
-                            cursor: canBuy ? "none" : "not-allowed",
-                            textTransform: "uppercase" as const,
-                            transition: "all 0.2s",
-                          }}
-                        >
-                          {canBuy ? `Comprar  ⬡${item.price}` : "Glifos insuficientes"}
-                        </button>
-                      ) : (
-                        /* Purchased — show toggle button */
-                        <button
-                          onClick={() => shopToggle(item.id)}
-                          style={{
-                            flex: 1,
-                            background: active ? "rgba(255,255,255,0.08)" : "none",
-                            border: `1px solid ${active ? "rgba(255,255,255,0.3)" : "#2a2a2a"}`,
-                            color: active ? "#fff" : "#555",
-                            fontFamily: "'DM Mono', monospace",
-                            fontSize: 9,
-                            letterSpacing: 2,
-                            padding: "8px 0",
-                            cursor: "none",
-                            textTransform: "uppercase" as const,
-                            transition: "all 0.2s",
-                          }}
-                        >
-                          {active ? "● Desativar" : "○ Ativar"}
-                        </button>
-                      )}
+            {/* ── Skins tab ── */}
+            {shopTab === "skins" && (
+              <div>
+                {/* Base skin (always available) */}
+                <div style={{ marginBottom: 16, padding: "12px 16px", background: "#0a0a0a", border: "1px solid #1a1a1a", display: "flex", alignItems: "center", gap: 16 }}>
+                  <div style={{ width: 64, height: 64, display: "flex", alignItems: "center", justifyContent: "center", background: "#080808", border: "1px solid #1a1a1a", flexShrink: 0 }}>
+                    <SapoAgent skin="base" state="idle" size={56} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 2, color: "#888", textTransform: "uppercase" as const, marginBottom: 4 }}>
+                      SAPO BASE
+                    </div>
+                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "#444" }}>
+                      Skin padrão do agente. Sempre disponível, sem equipamento.
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                  <div>
+                    {!activeSkin ? (
+                      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 2, color: "#555", border: "1px solid #2a2a2a", padding: "6px 12px" }}>
+                        ● ATIVO
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          // Deactivate current skin to go back to base
+                          if (activeSkin) toggleItem(activeSkin, "skin");
+                        }}
+                        style={{
+                          background: "none",
+                          border: "1px solid #2a2a2a",
+                          color: "#555",
+                          fontFamily: "'DM Mono', monospace",
+                          fontSize: 9,
+                          letterSpacing: 2,
+                          padding: "6px 12px",
+                          cursor: "none",
+                        }}
+                      >
+                        Usar Base
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Purchasable skins grid */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 2 }}>
+                  {SHOP_ITEMS.skins.map((item) => {
+                    const owned = isPurchased(item.id);
+                    const active = isActive(item.id);
+                    const canBuy = nexus.glifos >= item.price && !owned;
+                    const borderColor = active ? "rgba(255,255,255,0.35)" : owned ? "#2a2a2a" : "#1a1a1a";
+                    const bgColor = active ? "rgba(255,255,255,0.04)" : "#0d0d0d";
+
+                    return (
+                      <div
+                        key={item.id}
+                        style={{
+                          background: bgColor,
+                          border: `1px solid ${borderColor}`,
+                          padding: 0,
+                          display: "flex",
+                          flexDirection: "column" as const,
+                          transition: "border-color 0.2s, background 0.2s",
+                          position: "relative" as const,
+                          overflow: "hidden",
+                        }}
+                      >
+                        {/* Active indicator */}
+                        {active && (
+                          <div style={{
+                            position: "absolute" as const, top: 8, right: 8,
+                            fontFamily: "'DM Mono', monospace",
+                            fontSize: 8,
+                            letterSpacing: 2,
+                            color: "#fff",
+                            background: "rgba(255,255,255,0.1)",
+                            border: "1px solid rgba(255,255,255,0.2)",
+                            padding: "3px 7px",
+                            zIndex: 2,
+                          }}>
+                            ATIVO
+                          </div>
+                        )}
+
+                        {/* Skin preview */}
+                        <div className="shop-skin-preview" style={{ borderBottom: "1px solid #1a1a1a" }}>
+                          <img
+                            src={SKIN_PREVIEW_URLS[item.id]}
+                            alt={item.name}
+                            className={`shop-skin-img${!owned ? " skin-locked" : ""}`}
+                          />
+                          {!owned && (
+                            <div className="skin-lock-overlay">
+                              ⬡ {item.price}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Info */}
+                        <div style={{ padding: 16, display: "flex", flexDirection: "column" as const, gap: 8 }}>
+                          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 2, color: active ? "#fff" : owned ? "#888" : "#666", textTransform: "uppercase" as const }}>
+                            {item.name}
+                          </span>
+                          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "#444", lineHeight: 1.5 }}>
+                            {item.desc}
+                          </span>
+
+                          {!owned && (
+                            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: canBuy ? "#666" : "#333", letterSpacing: 1 }}>
+                              ⬡ {item.price}
+                            </span>
+                          )}
+
+                          <div style={{ marginTop: "auto", display: "flex", gap: 4 }}>
+                            {!owned ? (
+                              <button
+                                onClick={() => shopBuy(item.id)}
+                                disabled={!canBuy}
+                                style={{
+                                  flex: 1,
+                                  background: "none",
+                                  border: `1px solid ${canBuy ? "#444" : "#1a1a1a"}`,
+                                  color: canBuy ? "#888" : "#2a2a2a",
+                                  fontFamily: "'DM Mono', monospace",
+                                  fontSize: 9,
+                                  letterSpacing: 2,
+                                  padding: "8px 0",
+                                  cursor: canBuy ? "none" : "not-allowed",
+                                  textTransform: "uppercase" as const,
+                                  transition: "all 0.2s",
+                                }}
+                              >
+                                {canBuy ? `Comprar  ⬡${item.price}` : "Glifos insuficientes"}
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => shopToggle(item.id)}
+                                style={{
+                                  flex: 1,
+                                  background: active ? "rgba(255,255,255,0.08)" : "none",
+                                  border: `1px solid ${active ? "rgba(255,255,255,0.3)" : "#2a2a2a"}`,
+                                  color: active ? "#fff" : "#555",
+                                  fontFamily: "'DM Mono', monospace",
+                                  fontSize: 9,
+                                  letterSpacing: 2,
+                                  padding: "8px 0",
+                                  cursor: "none",
+                                  textTransform: "uppercase" as const,
+                                  transition: "all 0.2s",
+                                }}
+                              >
+                                {active ? "● Desativar" : "○ Equipar"}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* ── Appearance / Features tabs ── */}
+            {shopTab !== "skins" && (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 2 }}>
+                {SHOP_ITEMS[shopTab].map((item) => {
+                  const owned = isPurchased(item.id);
+                  const active = isActive(item.id);
+                  const canBuy = nexus.glifos >= item.price && !owned;
+                  const borderColor = active ? "rgba(255,255,255,0.35)" : owned ? "#2a2a2a" : "#1a1a1a";
+                  const bgColor = active ? "rgba(255,255,255,0.04)" : "#0d0d0d";
+
+                  return (
+                    <div
+                      key={item.id}
+                      style={{
+                        background: bgColor,
+                        border: `1px solid ${borderColor}`,
+                        padding: 16,
+                        display: "flex",
+                        flexDirection: "column" as const,
+                        gap: 8,
+                        transition: "border-color 0.2s, background 0.2s",
+                        position: "relative" as const,
+                      }}
+                    >
+                      {active && (
+                        <div style={{
+                          position: "absolute" as const, top: 10, right: 10,
+                          width: 6, height: 6, borderRadius: "50%",
+                          background: "#fff",
+                          boxShadow: "0 0 6px rgba(255,255,255,0.6)",
+                        }} />
+                      )}
+
+                      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 2, color: active ? "#fff" : owned ? "#888" : "#666", textTransform: "uppercase" as const }}>
+                        {item.name}
+                      </span>
+                      <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "#444", lineHeight: 1.5 }}>
+                        {item.desc}
+                      </span>
+
+                      {!owned && (
+                        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: canBuy ? "#666" : "#333", letterSpacing: 1 }}>
+                          ⬡ {item.price}
+                        </span>
+                      )}
+
+                      <div style={{ marginTop: "auto", display: "flex", gap: 4 }}>
+                        {!owned ? (
+                          <button
+                            onClick={() => shopBuy(item.id)}
+                            disabled={!canBuy}
+                            style={{
+                              flex: 1,
+                              background: "none",
+                              border: `1px solid ${canBuy ? "#444" : "#1a1a1a"}`,
+                              color: canBuy ? "#888" : "#2a2a2a",
+                              fontFamily: "'DM Mono', monospace",
+                              fontSize: 9,
+                              letterSpacing: 2,
+                              padding: "8px 0",
+                              cursor: canBuy ? "none" : "not-allowed",
+                              textTransform: "uppercase" as const,
+                              transition: "all 0.2s",
+                            }}
+                          >
+                            {canBuy ? `Comprar  ⬡${item.price}` : "Glifos insuficientes"}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => shopToggle(item.id)}
+                            style={{
+                              flex: 1,
+                              background: active ? "rgba(255,255,255,0.08)" : "none",
+                              border: `1px solid ${active ? "rgba(255,255,255,0.3)" : "#2a2a2a"}`,
+                              color: active ? "#fff" : "#555",
+                              fontFamily: "'DM Mono', monospace",
+                              fontSize: 9,
+                              letterSpacing: 2,
+                              padding: "8px 0",
+                              cursor: "none",
+                              textTransform: "uppercase" as const,
+                              transition: "all 0.2s",
+                            }}
+                          >
+                            {active ? "● Desativar" : "○ Ativar"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </section>
 
           {/* ── Ranks reference ── */}

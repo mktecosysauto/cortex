@@ -193,3 +193,18 @@
 
 ### Dashboard — Integração ROTA
 - [x] Seção de tasks da semana no Dashboard (pendentes + histórico)
+
+## SAPO — Sistema de Agentes Visuais (v10)
+- [x] Upload dos 3 PNGs para CDN (base.png, skin-espada.png, skin-mago.png)
+- [x] CSS global: sapoRespira, sapoFocado, sapoCelebra, .sapo-wrapper, .sapo-img, .sapo-blink-overlay
+- [x] Componente SapoAgent.tsx com piscar aleatório via useEffect + setTimeout
+- [ ] Integrar SapoAgent na landing page (seção NEXUS, 280×340px, respirar+piscar) — próxima iteração
+- [ ] Integrar SapoAgent no GlobalHeader (32×40px, estático) — próxima iteração
+- [ ] Integrar SapoAgent no widget PULSO (48×58px, respirar, sapo-focado ao iniciar) — próxima iteração
+- [x] Integrar SapoAgent na página /nexus (160px, respirar+piscar, skin ativa)
+- [x] activeSkin no NexusContext (base|espada|mago) + persistência localStorage
+- [x] Skins na loja /nexus: cards com preview, compra, equipar, desequipar
+- [x] toggleItem() para skins exclusivas (só uma ativa por vez)
+- [x] Ajuste visual do overlay de piscar via CSS (top/height/left/right ajustáveis)
+- [x] prefers-reduced-motion: animation none
+- [x] Animação celebrate ao comprar item na loja

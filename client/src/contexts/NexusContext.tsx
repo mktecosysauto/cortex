@@ -78,6 +78,9 @@ const ITEM_TYPE_TO_APPEARANCE: Record<string, keyof AgentAppearance> = {
   title:      "titleId",
 };
 
+/** Exclusive types — only one active at a time */
+const EXCLUSIVE_TYPES = new Set(["palette", "silhouette", "effect", "title", "skin"]);
+
 const FOCUS_MULTIPLIER = 1.2;
 const NEXUS_KEY = "cortex_nexus_v2";
 
@@ -253,7 +256,7 @@ interface NexusContextValue {
   buyItem: (itemId: string, itemType: string, itemPrice: number, itemName: string) => boolean;
   /**
    * Toggle an item on/off. Item must be in purchases.
-   * For appearance types (palette/silhouette/effect/title) only one per type can be active.
+   * For appearance types (palette/silhouette/effect/title/skin) only one per type can be active.
    * For feature type multiple can be active simultaneously.
    */
   toggleItem: (itemId: string, itemType: string) => void;
@@ -261,6 +264,11 @@ interface NexusContextValue {
   isActive: (itemId: string) => boolean;
   /** Whether an item has been purchased */
   isPurchased: (itemId: string) => boolean;
+  /**
+   * Returns the active skin ID ("skin-espada", "skin-mago") or null for base.
+   * Derived from activeItems where item type is 'skin'.
+   */
+  activeSkin: string | null;
 }
 
 const NexusContext = createContext<NexusContextValue | null>(null);
@@ -377,14 +385,14 @@ export function NexusProvider({ children }: { children: ReactNode }) {
         // Deactivate
         newActiveItems = prev.activeItems.filter((id) => id !== itemId);
       } else {
-        // Activate — for appearance types, deactivate any other item of the same type first
-        const appearanceTypes = ["palette", "silhouette", "effect", "title"];
-        if (appearanceTypes.includes(itemType)) {
+        // Activate — for exclusive types, deactivate any other item of the same type first
+        if (EXCLUSIVE_TYPES.has(itemType)) {
           // Remove any other active item of the same type
+          // Skin IDs follow pattern: skin-* (hyphen), others: type_* (underscore)
           newActiveItems = prev.activeItems.filter((id) => {
-            // We need to know the type of each active item — encode type in id prefix convention
-            // palette_*, silhouette_*, effect_*, title_*, feature_*
-            const activeType = id.split("_")[0];
+            const activeType = itemType === "skin"
+              ? (id.startsWith("skin-") ? "skin" : id.split("_")[0])
+              : id.split("_")[0];
             return activeType !== itemType;
           });
           newActiveItems.push(itemId);
@@ -415,6 +423,9 @@ export function NexusProvider({ children }: { children: ReactNode }) {
 
   const isActive = useCallback((itemId: string) => nexus.activeItems.includes(itemId), [nexus.activeItems]);
   const isPurchased = useCallback((itemId: string) => nexus.purchases.includes(itemId), [nexus.purchases]);
+
+  // Derive activeSkin from activeItems
+  const activeSkin = nexus.activeItems.find((id) => id.startsWith("skin-")) ?? null;
 
   const addXP = useCallback((type: string, isFocused = false) => {
     setNexus((prev) => {
@@ -472,7 +483,7 @@ export function NexusProvider({ children }: { children: ReactNode }) {
   return (
     <NexusContext.Provider value={{
       nexus, addXP, updateNexus, getCurrentRankData, getProgress, syncWithDB,
-      buyItem, toggleItem, isActive, isPurchased,
+      buyItem, toggleItem, isActive, isPurchased, activeSkin,
     }}>
       {children}
     </NexusContext.Provider>
