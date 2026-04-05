@@ -151,3 +151,12 @@
 - [x] Admin: botão "SIMULAR SESSÕES" melhorado com feedback visual
 - [x] Admin: seção "ESTADO ATUAL" mostrando XP, rank, glifos, conquistas em tempo real
 - [x] Redirecionar /admin para login se não autenticado (guard interno)
+
+## Loja NEXUS — Ativar/Desativar (v8)
+- [x] Separar `purchases` (comprados) de `activeItems` (ativados) no NexusContext
+- [x] Função `toggleItem(id)` para ativar/desativar itens comprados
+- [x] Persistir `activeItems` no banco de dados (coluna JSON na tabela users)
+- [x] UI da loja: botão "ATIVAR" / "DESATIVAR" por item comprado
+- [x] UI da loja: estado visual claro — comprado+ativo, comprado+inativo, não comprado
+- [x] Painel "EQUIPADO" no topo da loja mostrando o que está ativo
+- [x] AGENTE reflete imediatamente as mudanças de aparência ao ativar/desativar

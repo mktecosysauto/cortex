@@ -201,6 +201,7 @@ export default function Admin() {
       },
       achievements: [],
       purchases: [],
+      activeItems: [],
     }));
     syncWithDB();
     toast.success("NEXUS resetado para o estado inicial");

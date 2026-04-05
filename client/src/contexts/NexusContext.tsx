@@ -30,7 +30,10 @@ export interface NexusState {
   rankId: number;
   stats: NexusStats;
   achievements: string[];
+  /** IDs of all purchased items (never removed after purchase) */
   purchases: string[];
+  /** IDs of currently active/equipped items (subset of purchases) */
+  activeItems: string[];
 }
 
 export interface Rank {
@@ -67,8 +70,16 @@ export const XP_REWARDS: Record<string, { xp: number; glifos: number }> = {
   imagem_salva:        { xp: 5,  glifos: 0  },
 };
 
+/** Maps item type to the agentAppearance key it controls */
+const ITEM_TYPE_TO_APPEARANCE: Record<string, keyof AgentAppearance> = {
+  palette:    "paletteId",
+  silhouette: "silhouetteId",
+  effect:     "effectId",
+  title:      "titleId",
+};
+
 const FOCUS_MULTIPLIER = 1.2;
-const NEXUS_KEY = "cortex_nexus_v1";
+const NEXUS_KEY = "cortex_nexus_v2";
 
 const DEFAULT_STATE: NexusState = {
   agentName: "AGENTE",
@@ -90,6 +101,7 @@ const DEFAULT_STATE: NexusState = {
   },
   achievements: [],
   purchases: [],
+  activeItems: [],
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -112,16 +124,53 @@ export function calcReward(type: string, isFocused = false): { xp: number; glifo
   return { xp: Math.round(base.xp * mult), glifos: Math.round(base.glifos * mult) };
 }
 
+/**
+ * Rebuild agentAppearance from the activeItems list.
+ * Only one item per type can be active at a time.
+ * allItems is the full SHOP_ITEMS flat list passed from the page.
+ */
+export function buildAppearanceFromActive(
+  activeItems: string[],
+  allShopItems: { id: string; type: string }[]
+): AgentAppearance {
+  const appearance: AgentAppearance = { paletteId: null, silhouetteId: null, effectId: null, titleId: null };
+  for (const id of activeItems) {
+    const item = allShopItems.find((i) => i.id === id);
+    if (!item) continue;
+    const key = ITEM_TYPE_TO_APPEARANCE[item.type];
+    if (key) appearance[key] = id;
+  }
+  return appearance;
+}
+
 export function loadNexusFromStorage(): NexusState {
   try {
     const raw = localStorage.getItem(NEXUS_KEY);
-    if (!raw) return { ...DEFAULT_STATE, stats: { ...DEFAULT_STATE.stats } };
+    if (!raw) {
+      // Migrate from v1 key if exists
+      const v1 = localStorage.getItem("cortex_nexus_v1");
+      if (v1) {
+        const parsed = JSON.parse(v1);
+        const migrated: NexusState = {
+          ...DEFAULT_STATE,
+          ...parsed,
+          stats: { ...DEFAULT_STATE.stats, ...(parsed.stats ?? {}) },
+          agentAppearance: { ...DEFAULT_STATE.agentAppearance, ...(parsed.agentAppearance ?? {}) },
+          activeItems: parsed.purchases ?? [],
+        };
+        localStorage.setItem(NEXUS_KEY, JSON.stringify(migrated));
+        return migrated;
+      }
+      return { ...DEFAULT_STATE, stats: { ...DEFAULT_STATE.stats } };
+    }
     const parsed = JSON.parse(raw);
     return {
       ...DEFAULT_STATE,
       ...parsed,
       stats: { ...DEFAULT_STATE.stats, ...(parsed.stats ?? {}) },
       agentAppearance: { ...DEFAULT_STATE.agentAppearance, ...(parsed.agentAppearance ?? {}) },
+      purchases: parsed.purchases ?? [],
+      activeItems: parsed.activeItems ?? parsed.purchases ?? [],
     };
   } catch {
     return { ...DEFAULT_STATE, stats: { ...DEFAULT_STATE.stats } };
@@ -197,6 +246,21 @@ interface NexusContextValue {
   getCurrentRankData: () => Rank;
   getProgress: () => number;
   syncWithDB: () => void;
+  /**
+   * Buy an item from the shop. Deducts glifos, adds to purchases.
+   * Does NOT activate the item automatically.
+   */
+  buyItem: (itemId: string, itemType: string, itemPrice: number, itemName: string) => boolean;
+  /**
+   * Toggle an item on/off. Item must be in purchases.
+   * For appearance types (palette/silhouette/effect/title) only one per type can be active.
+   * For feature type multiple can be active simultaneously.
+   */
+  toggleItem: (itemId: string, itemType: string) => void;
+  /** Whether an item is currently active */
+  isActive: (itemId: string) => boolean;
+  /** Whether an item has been purchased */
+  isPurchased: (itemId: string) => boolean;
 }
 
 const NexusContext = createContext<NexusContextValue | null>(null);
@@ -217,14 +281,25 @@ export function NexusProvider({ children }: { children: ReactNode }) {
     if (profileQuery.data) {
       const p = profileQuery.data;
       setNexus((prev) => {
+        const dbPurchases = (p.purchases as string[] | null) ?? prev.purchases;
+        // activeItems stored in agentAppearance JSON in DB — extract from it
+        const dbAppearance = (p.agentAppearance as AgentAppearance | null) ?? prev.agentAppearance;
+        // Reconstruct activeItems from stored appearance (backwards compat)
+        const dbActiveItems: string[] = [];
+        if (dbAppearance.paletteId)    dbActiveItems.push(dbAppearance.paletteId);
+        if (dbAppearance.silhouetteId) dbActiveItems.push(dbAppearance.silhouetteId);
+        if (dbAppearance.effectId)     dbActiveItems.push(dbAppearance.effectId);
+        if (dbAppearance.titleId)      dbActiveItems.push(dbAppearance.titleId);
+
         const merged: NexusState = {
           ...prev,
           agentName: p.agentName ?? prev.agentName,
-          agentAppearance: (p.agentAppearance as AgentAppearance | null) ?? prev.agentAppearance,
+          agentAppearance: dbAppearance,
           xp: p.xp ?? prev.xp,
           glifos: p.glifos ?? prev.glifos,
           rankId: p.rankId ?? prev.rankId,
-          purchases: (p.purchases as string[] | null) ?? prev.purchases,
+          purchases: dbPurchases,
+          activeItems: dbActiveItems.length > 0 ? dbActiveItems : prev.activeItems,
         };
         saveNexusToStorage(merged);
         return merged;
@@ -232,7 +307,7 @@ export function NexusProvider({ children }: { children: ReactNode }) {
     }
   }, [profileQuery.data]);
 
-  // Debounced DB sync
+  // Debounced DB sync — persists agentAppearance which encodes activeItems
   const syncWithDB = useCallback(() => {
     if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
     syncTimeoutRef.current = setTimeout(() => {
@@ -247,7 +322,7 @@ export function NexusProvider({ children }: { children: ReactNode }) {
         });
         return current;
       });
-    }, 2000);
+    }, 1500);
   }, [updateProfileMut]);
 
   const updateNexus = useCallback((updater: (prev: NexusState) => NexusState) => {
@@ -258,6 +333,88 @@ export function NexusProvider({ children }: { children: ReactNode }) {
     });
     syncWithDB();
   }, [syncWithDB]);
+
+  // ── Buy item ──────────────────────────────────────────────────────────────
+  const buyItem = useCallback((itemId: string, _itemType: string, itemPrice: number, itemName: string): boolean => {
+    let success = false;
+    setNexus((prev) => {
+      if (prev.purchases.includes(itemId) || prev.glifos < itemPrice) return prev;
+      success = true;
+      const next: NexusState = {
+        ...prev,
+        glifos: prev.glifos - itemPrice,
+        purchases: [...prev.purchases, itemId],
+        // Do NOT activate automatically — user must toggle
+      };
+      saveNexusToStorage(next);
+      return next;
+    });
+    if (success) {
+      // Sync after purchase
+      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+      syncTimeoutRef.current = setTimeout(() => {
+        setNexus((current) => {
+          updateProfileMut.mutate({
+            glifos: current.glifos,
+            purchases: current.purchases,
+          });
+          return current;
+        });
+      }, 1000);
+    }
+    return success;
+  }, [updateProfileMut]);
+
+  // ── Toggle item ───────────────────────────────────────────────────────────
+  const toggleItem = useCallback((itemId: string, itemType: string) => {
+    setNexus((prev) => {
+      if (!prev.purchases.includes(itemId)) return prev;
+
+      const isCurrentlyActive = prev.activeItems.includes(itemId);
+      let newActiveItems: string[];
+
+      if (isCurrentlyActive) {
+        // Deactivate
+        newActiveItems = prev.activeItems.filter((id) => id !== itemId);
+      } else {
+        // Activate — for appearance types, deactivate any other item of the same type first
+        const appearanceTypes = ["palette", "silhouette", "effect", "title"];
+        if (appearanceTypes.includes(itemType)) {
+          // Remove any other active item of the same type
+          newActiveItems = prev.activeItems.filter((id) => {
+            // We need to know the type of each active item — encode type in id prefix convention
+            // palette_*, silhouette_*, effect_*, title_*, feature_*
+            const activeType = id.split("_")[0];
+            return activeType !== itemType;
+          });
+          newActiveItems.push(itemId);
+        } else {
+          // Features can stack
+          newActiveItems = [...prev.activeItems, itemId];
+        }
+      }
+
+      // Rebuild agentAppearance from newActiveItems
+      const newAppearance: AgentAppearance = { paletteId: null, silhouetteId: null, effectId: null, titleId: null };
+      for (const id of newActiveItems) {
+        const type = id.split("_")[0];
+        const key = ITEM_TYPE_TO_APPEARANCE[type ?? ""];
+        if (key) newAppearance[key] = id;
+      }
+
+      const next: NexusState = {
+        ...prev,
+        activeItems: newActiveItems,
+        agentAppearance: newAppearance,
+      };
+      saveNexusToStorage(next);
+      return next;
+    });
+    syncWithDB();
+  }, [syncWithDB]);
+
+  const isActive = useCallback((itemId: string) => nexus.activeItems.includes(itemId), [nexus.activeItems]);
+  const isPurchased = useCallback((itemId: string) => nexus.purchases.includes(itemId), [nexus.purchases]);
 
   const addXP = useCallback((type: string, isFocused = false) => {
     setNexus((prev) => {
@@ -293,15 +450,10 @@ export function NexusProvider({ children }: { children: ReactNode }) {
       saveNexusToStorage(next);
       return next;
     });
-    // Sync to DB after XP update
     if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
     syncTimeoutRef.current = setTimeout(() => {
       setNexus((current) => {
-        updateProfileMut.mutate({
-          xp: current.xp,
-          glifos: current.glifos,
-          rankId: current.rankId,
-        });
+        updateProfileMut.mutate({ xp: current.xp, glifos: current.glifos, rankId: current.rankId });
         return current;
       });
     }, 3000);
@@ -318,7 +470,10 @@ export function NexusProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <NexusContext.Provider value={{ nexus, addXP, updateNexus, getCurrentRankData, getProgress, syncWithDB }}>
+    <NexusContext.Provider value={{
+      nexus, addXP, updateNexus, getCurrentRankData, getProgress, syncWithDB,
+      buyItem, toggleItem, isActive, isPurchased,
+    }}>
       {children}
     </NexusContext.Provider>
   );
