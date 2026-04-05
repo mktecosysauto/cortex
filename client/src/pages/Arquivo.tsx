@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { GrainOverlay, CustomCursor } from "@/components/CortexShell";
+import { GlobalHeader } from "@/components/GlobalHeader";
 import { usePageTransition } from "@/contexts/PageTransitionContext";
 import { trpc } from "@/lib/trpc";
 import NexusBadge from "@/components/NexusBadge";
@@ -799,12 +800,13 @@ export default function Arquivo() {
     <>
       <GrainOverlay />
       <CustomCursor />
+      <GlobalHeader currentPage="arquivo" />
       <ToastContainer />
 
       {/* ── HEADER ─────────────────────────────────────────────────────────── */}
       <header style={{
         position: "sticky",
-        top: 0,
+        top: 56,
         zIndex: 100,
         background: "rgba(0,0,0,0.92)",
         backdropFilter: "blur(14px)",

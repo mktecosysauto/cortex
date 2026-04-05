@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { GrainOverlay, CustomCursor } from "@/components/CortexShell";
+import { GlobalHeader } from "@/components/GlobalHeader";
 import { usePageTransition } from "@/contexts/PageTransitionContext";
-import NexusBadge from "@/components/NexusBadge";
 import { useNexus, renderAgentSVG } from "@/contexts/NexusContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
@@ -572,6 +572,7 @@ export default function Home() {
     <>
       <GrainOverlay />
       <CustomCursor />
+      <GlobalHeader currentPage="home" />
       <GlobalSpine />
       <ToastContainer />
 

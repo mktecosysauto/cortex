@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { GlobalHeader } from "@/components/GlobalHeader";
 import { usePageTransition } from "@/contexts/PageTransitionContext";
 import { trpc } from "@/lib/trpc";
 import { getLoginUrl } from "@/const";
@@ -180,7 +181,90 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-// ─── Main Dashboard ───────────────────────────────────────────────────────────
+// ─── ROTA Section ──────────────────────────────────────────────────────────────────────────────────
+const DIFF_LABELS: Record<string, string> = { easy: "FÁCIL", medium: "MÉDIO", hard: "DIFÍCIL" };
+const DIFF_COLORS: Record<string, string> = { easy: "#3a3", medium: "#a83", hard: "#a33" };
+
+function RotaSection({ isAuthenticated }: { isAuthenticated: boolean }) {
+  const tasksQuery = trpc.cortex.rota.list.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
+  const historyQuery = trpc.cortex.rota.history.useQuery(
+    { filter: "week" },
+    { enabled: isAuthenticated }
+  );
+
+  const pending = tasksQuery.data ?? [];
+  const completed = historyQuery.data ?? [];
+
+  return (
+    <Section title="ROTA — Tasks da Semana">
+      {!isAuthenticated ? (
+        <div style={{ fontFamily: "DM Mono, monospace", fontSize: 9, color: "var(--dim)", letterSpacing: 2 }}>ENTRE PARA VER SUAS TASKS</div>
+      ) : (
+        <>
+          {/* Pendentes */}
+          {pending.length === 0 && completed.length === 0 ? (
+            <div style={{ fontFamily: "DM Mono, monospace", fontSize: 9, color: "var(--dim)", letterSpacing: 2, padding: "16px 0" }}>NENHUMA TASK REGISTRADA</div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {pending.map(task => {
+                const deadline = task.currentDeadline ? new Date(task.currentDeadline as unknown as string) : null;
+                const overdue = deadline ? new Date() > new Date(deadline.getTime() + 24 * 60 * 60 * 1000) : false;
+                return (
+                  <div key={task.id} style={{
+                    display: "grid", gridTemplateColumns: "1fr 80px 80px",
+                    gap: 12, alignItems: "center",
+                    padding: "10px 12px",
+                    background: "rgba(255,255,255,0.02)",
+                    borderLeft: `2px solid ${DIFF_COLORS[task.difficulty] ?? "#333"}`,
+                  }}>
+                    <div>
+                      <div style={{ fontFamily: "DM Mono, monospace", fontSize: 10, color: "var(--text)", letterSpacing: 1 }}>{task.title}</div>
+                      {task.toolContext && (
+                        <div style={{ fontFamily: "DM Mono, monospace", fontSize: 8, color: "var(--dim)", marginTop: 2 }}>{task.toolContext}</div>
+                      )}
+                    </div>
+                    <div style={{ fontFamily: "DM Mono, monospace", fontSize: 8, color: DIFF_COLORS[task.difficulty] ?? "var(--dim)", letterSpacing: 2 }}>
+                      {DIFF_LABELS[task.difficulty] ?? task.difficulty}
+                    </div>
+                    <div style={{ fontFamily: "DM Mono, monospace", fontSize: 8, color: overdue ? "#a33" : "var(--dim)", letterSpacing: 1, textAlign: "right" }}>
+                      {deadline ? deadline.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "—"}
+                      {overdue && " ⚠"}
+                    </div>
+                  </div>
+                );
+              })}
+              {/* Completed */}
+              {completed.slice(0, 5).map(task => (
+                <div key={task.id} style={{
+                  display: "grid", gridTemplateColumns: "1fr 80px 80px",
+                  gap: 12, alignItems: "center",
+                  padding: "10px 12px",
+                  background: "rgba(255,255,255,0.01)",
+                  borderLeft: "2px solid #2a2a2a",
+                  opacity: 0.5,
+                }}>
+                  <div style={{ fontFamily: "DM Mono, monospace", fontSize: 10, color: "var(--dim)", letterSpacing: 1, textDecoration: "line-through" }}>{task.title}</div>
+                  <div style={{ fontFamily: "DM Mono, monospace", fontSize: 8, color: "#3a3", letterSpacing: 2 }}>CONCLUÍDA</div>
+                  <div style={{ fontFamily: "DM Mono, monospace", fontSize: 8, color: "var(--dim)", textAlign: "right" }}>
+                    {task.completedAt ? new Date(task.completedAt as unknown as string).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "—"}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <div style={{ marginTop: 12, fontFamily: "DM Mono, monospace", fontSize: 8, color: "var(--dim)", letterSpacing: 2 }}>
+            {pending.length} PENDENTE{pending.length !== 1 ? "S" : ""} · {completed.length} CONCLUÍDA{completed.length !== 1 ? "S" : ""} · GERENCIE PELO ▶ PULSO NO HEADER
+          </div>
+        </>
+      )}
+    </Section>
+  );
+}
+
+// ─── Main Dashboard ──────────────────────────────────────────────────────────────────────────────────
 export default function Dashboard() {
   const { user, loading, isAuthenticated } = useAuth();
   const { navigateTo } = usePageTransition();
@@ -254,8 +338,9 @@ export default function Dashboard() {
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text)" }}>
+      <GlobalHeader currentPage="dashboard" />
       {/* Header */}
-      <div style={{ position: "sticky", top: 0, zIndex: 50, background: "var(--bg)", borderBottom: "1px solid var(--border)", padding: "0 24px", height: 52, display: "flex", alignItems: "center", gap: 16 }}>
+      <div style={{ position: "sticky", top: 56, zIndex: 50, background: "var(--bg)", borderBottom: "1px solid var(--border)", padding: "0 24px", height: 52, display: "flex", alignItems: "center", gap: 16 }}>
         <button onClick={() => navigateTo("/")} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 3, color: "var(--dim)", padding: 0 }}>
           ← CÓRTEX
         </button>
@@ -355,6 +440,9 @@ export default function Dashboard() {
             </div>
           )}
         </Section>
+
+        {/* ── ROTA — Tasks da Semana ── */}
+        <RotaSection isAuthenticated={isAuthenticated} />
 
         {/* Leaderboard */}
         <Section title="Ranking">

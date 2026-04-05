@@ -160,3 +160,36 @@
 - [x] UI da loja: estado visual claro — comprado+ativo, comprado+inativo, não comprado
 - [x] Painel "EQUIPADO" no topo da loja mostrando o que está ativo
 - [x] AGENTE reflete imediatamente as mudanças de aparência ao ativar/desativar
+
+## PULSO Reposicionado + ROTA (v9)
+
+### Banco de Dados
+- [x] Colunas ROTA em `cortex_tasks`: original_deadline, current_deadline, deadline_changed, bonus_eligible, archived_at, display_order
+
+### Back-end tRPC (ROTA)
+- [x] `rota.list` — listar tasks pendentes do usuário
+- [x] `rota.history` — listar tasks concluídas com filtro semana/mês/tudo
+- [x] `rota.create` — criar task com original_deadline imutável
+- [x] `rota.complete` — completar task, calcular recompensa, creditar XP/glifos
+- [x] `rota.changeDeadline` — alterar prazo e marcar bonus_eligible = false
+- [x] `rota.delete` — deletar task
+
+### PULSO — Reposicionamento
+- [x] Mover PULSO do canto inferior direito para o header (GlobalHeader)
+- [x] Timer inline no botão do header quando ativo
+- [x] Pop-up com aba ROTA integrada
+- [x] sessionStorage para persistir estado do timer entre navegações
+
+### ROTA — Sistema de Tasks
+- [x] Aba ROTA no popup do PULSO (form de nova task + lista)
+- [x] Recompensas condicionais: XP+glifos só se dentro do prazo original
+- [x] Tasks atrasadas em vermelho (overdue)
+- [x] Badge com count de tasks pendentes no botão do header
+- [x] Alterar prazo cancela bônus imediatamente
+
+### Header Global
+- [x] Componente GlobalHeader com PULSO + ROTA + NexusBadge + login/logout
+- [x] Integrado em Home, Arquivo, Nexus, Dashboard, Admin
+
+### Dashboard — Integração ROTA
+- [x] Seção de tasks da semana no Dashboard (pendentes + histórico)

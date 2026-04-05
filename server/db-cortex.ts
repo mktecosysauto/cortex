@@ -90,18 +90,88 @@ export async function getToolEventsInRange(userId: number, from: Date, to: Date)
     ));
 }
 
-// ─── Tasks ────────────────────────────────────────────────────────────────────
-export async function saveTask(data: {
+// ─── Tasks (ROTA) ─────────────────────────────────────────────────────────────
+export async function createTask(data: {
   userId: number;
   title: string;
   difficulty: "facil" | "media" | "dificil" | "lendaria";
+  originalDeadline: string; // YYYY-MM-DD — NEVER changes
+  currentDeadline: string;
   toolContext?: string;
-  xpEarned: number;
-  glifosEarned: number;
+  displayOrder?: number;
 }) {
   const db = await getDb();
   if (!db) return null;
-  return db.insert(cortexTasks).values({ ...data, status: "done", completedAt: new Date() });
+  const result = await db.insert(cortexTasks).values([{
+    userId: data.userId,
+    title: data.title,
+    difficulty: data.difficulty,
+    originalDeadline: data.originalDeadline ? new Date(data.originalDeadline) : null,
+    currentDeadline: data.currentDeadline ? new Date(data.currentDeadline) : null,
+    toolContext: data.toolContext,
+    displayOrder: data.displayOrder ?? 0,
+    status: "pending" as const,
+    bonusEligible: true,
+    deadlineChanged: false,
+    xpEarned: 0,
+    glifosEarned: 0,
+  }]);
+  return result;
+}
+
+export async function getTasksPending(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(cortexTasks)
+    .where(and(eq(cortexTasks.userId, userId), eq(cortexTasks.status, "pending")))
+    .orderBy(cortexTasks.currentDeadline, cortexTasks.displayOrder);
+}
+
+export async function getTasksHistory(userId: number, from?: Date) {
+  const db = await getDb();
+  if (!db) return [];
+  const conditions = [eq(cortexTasks.userId, userId), eq(cortexTasks.status, "done")];
+  if (from) conditions.push(gte(cortexTasks.completedAt, from));
+  return db.select().from(cortexTasks)
+    .where(and(...conditions))
+    .orderBy(desc(cortexTasks.completedAt))
+    .limit(100);
+}
+
+export async function completeTask(taskId: number, userId: number, xpEarned: number, glifosEarned: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(cortexTasks)
+    .set({ status: "done", completedAt: new Date(), xpEarned, glifosEarned })
+    .where(and(eq(cortexTasks.id, taskId), eq(cortexTasks.userId, userId)));
+}
+
+export async function changeTaskDeadline(taskId: number, userId: number, newDeadline: string) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(cortexTasks)
+    .set({ currentDeadline: new Date(newDeadline), deadlineChanged: true, bonusEligible: false })
+    .where(and(eq(cortexTasks.id, taskId), eq(cortexTasks.userId, userId)));
+}
+
+export async function deleteTask(taskId: number, userId: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(cortexTasks)
+    .where(and(eq(cortexTasks.id, taskId), eq(cortexTasks.userId, userId)));
+}
+
+export async function getTasksInRange(userId: number, from: Date, to: Date) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(cortexTasks)
+    .where(and(
+      eq(cortexTasks.userId, userId),
+      eq(cortexTasks.status, "done"),
+      gte(cortexTasks.completedAt, from),
+      lte(cortexTasks.completedAt, to)
+    ))
+    .orderBy(desc(cortexTasks.completedAt));
 }
 
 // ─── Weekly Insights ──────────────────────────────────────────────────────────

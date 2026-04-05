@@ -6,7 +6,6 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { PageTransitionProvider } from "./contexts/PageTransitionContext";
 import { NexusProvider } from "./contexts/NexusContext";
-import PulsoWidget from "./components/PulsoWidget";
 import Home from "./pages/Home";
 import Arquivo from "./pages/Arquivo";
 import Nexus from "./pages/Nexus";
@@ -38,7 +37,6 @@ function App() {
             <PageTransitionProvider>
               <Toaster />
               <Router />
-              <PulsoWidget />
             </PageTransitionProvider>
           </TooltipProvider>
         </NexusProvider>

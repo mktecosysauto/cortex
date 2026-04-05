@@ -1,5 +1,6 @@
 import {
   boolean,
+  date,
   int,
   json,
   mysqlEnum,
@@ -64,13 +65,19 @@ export type InsertCortexSession = typeof cortexSessions.$inferInsert;
 // ─── Cortex Tasks ─────────────────────────────────────────────────────────────
 export const cortexTasks = mysqlTable("cortex_tasks", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().references(() => users.id),
-  title: varchar("title", { length: 512 }).notNull(),
-  difficulty: mysqlEnum("difficulty", ["facil", "media", "dificil", "lendaria"]).notNull(),
-  status: mysqlEnum("status", ["pending", "done"]).default("pending").notNull(),
+  userId: int("userId").notNull(),
+  title: text("title").notNull(),
+  difficulty: mysqlEnum("difficulty", ["facil", "media", "dificil", "lendaria"]).default("facil").notNull(),
+  status: mysqlEnum("status", ["pending", "done", "archived"]).default("pending").notNull(),
   toolContext: varchar("toolContext", { length: 64 }),
   xpEarned: int("xpEarned").default(0).notNull(),
   glifosEarned: int("glifosEarned").default(0).notNull(),
+  originalDeadline: date("originalDeadline"),
+  currentDeadline: date("currentDeadline"),
+  deadlineChanged: boolean("deadlineChanged").default(false).notNull(),
+  bonusEligible: boolean("bonusEligible").default(true).notNull(),
+  archivedAt: timestamp("archivedAt"),
+  displayOrder: int("displayOrder").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   completedAt: timestamp("completedAt"),
 });

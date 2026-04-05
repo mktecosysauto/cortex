@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { GlobalHeader } from "@/components/GlobalHeader";
 import { usePageTransition } from "@/contexts/PageTransitionContext";
 import { useNexus, RANKS, getCurrentRank } from "@/contexts/NexusContext";
 import { trpc } from "@/lib/trpc";
@@ -289,8 +290,9 @@ export default function Admin() {
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text)" }}>
+      <GlobalHeader currentPage="admin" />
       {/* Header */}
-      <div style={{ position: "sticky", top: 0, zIndex: 50, background: "var(--bg)", borderBottom: "1px solid var(--border)", padding: "0 24px", height: 52, display: "flex", alignItems: "center", gap: 16 }}>
+      <div style={{ position: "sticky", top: 56, zIndex: 50, background: "var(--bg)", borderBottom: "1px solid var(--border)", padding: "0 24px", height: 52, display: "flex", alignItems: "center", gap: 16 }}>
         <button onClick={() => navigateTo("/")} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 3, color: "var(--dim)", padding: 0 }}>← CÓRTEX</button>
         <div style={{ flex: 1, fontFamily: "Bebas Neue, sans-serif", fontSize: 18, letterSpacing: 6, color: "var(--text)" }}>ADMIN</div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>

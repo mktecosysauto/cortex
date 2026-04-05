@@ -4,11 +4,18 @@ import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { invokeLLM } from "../_core/llm";
 import {
   adminResetUser,
+  changeTaskDeadline,
+  completeTask,
+  createTask,
+  deleteTask,
   getAllUsers,
   getLeaderboard,
   getSessionsInRange,
   getSessionsLast30Days,
   getSystemStats,
+  getTasksHistory,
+  getTasksInRange,
+  getTasksPending,
   getToolEventsInRange,
   getUserProfile,
   getWeeklyInsight,
@@ -290,10 +297,117 @@ const adminRouter = router({
       return { success: true, xpGained: totalXp, glifosGained: totalGlifos };
     }),
 });
+// ─── Rota (Tasks) ───────────────────────────────────────────────────────────────────
+const ROTA_REWARDS: Record<string, { xp: number; glifos: number }> = {
+  facil:    { xp: 20,  glifos: 15  },
+  media:    { xp: 50,  glifos: 35  },
+  dificil:  { xp: 120, glifos: 80  },
+  lendaria: { xp: 300, glifos: 200 },
+};
 
-// ─── Export ───────────────────────────────────────────────────────────────────
+const rotaRouter = router({
+  list: protectedProcedure.query(async ({ ctx }) => {
+    return getTasksPending(ctx.user.id);
+  }),
+
+  history: protectedProcedure
+    .input(z.object({
+      filter: z.enum(["all", "week", "month"]).default("all"),
+    }))
+    .query(async ({ ctx, input }) => {
+      let from: Date | undefined;
+      const now = new Date();
+      if (input.filter === "week") {
+        from = new Date(now);
+        from.setDate(now.getDate() - now.getDay());
+        from.setHours(0, 0, 0, 0);
+      } else if (input.filter === "month") {
+        from = new Date(now.getFullYear(), now.getMonth(), 1);
+      }
+      return getTasksHistory(ctx.user.id, from);
+    }),
+
+  create: protectedProcedure
+    .input(z.object({
+      title: z.string().min(1).max(200),
+      difficulty: z.enum(["facil", "media", "dificil", "lendaria"]),
+      deadline: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      toolContext: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      await createTask({
+        userId: ctx.user.id,
+        title: input.title,
+        difficulty: input.difficulty,
+        originalDeadline: input.deadline,
+        currentDeadline: input.deadline,
+        toolContext: input.toolContext,
+      });
+      return { success: true };
+    }),
+
+  complete: protectedProcedure
+    .input(z.object({ taskId: z.number().int() }))
+    .mutation(async ({ ctx, input }) => {
+      // Fetch the task to check deadline
+      const pending = await getTasksPending(ctx.user.id);
+      const task = pending.find(t => t.id === input.taskId);
+      if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "Task não encontrada" });
+
+      const now = new Date();
+      const deadline = task.currentDeadline ? new Date(task.currentDeadline) : null;
+      const isOnTime = deadline ? now <= new Date(deadline.getTime() + 24 * 60 * 60 * 1000) : false;
+      const bonusEligible = task.bonusEligible && isOnTime;
+
+      const reward = ROTA_REWARDS[task.difficulty] ?? { xp: 20, glifos: 15 };
+      const xpEarned = bonusEligible ? reward.xp : 0;
+      const glifosEarned = bonusEligible ? reward.glifos : 2;
+
+      await completeTask(input.taskId, ctx.user.id, xpEarned, glifosEarned);
+
+      // Credit XP and glifos to user
+      const profile = await getUserProfile(ctx.user.id);
+      if (profile) {
+        await updateUserNexus(ctx.user.id, {
+          xp: (profile.xp ?? 0) + xpEarned,
+          glifos: (profile.glifos ?? 0) + glifosEarned,
+        });
+      }
+
+      return { success: true, xpEarned, glifosEarned, bonusEligible };
+    }),
+
+  changeDeadline: protectedProcedure
+    .input(z.object({
+      taskId: z.number().int(),
+      newDeadline: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      await changeTaskDeadline(input.taskId, ctx.user.id, input.newDeadline);
+      return { success: true };
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ taskId: z.number().int() }))
+    .mutation(async ({ ctx, input }) => {
+      await deleteTask(input.taskId, ctx.user.id);
+      return { success: true };
+    }),
+
+  weeklyTasks: protectedProcedure
+    .input(z.object({
+      weekStart: z.date(),
+      weekEnd: z.date(),
+    }))
+    .query(async ({ ctx, input }) => {
+      return getTasksInRange(ctx.user.id, input.weekStart, input.weekEnd);
+    }),
+});
+
+// ─── Export ────────────────────────────────────────────────────────────────────
 export const cortexRouter = router({
   nexus: nexusRouter,
   dashboard: dashboardRouter,
   admin: adminRouter,
+  rota: rotaRouter,
 });

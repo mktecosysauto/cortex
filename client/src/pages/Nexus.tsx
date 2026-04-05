@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { GrainOverlay, CustomCursor } from "@/components/CortexShell";
+import { GlobalHeader } from "@/components/GlobalHeader";
 import { usePageTransition } from "@/contexts/PageTransitionContext";
 import {
   useNexus,
@@ -131,6 +132,7 @@ export default function Nexus() {
     <>
       <GrainOverlay />
       <CustomCursor />
+      <GlobalHeader currentPage="nexus" />
       <ToastContainer />
 
       <div style={{ minHeight: "100vh", background: "#000", color: "#fff" }}>
@@ -138,7 +140,7 @@ export default function Nexus() {
         <header
           style={{
             position: "sticky",
-            top: 0,
+            top: 56,
             zIndex: 100,
             background: "rgba(0,0,0,0.95)",
             borderBottom: "1px solid #1a1a1a",
