@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { GrainOverlay, CustomCursor } from "@/components/CortexShell";
 import { usePageTransition } from "@/contexts/PageTransitionContext";
 import { trpc } from "@/lib/trpc";
+import NexusBadge from "@/components/NexusBadge";
+import { useNexus } from "@/contexts/NexusContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface PromptItem {
@@ -753,6 +755,7 @@ export default function Arquivo() {
   const [showSettings, setShowSettings] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
   const { navigateTo } = usePageTransition();
+  const { addXP, updateNexus } = useNexus();
 
   const allItems = [...BASE_PROMPTS, ...userItems];
 
@@ -762,7 +765,10 @@ export default function Arquivo() {
       saveUserItems(next);
       return next;
     });
-  }, []);
+    // XP: imagem salva na galeria
+    addXP("imagem_salva");
+    updateNexus((prev) => ({ ...prev, stats: { ...prev.stats, imagesGenerated: prev.stats.imagesGenerated + 1 } }));
+  }, [addXP, updateNexus]);
 
   const handleDelete = useCallback((id: number) => {
     setUserItems((prev) => {
@@ -829,6 +835,7 @@ export default function Arquivo() {
             <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 1, padding: "3px 8px", border: "1px solid #2a2a2a", color: "#666" }}>
               {allItems.length} REF
             </div>
+            <NexusBadge />
 
             {userItems.length > 0 && (
               <button className="btn-cortex sm ghost" onClick={clearUserItems} title="Limpar cards do usuário">

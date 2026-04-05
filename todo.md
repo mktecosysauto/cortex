@@ -84,3 +84,19 @@
 
 ## Bugs v3
 - [x] Erro "Failed to fetch" na geração de imagem Freepik (CORS — chamadas diretas do browser bloqueadas)
+
+## NEXUS + PULSO (v5)
+- [x] CSS variables --nexus-rank-1 a --nexus-rank-7 + animações xpGain, rankUp, agentCelebrate, pulsoTick, glowPulse
+- [x] Contexto global NexusContext (loadNexus, saveNexus, addXP, calcReward, getCurrentRank, renderAgent)
+- [x] Widget PULSO global (timer Pomodoro, controles, overlay de conclusão, streak)
+- [x] Badge NEXUS no header de todas as páginas (Home, Arquivo)
+- [x] Frame 00 NEXUS na landing page (módulo especial com AGENTE colorido)
+- [x] Página /nexus: AGENTE SVG full, nome editável, rank, XP bar, glifos
+- [x] Página /nexus: Stats grid (6 métricas)
+- [x] Página /nexus: Activity grid (30 células)
+- [x] Página /nexus: Conquistas (12, bloqueadas/desbloqueadas)
+- [x] Página /nexus: Loja com tabs Aparência/Funcionalidades + compra com glifos
+- [x] Hooks XP no ARQUIVO: imagem_salva + imagesGenerated
+- [x] Multiplicador ×1.2 quando PULSO ativo durante uso de ferramenta
+- [x] Rota /nexus no App.tsx
+- [x] Responsividade mobile do widget PULSO (bottom sheet)

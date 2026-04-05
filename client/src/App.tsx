@@ -5,14 +5,18 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { PageTransitionProvider } from "./contexts/PageTransitionContext";
+import { NexusProvider } from "./contexts/NexusContext";
+import PulsoWidget from "./components/PulsoWidget";
 import Home from "./pages/Home";
 import Arquivo from "./pages/Arquivo";
+import Nexus from "./pages/Nexus";
 
 function Router() {
   return (
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/arquivo"} component={Arquivo} />
+      <Route path={"/nexus"} component={Nexus} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
@@ -23,13 +27,15 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
-        <TooltipProvider>
-          {/* PageTransitionProvider must be inside Router context (wouter) */}
-          <PageTransitionProvider>
-            <Toaster />
-            <Router />
-          </PageTransitionProvider>
-        </TooltipProvider>
+        <NexusProvider>
+          <TooltipProvider>
+            <PageTransitionProvider>
+              <Toaster />
+              <Router />
+              <PulsoWidget />
+            </PageTransitionProvider>
+          </TooltipProvider>
+        </NexusProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

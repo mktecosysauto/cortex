@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { GrainOverlay, CustomCursor } from "@/components/CortexShell";
 import { usePageTransition } from "@/contexts/PageTransitionContext";
+import NexusBadge from "@/components/NexusBadge";
+import { useNexus, renderAgentSVG } from "@/contexts/NexusContext";
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 let _toastSetter: ((t: { msg: string; type: string; id: number }) => void) | null = null;
@@ -424,6 +426,120 @@ function ModuleDivider({ index }: { index: number }) {
   );
 }
 
+// ─── NEXUS Frame (frame 00) ──────────────────────────────────────────────────
+function NexusFrame() {
+  const frameRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  const { nexus, getCurrentRankData } = useNexus();
+  const { navigateTo } = usePageTransition();
+  const rank = getCurrentRankData();
+  const agentSvg = renderAgentSVG("full", rank.color, nexus.agentAppearance.effectId, nexus.agentAppearance.silhouetteId);
+
+  useEffect(() => {
+    const el = frameRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
+      { threshold: 0.2, rootMargin: "0px 0px -60px 0px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={frameRef}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(60px)",
+        transition: "opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1)",
+        position: "relative",
+        zIndex: 2,
+      }}
+    >
+      <div className="module-frame">
+        {/* Text side */}
+        <div className="flex flex-col gap-6">
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: 10,
+              color: rank.color,
+              letterSpacing: 4,
+              border: `1px solid ${rank.color}`,
+              padding: "3px 8px",
+              opacity: 0.7,
+            }}>00</span>
+            <span style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: 8,
+              letterSpacing: 2,
+              color: "#444",
+              border: "1px solid #222",
+              padding: "2px 7px",
+              textTransform: "uppercase",
+            }}>SISTEMA CENTRAL</span>
+          </div>
+          <div>
+            <h2 style={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontSize: "clamp(52px, 9vw, 96px)",
+              lineHeight: 0.95,
+              letterSpacing: 3,
+              color: rank.color,
+            }}>NEXUS</h2>
+            <p style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: 11,
+              color: "#555",
+              marginTop: 10,
+              letterSpacing: 1,
+            }}>Progressão · XP · Ranks · Conquistas</p>
+          </div>
+          <p style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: 14,
+            color: "#888",
+            lineHeight: 1.7,
+            maxWidth: 380,
+          }}>
+            Seu sistema de progressão pessoal dentro do CÓRTEX. Cada prompt gerado, imagem criada e sessão de foco concluída constrói o seu AGENTE.
+          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button className="btn-cortex" data-hover onClick={() => navigateTo("/nexus")} style={{ borderColor: rank.color, color: rank.color }}>
+              → Acessar NEXUS
+            </button>
+            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#444", letterSpacing: 1 }}>
+              {rank.name} · {nexus.xp} XP
+            </span>
+          </div>
+        </div>
+        {/* Visual side — AGENTE */}
+        <div style={{ opacity: visible ? 1 : 0, transition: "opacity 0.9s ease 0.35s" }}>
+          <div style={{
+            aspectRatio: "4/3",
+            background: "#080808",
+            border: `1px solid ${rank.color}22`,
+            position: "relative",
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
+            <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+            <div style={{ width: 120, height: 120 }} dangerouslySetInnerHTML={{ __html: agentSvg.replace('width="200" height="200"', 'width="120" height="120"') }} />
+            <div style={{ position: "absolute", bottom: 16, left: 0, right: 0, textAlign: "center" }}>
+              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 13, letterSpacing: 4, color: rank.color, opacity: 0.7 }}>
+                {nexus.agentName}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Landing Page ────────────────────────────────────────────────────────
 export default function Home() {
   const phraseRef = useRef<HTMLDivElement>(null);
@@ -622,6 +738,11 @@ export default function Home() {
             padding: "0 40px",
           }}
         >
+          {/* Frame 00 — NEXUS */}
+          <NexusFrame />
+
+          <ModuleDivider index={0} />
+
           <ModuleFrame
             number="01"
             name="ARQUIVO"

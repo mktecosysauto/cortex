@@ -43,6 +43,25 @@
   --red:      #ff4444;
   --green:    #44ff88;
 
+  /* NEXUS rank colors */
+  --nexus-rank-1: #d4d4d4;
+  --nexus-rank-2: #c8b89a;
+  --nexus-rank-3: #a8c4b8;
+  --nexus-rank-4: #8ab4d4;
+  --nexus-rank-5: #b49ad4;
+  --nexus-rank-6: #d4a870;
+  --nexus-rank-7: #ffffff;
+  --nexus-glow:   0 0 20px rgba(255,255,255,0.6);
+
+  /* PULSO */
+  --pulso-bg:     rgba(10,10,10,0.96);
+  --pulso-border: #2a2a2a;
+  --pulso-active: #ffffff;
+
+  /* Aliases for components */
+  --text:   #ffffff;
+  --border: oklch(16.5% 0 0);
+
   /* Tailwind/shadcn tokens mapped to CÓRTEX palette */
   --radius: 0px;
   --background: oklch(0% 0 0);
@@ -657,4 +676,28 @@
     10%  { opacity: 1; }
     90%  { opacity: 1; }
     100% { top: 100%; opacity: 0; }
+  }
+
+  @keyframes xpGain {
+    0%   { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-40px); opacity: 0; }
+  }
+  @keyframes rankUp {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.08); }
+    100% { transform: scale(1); }
+  }
+  @keyframes agentCelebrate {
+    0%, 100% { transform: translateY(0); }
+    25%       { transform: translateY(-6px); }
+    75%       { transform: translateY(-3px); }
+  }
+  @keyframes pulsoTick {
+    0%   { opacity: 1; }
+    50%  { opacity: 0.6; }
+    100% { opacity: 1; }
+  }
+  @keyframes glowPulse {
+    0%, 100% { box-shadow: var(--nexus-glow); }
+    50%       { box-shadow: 0 0 40px rgba(255,255,255,0.9); }
   }
