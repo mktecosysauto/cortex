@@ -12,6 +12,7 @@ import Arquivo from "./pages/Arquivo";
 import Nexus from "./pages/Nexus";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
+import Login from "./pages/Login";
 
 function Router() {
   return (
@@ -21,6 +22,7 @@ function Router() {
       <Route path={"/nexus"} component={Nexus} />
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/admin"} component={Admin} />
+      <Route path={"/login"} component={Login} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

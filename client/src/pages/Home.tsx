@@ -3,6 +3,8 @@ import { GrainOverlay, CustomCursor } from "@/components/CortexShell";
 import { usePageTransition } from "@/contexts/PageTransitionContext";
 import NexusBadge from "@/components/NexusBadge";
 import { useNexus, renderAgentSVG } from "@/contexts/NexusContext";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { getLoginUrl } from "@/const";
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 let _toastSetter: ((t: { msg: string; type: string; id: number }) => void) | null = null;
@@ -544,6 +546,7 @@ function NexusFrame() {
 export default function Home() {
   const phraseRef = useRef<HTMLDivElement>(null);
   const [scrollPct, setScrollPct] = useState(0);
+  const { user, isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
     const onScroll = () => {
@@ -856,6 +859,29 @@ export default function Home() {
         >
           © 2026 — Sistema Central de Design
         </p>
+
+        {/* Auth row */}
+        <div style={{ marginTop: 24, display: "flex", alignItems: "center", justifyContent: "center", gap: 16 }}>
+          {isAuthenticated ? (
+            <>
+              <span style={{ fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 2, color: "#333" }}>
+                {user?.name?.toUpperCase()}
+              </span>
+              {user?.role === "admin" && (
+                <button onClick={() => window.location.href = "/admin"} style={{ background: "none", border: "1px solid #222", cursor: "pointer", fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 3, color: "#555", padding: "4px 12px" }}>
+                  ADMIN
+                </button>
+              )}
+              <button onClick={() => logout()} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 3, color: "#333", padding: 0 }}>
+                SAIR
+              </button>
+            </>
+          ) : (
+            <a href={getLoginUrl()} style={{ fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 3, color: "#444", textDecoration: "none", border: "1px solid #1a1a1a", padding: "6px 16px" }}>
+              ENTRAR
+            </a>
+          )}
+        </div>
       </footer>
     </>
   );

@@ -4,6 +4,8 @@ import { usePageTransition } from "@/contexts/PageTransitionContext";
 import { trpc } from "@/lib/trpc";
 import NexusBadge from "@/components/NexusBadge";
 import { useNexus } from "@/contexts/NexusContext";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { getLoginUrl } from "@/const";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface PromptItem {
@@ -756,6 +758,7 @@ export default function Arquivo() {
   const [showUpload, setShowUpload] = useState(false);
   const { navigateTo } = usePageTransition();
   const { addXP, updateNexus } = useNexus();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const allItems = [...BASE_PROMPTS, ...userItems];
 
@@ -836,6 +839,24 @@ export default function Arquivo() {
               {allItems.length} REF
             </div>
             <NexusBadge />
+
+            {/* Auth button */}
+            {isAuthenticated ? (
+              <>
+                {user?.role === "admin" && (
+                  <button className="btn-cortex sm ghost" onClick={() => window.location.href = "/admin"} data-hover title="Painel Admin">
+                    ADMIN
+                  </button>
+                )}
+                <button className="btn-cortex sm ghost" onClick={() => logout()} data-hover title="Sair">
+                  SAIR
+                </button>
+              </>
+            ) : (
+              <a href={getLoginUrl()} className="btn-cortex sm" style={{ textDecoration: "none" }} data-hover>
+                ENTRAR
+              </a>
+            )}
 
             {userItems.length > 0 && (
               <button className="btn-cortex sm ghost" onClick={clearUserItems} title="Limpar cards do usuário">

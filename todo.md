@@ -140,3 +140,14 @@
 - [x] saveToolEvent() ao gerar prompt/imagem no ARQUIVO (via tRPC)
 - [x] loadUserProfile() ao iniciar sessão (sobrescreve localStorage)
 - [x] saveUserProgress() ao atualizar XP/glifos (sync background debounced)
+
+## Login + Admin Desbloqueado (v7)
+- [x] Página /login com design editorial CÓRTEX e Manus OAuth
+- [x] Botão login/logout no header global (Home, Arquivo)
+- [x] Admin: botão "DESBLOQUEAR TUDO" (todas conquistas + itens da loja)
+- [x] Admin: botão "XP MÁXIMO" (30000 XP → rank CÓRTEX)
+- [x] Admin: botão "GLIFOS MÁXIMOS" (9999 glifos)
+- [x] Admin: botão "RESETAR TUDO" (zerar XP, glifos, conquistas, compras)
+- [x] Admin: botão "SIMULAR SESSÕES" melhorado com feedback visual
+- [x] Admin: seção "ESTADO ATUAL" mostrando XP, rank, glifos, conquistas em tempo real
+- [x] Redirecionar /admin para login se não autenticado (guard interno)
