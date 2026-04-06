@@ -905,3 +905,14 @@
   0%   { transform: scaleX(1); }
   100% { transform: scaleX(0); }
 }
+
+/* ── Painel ROTA ── */
+@keyframes rotaPanelSlideIn {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes rotaPanelFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

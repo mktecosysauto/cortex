@@ -408,236 +408,485 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
         </div>
       )}
 
-      {/* ── ROTA popup (draggable) ── */}
+      {/* ── ROTA — painel lateral ── */}
       {rotaOpen && isAuthenticated && (
-        <div
-          ref={rotaRef}
-          style={{
-            position: "fixed", top: 64 + rotaPos.y, right: 24 - rotaPos.x, zIndex: 998,
-            width: 320, background: "#0a0a0a", border: "1px solid #222",
-          }}
-        >
-          {/* Header */}
+        <>
+          {/* Backdrop */}
           <div
-            onMouseDown={rotaStartDrag}
+            onClick={() => setRotaOpen(false)}
             style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "12px 16px", borderBottom: "1px solid #1a1a1a", cursor: "grab",
+              position: "fixed", inset: 0, zIndex: 997,
+              background: "rgba(0,0,0,0.6)",
+              backdropFilter: "blur(2px)",
+              animation: "rotaPanelFadeIn 0.25s ease both",
+            }}
+          />
+          {/* Painel */}
+          <div
+            style={{
+              position: "fixed", top: 56, right: 0, bottom: 0, zIndex: 998,
+              width: 380, maxWidth: "100vw",
+              background: "#080808",
+              borderLeft: "1px solid #1e1e1e",
+              display: "flex", flexDirection: "column",
+              animation: "rotaPanelSlideIn 0.3s cubic-bezier(0.16,1,0.3,1) both",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, letterSpacing: 3, color: "#fff" }}>ROTA</span>
-              {pendingCount > 0 && (
-                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, color: "#555", letterSpacing: 1 }}>
-                  {pendingCount} pendente{pendingCount > 1 ? "s" : ""}
-                </span>
-              )}
-            </div>
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, color: "#333", letterSpacing: 1 }}>⠿ arrastar</span>
-              <button onClick={() => setRotaOpen(false)} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: 14 }}>✕</button>
-            </div>
-          </div>
-
-          {/* Tabs */}
-          <div style={{ display: "flex", borderBottom: "1px solid #1a1a1a" }}>
-            {(["pending", "history"] as const).map(tab => (
-              <button key={tab} onClick={() => setRotaTab(tab)} style={{
-                flex: 1, padding: "8px 0", fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2,
-                border: "none", borderBottom: rotaTab === tab ? "1px solid #fff" : "1px solid transparent",
-                color: rotaTab === tab ? "#fff" : "#444", background: "transparent", cursor: "pointer",
-              }}>
-                {tab === "pending" ? "PENDENTES" : "HISTÓRICO"}
-              </button>
-            ))}
-          </div>
-
-          {/* Content */}
-          <div style={{ maxHeight: 360, overflowY: "auto", padding: "8px 0" }}>
-            {rotaTab === "pending" && (
-              <>
-                {/* New task form */}
-                {rotaNewOpen ? (
-                  <div style={{ padding: "12px 16px", borderBottom: "1px solid #1a1a1a" }}>
-                    <input
-                      value={rotaTitle}
-                      onChange={e => setRotaTitle(e.target.value)}
-                      placeholder="Nome da task..."
-                      autoFocus
-                      style={{
-                        width: "100%", background: "transparent", border: "1px solid #222",
-                        color: "#ccc", fontFamily: "'DM Mono', monospace", fontSize: 9,
-                        padding: "6px 8px", marginBottom: 8, boxSizing: "border-box",
-                      }}
-                    />
-                    <div style={{ display: "flex", gap: 4, marginBottom: 8 }}>
-                      {(["facil", "media", "dificil", "lendaria"] as const).map(d => (
-                        <button key={d} onClick={() => setRotaDiff(d)} style={{
-                          flex: 1, padding: "4px 0", fontFamily: "'DM Mono', monospace", fontSize: 7, letterSpacing: 1,
-                          border: "1px solid", borderColor: rotaDiff === d ? "#fff" : "#222",
-                          color: rotaDiff === d ? "#000" : "#444",
-                          background: rotaDiff === d ? "#fff" : "transparent", cursor: "pointer",
-                        }}>{d.toUpperCase().slice(0, 4)}</button>
-                      ))}
-                    </div>
-                    <div style={{ display: "flex", gap: 4, marginBottom: 8, alignItems: "center" }}>
-                      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, color: "#444", letterSpacing: 1, whiteSpace: "nowrap" }}>PRAZO</span>
-                      <input
-                        type="date"
-                        value={rotaDeadline}
-                        onChange={e => setRotaDeadline(e.target.value)}
-                        style={{
-                          flex: 1, background: "transparent", border: "1px solid #222",
-                          color: "#888", fontFamily: "'DM Mono', monospace", fontSize: 9,
-                          padding: "4px 6px", colorScheme: "dark",
-                        }}
-                      />
-                    </div>
-                    <div style={{ display: "flex", gap: 4 }}>
-                      <button
-                        onClick={() => {
-                          if (!rotaTitle.trim()) return;
-                          createTaskMut.mutate({ title: rotaTitle.trim(), difficulty: rotaDiff, deadline: rotaDeadline });
-                        }}
-                        disabled={createTaskMut.isPending}
-                        style={{
-                          flex: 1, padding: "6px 0", fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 1,
-                          border: "1px solid #fff", color: "#000", background: "#fff", cursor: "pointer",
-                        }}
-                      >
-                        {createTaskMut.isPending ? "..." : "CRIAR"}
-                      </button>
-                      <button onClick={() => setRotaNewOpen(false)} style={{
-                        padding: "6px 12px", fontFamily: "'DM Mono', monospace", fontSize: 9,
-                        border: "1px solid #222", color: "#444", background: "transparent", cursor: "pointer",
-                      }}>✕</button>
-                    </div>
-                    {/* Reward preview */}
-                    <div style={{ marginTop: 8, fontFamily: "'DM Mono', monospace", fontSize: 7, color: "#333", letterSpacing: 1 }}>
-                      RECOMPENSA: +{ROTA_REWARDS[rotaDiff].xp} XP · ⬡ {ROTA_REWARDS[rotaDiff].glifos} (se no prazo)
-                    </div>
+            {/* ── Header do painel ── */}
+            <div style={{
+              padding: "20px 24px 0",
+              borderBottom: "1px solid #1a1a1a",
+              flexShrink: 0,
+            }}>
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
+                <div>
+                  <div style={{
+                    fontFamily: "'Bebas Neue', sans-serif", fontSize: 28,
+                    letterSpacing: 6, color: "#fff", lineHeight: 1,
+                  }}>
+                    ROTA
                   </div>
-                ) : (
+                  <div style={{
+                    fontFamily: "'DM Mono', monospace", fontSize: 9,
+                    letterSpacing: 2, color: "#444", marginTop: 4,
+                  }}>
+                    {pendingCount === 0
+                      ? "NENHUMA TASK PENDENTE"
+                      : `${pendingCount} TASK${pendingCount > 1 ? "S" : ""} PENDENTE${pendingCount > 1 ? "S" : ""}`}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setRotaOpen(false)}
+                  style={{
+                    background: "none", border: "1px solid #222",
+                    color: "#555", cursor: "pointer",
+                    width: 32, height: 32, display: "flex",
+                    alignItems: "center", justifyContent: "center",
+                    fontSize: 14, flexShrink: 0,
+                  }}
+                >✕</button>
+              </div>
+
+              {/* Tabs */}
+              <div style={{ display: "flex", gap: 0 }}>
+                {(["pending", "history"] as const).map(tab => (
                   <button
-                    onClick={() => setRotaNewOpen(true)}
+                    key={tab}
+                    onClick={() => setRotaTab(tab)}
                     style={{
-                      width: "100%", padding: "10px 16px", textAlign: "left",
-                      fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 2, color: "#444",
-                      background: "transparent", border: "none", borderBottom: "1px solid #1a1a1a", cursor: "pointer",
+                      flex: 1, padding: "10px 0",
+                      fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 3,
+                      border: "none",
+                      borderBottom: rotaTab === tab ? "2px solid #fff" : "2px solid transparent",
+                      color: rotaTab === tab ? "#fff" : "#444",
+                      background: "transparent", cursor: "pointer",
+                      transition: "color 0.2s, border-color 0.2s",
                     }}
                   >
-                    + NOVA TASK
+                    {tab === "pending" ? "PENDENTES" : "HISTÓRICO"}
                   </button>
-                )}
+                ))}
+              </div>
+            </div>
 
-                {/* Pending list */}
-                {rotaTasks.length === 0 ? (
-                  <div style={{ padding: "24px 16px", textAlign: "center", fontFamily: "'DM Mono', monospace", fontSize: 8, color: "#333", letterSpacing: 1 }}>
-                    NENHUMA TASK PENDENTE
-                  </div>
-                ) : rotaTasks.map(task => {
-                  const deadline = task.currentDeadline ? new Date(task.currentDeadline as unknown as string) : null;
-                  const overdue = deadline ? new Date() > new Date(deadline.getTime() + 24 * 60 * 60 * 1000) : false;
-                  const deadlineStr = deadline ? deadline.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "—";
-                  const reward = ROTA_REWARDS[task.difficulty];
+            {/* ── Conteúdo scrollável ── */}
+            <div style={{ flex: 1, overflowY: "auto", padding: "0" }}>
 
-                  return (
-                    <div key={task.id} style={{
-                      display: "flex", alignItems: "flex-start", gap: 10,
-                      padding: "10px 16px", borderBottom: "1px solid #111",
-                      background: overdue ? "rgba(255,80,80,0.03)" : "transparent",
+              {/* ── Tab: PENDENTES ── */}
+              {rotaTab === "pending" && (
+                <div>
+                  {/* Formulário nova task */}
+                  {rotaNewOpen ? (
+                    <div style={{
+                      padding: "20px 24px",
+                      borderBottom: "1px solid #1a1a1a",
+                      background: "#0d0d0d",
                     }}>
-                      {/* Check */}
-                      <button
-                        onClick={() => completeTaskMut.mutate({ taskId: task.id })}
+                      <div style={{
+                        fontFamily: "'DM Mono', monospace", fontSize: 8,
+                        letterSpacing: 3, color: "#444", marginBottom: 12,
+                      }}>
+                        NOVA TASK
+                      </div>
+                      <input
+                        value={rotaTitle}
+                        onChange={e => setRotaTitle(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === "Enter" && rotaTitle.trim()) {
+                            createTaskMut.mutate({ title: rotaTitle.trim(), difficulty: rotaDiff, deadline: rotaDeadline });
+                          }
+                          if (e.key === "Escape") setRotaNewOpen(false);
+                        }}
+                        placeholder="Nome da task..."
+                        autoFocus
                         style={{
-                          width: 14, height: 14, borderRadius: "50%", flexShrink: 0, marginTop: 2,
-                          border: "1px solid", borderColor: overdue ? "#ff5050" : "#333",
-                          background: "transparent", cursor: "pointer",
+                          width: "100%", background: "transparent",
+                          border: "none", borderBottom: "1px solid #2a2a2a",
+                          color: "#fff", fontFamily: "'DM Sans', sans-serif",
+                          fontSize: 14, padding: "8px 0", marginBottom: 16,
+                          boxSizing: "border-box", outline: "none",
                         }}
                       />
-                      {/* Content */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: overdue ? "#ff8080" : "#ccc", marginBottom: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {task.title}
-                        </div>
-                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 7, color: overdue ? "#ff5050" : "#444", letterSpacing: 1 }}>
-                            {overdue ? "⚠ " : ""}{deadlineStr}
-                          </span>
-                          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 7, color: "#333", letterSpacing: 1 }}>
-                            {task.difficulty.toUpperCase()}
-                          </span>
-                          {!task.deadlineChanged && reward && (
-                            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 7, color: "#2a2a2a", letterSpacing: 1 }}>
-                              +{reward.xp}xp ⬡{reward.glifos}
-                            </span>
-                          )}
-                          {task.deadlineChanged && (
-                            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 7, color: "#ff5050", letterSpacing: 1 }}>sem bônus</span>
-                          )}
-                        </div>
-                      </div>
-                      {/* Actions */}
-                      <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-                        <button
-                          onClick={() => rotaEditDeadline(task.id, (task.currentDeadline as string | null)?.slice(0, 10) ?? todayStr())}
-                          style={{ background: "none", border: "none", color: "#333", cursor: "pointer", fontSize: 10, padding: "2px 4px" }}
-                          title="Alterar prazo"
-                        >✎</button>
-                        <button
-                          onClick={() => deleteTaskMut.mutate({ taskId: task.id })}
-                          style={{ background: "none", border: "none", color: "#333", cursor: "pointer", fontSize: 10, padding: "2px 4px" }}
-                          title="Remover"
-                        >✕</button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </>
-            )}
 
-            {rotaTab === "history" && (
-              <>
-                {/* Filters */}
-                <div style={{ display: "flex", gap: 4, padding: "8px 16px", borderBottom: "1px solid #1a1a1a" }}>
-                  {(["all", "week", "month"] as const).map(f => (
-                    <button key={f} onClick={() => { setRotaHistoryFilter(f); refetchHistory(); }} style={{
-                      flex: 1, padding: "4px 0", fontFamily: "'DM Mono', monospace", fontSize: 7, letterSpacing: 1,
-                      border: "1px solid", borderColor: rotaHistoryFilter === f ? "#fff" : "#222",
-                      color: rotaHistoryFilter === f ? "#000" : "#444",
-                      background: rotaHistoryFilter === f ? "#fff" : "transparent", cursor: "pointer",
-                    }}>
-                      {f === "all" ? "TUDO" : f === "week" ? "SEMANA" : "MÊS"}
-                    </button>
-                  ))}
-                </div>
-                {rotaHistory.length === 0 ? (
-                  <div style={{ padding: "24px 16px", textAlign: "center", fontFamily: "'DM Mono', monospace", fontSize: 8, color: "#333", letterSpacing: 1 }}>
-                    NENHUMA TASK CONCLUÍDA
-                  </div>
-                ) : rotaHistory.map(task => {
-                  const hasBonus = (task.xpEarned ?? 0) > 0;
-                  const date = task.completedAt ? new Date(task.completedAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "—";
-                  return (
-                    <div key={task.id} style={{
-                      display: "flex", alignItems: "center", gap: 8,
-                      padding: "8px 16px", borderBottom: "1px solid #111",
-                    }}>
-                      <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, color: "#666", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {task.title}
-                      </span>
-                      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 7, color: "#333", letterSpacing: 1, whiteSpace: "nowrap" }}>{date}</span>
-                      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 7, letterSpacing: 1, whiteSpace: "nowrap", color: hasBonus ? "#888" : "#333" }}>
-                        {hasBonus ? `+${task.xpEarned} XP · ⬡${task.glifosEarned}` : "⬡ 2"}
-                      </span>
+                      {/* Dificuldade */}
+                      <div style={{ marginBottom: 16 }}>
+                        <div style={{
+                          fontFamily: "'DM Mono', monospace", fontSize: 8,
+                          letterSpacing: 2, color: "#333", marginBottom: 8,
+                        }}>
+                          DIFICULDADE
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4 }}>
+                          {([
+                            { id: "facil",    label: "FÁCIL",    color: "#3a8a3a" },
+                            { id: "media",    label: "MÉDIA",    color: "#8a6a2a" },
+                            { id: "dificil",  label: "DIFÍCIL",  color: "#8a3a3a" },
+                            { id: "lendaria", label: "LENDÁRIA", color: "#6a3a8a" },
+                          ] as const).map(d => (
+                            <button
+                              key={d.id}
+                              onClick={() => setRotaDiff(d.id)}
+                              style={{
+                                padding: "8px 0",
+                                fontFamily: "'DM Mono', monospace", fontSize: 7, letterSpacing: 1,
+                                border: `1px solid ${rotaDiff === d.id ? d.color : "#1e1e1e"}`,
+                                color: rotaDiff === d.id ? "#fff" : "#444",
+                                background: rotaDiff === d.id ? `${d.color}22` : "transparent",
+                                cursor: "pointer", transition: "all 0.15s",
+                              }}
+                            >
+                              {d.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Prazo */}
+                      <div style={{ marginBottom: 16 }}>
+                        <div style={{
+                          fontFamily: "'DM Mono', monospace", fontSize: 8,
+                          letterSpacing: 2, color: "#333", marginBottom: 8,
+                        }}>
+                          PRAZO
+                        </div>
+                        <input
+                          type="date"
+                          value={rotaDeadline}
+                          onChange={e => setRotaDeadline(e.target.value)}
+                          style={{
+                            width: "100%", background: "transparent",
+                            border: "1px solid #1e1e1e",
+                            color: "#888", fontFamily: "'DM Mono', monospace",
+                            fontSize: 11, padding: "8px 10px",
+                            colorScheme: "dark", boxSizing: "border-box",
+                          }}
+                        />
+                      </div>
+
+                      {/* Recompensa preview */}
+                      <div style={{
+                        padding: "10px 12px", background: "#111",
+                        border: "1px solid #1a1a1a", marginBottom: 16,
+                        display: "flex", justifyContent: "space-between", alignItems: "center",
+                      }}>
+                        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, color: "#444", letterSpacing: 1 }}>
+                          RECOMPENSA SE NO PRAZO
+                        </span>
+                        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#888", letterSpacing: 1 }}>
+                          +{ROTA_REWARDS[rotaDiff].xp} XP · ⬡ {ROTA_REWARDS[rotaDiff].glifos}
+                        </span>
+                      </div>
+
+                      {/* Botões */}
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button
+                          onClick={() => {
+                            if (!rotaTitle.trim()) return;
+                            createTaskMut.mutate({ title: rotaTitle.trim(), difficulty: rotaDiff, deadline: rotaDeadline });
+                          }}
+                          disabled={createTaskMut.isPending || !rotaTitle.trim()}
+                          style={{
+                            flex: 1, padding: "12px 0",
+                            fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 2,
+                            border: "none", color: "#000", background: "#fff",
+                            cursor: createTaskMut.isPending || !rotaTitle.trim() ? "default" : "pointer",
+                            opacity: !rotaTitle.trim() ? 0.4 : 1,
+                            transition: "opacity 0.2s",
+                          }}
+                        >
+                          {createTaskMut.isPending ? "CRIANDO..." : "CRIAR TASK"}
+                        </button>
+                        <button
+                          onClick={() => { setRotaNewOpen(false); setRotaTitle(""); }}
+                          style={{
+                            padding: "12px 16px",
+                            fontFamily: "'DM Mono', monospace", fontSize: 9,
+                            border: "1px solid #222", color: "#444",
+                            background: "transparent", cursor: "pointer",
+                          }}
+                        >
+                          CANCELAR
+                        </button>
+                      </div>
                     </div>
-                  );
-                })}
-              </>
-            )}
+                  ) : (
+                    <button
+                      onClick={() => setRotaNewOpen(true)}
+                      style={{
+                        width: "100%", padding: "16px 24px", textAlign: "left",
+                        fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 3,
+                        color: "#555", background: "transparent",
+                        border: "none", borderBottom: "1px solid #111",
+                        cursor: "pointer", display: "flex", alignItems: "center", gap: 8,
+                        transition: "color 0.2s",
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
+                      onMouseLeave={e => (e.currentTarget.style.color = "#555")}
+                    >
+                      <span style={{ fontSize: 16, lineHeight: 1 }}>+</span>
+                      NOVA TASK
+                    </button>
+                  )}
+
+                  {/* Lista de tasks pendentes */}
+                  {rotaTasks.length === 0 ? (
+                    <div style={{
+                      padding: "48px 24px", textAlign: "center",
+                    }}>
+                      <div style={{
+                        fontFamily: "'Bebas Neue', sans-serif", fontSize: 48,
+                        letterSpacing: 4, color: "#1a1a1a", marginBottom: 12,
+                      }}>
+                        ◈
+                      </div>
+                      <div style={{
+                        fontFamily: "'DM Mono', monospace", fontSize: 9,
+                        letterSpacing: 2, color: "#333",
+                      }}>
+                        NENHUMA TASK PENDENTE
+                      </div>
+                      <div style={{
+                        fontFamily: "'DM Mono', monospace", fontSize: 8,
+                        letterSpacing: 1, color: "#222", marginTop: 8,
+                      }}>
+                        Crie uma task para começar
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ padding: "8px 0" }}>
+                      {rotaTasks.map(task => {
+                        const deadline = task.currentDeadline ? new Date(task.currentDeadline as unknown as string) : null;
+                        const overdue = deadline ? new Date() > new Date(deadline.getTime() + 24 * 60 * 60 * 1000) : false;
+                        const deadlineStr = deadline ? deadline.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "—";
+                        const reward = ROTA_REWARDS[task.difficulty];
+                        const diffColors: Record<string, string> = {
+                          facil: "#3a8a3a", media: "#8a6a2a", dificil: "#8a3a3a", lendaria: "#6a3a8a",
+                        };
+                        const diffColor = diffColors[task.difficulty] ?? "#444";
+                        return (
+                          <div
+                            key={task.id}
+                            style={{
+                              padding: "16px 24px",
+                              borderBottom: "1px solid #111",
+                              background: overdue ? "rgba(255,80,80,0.02)" : "transparent",
+                              borderLeft: `2px solid ${overdue ? "#ff5050" : diffColor}`,
+                              transition: "background 0.2s",
+                            }}
+                          >
+                            {/* Linha superior: check + título + ações */}
+                            <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                              {/* Botão completar */}
+                              <button
+                                onClick={() => completeTaskMut.mutate({ taskId: task.id })}
+                                title="Completar task"
+                                style={{
+                                  width: 18, height: 18, borderRadius: "50%",
+                                  border: `1px solid ${overdue ? "#ff5050" : "#333"}`,
+                                  background: "transparent", cursor: "pointer",
+                                  flexShrink: 0, marginTop: 2,
+                                  transition: "border-color 0.2s, background 0.2s",
+                                }}
+                                onMouseEnter={e => {
+                                  (e.currentTarget as HTMLButtonElement).style.background = overdue ? "#ff505022" : "#ffffff22";
+                                  (e.currentTarget as HTMLButtonElement).style.borderColor = overdue ? "#ff5050" : "#fff";
+                                }}
+                                onMouseLeave={e => {
+                                  (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                                  (e.currentTarget as HTMLButtonElement).style.borderColor = overdue ? "#ff5050" : "#333";
+                                }}
+                              />
+                              {/* Título */}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{
+                                  fontFamily: "'DM Sans', sans-serif", fontSize: 13,
+                                  color: overdue ? "#ff8080" : "#ccc",
+                                  lineHeight: 1.3, marginBottom: 6,
+                                }}>
+                                  {task.title}
+                                </div>
+                                {/* Meta info */}
+                                <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                                  <span style={{
+                                    fontFamily: "'DM Mono', monospace", fontSize: 8,
+                                    letterSpacing: 1, color: diffColor,
+                                    padding: "2px 6px", border: `1px solid ${diffColor}44`,
+                                  }}>
+                                    {task.difficulty.toUpperCase()}
+                                  </span>
+                                  <span style={{
+                                    fontFamily: "'DM Mono', monospace", fontSize: 8,
+                                    letterSpacing: 1, color: overdue ? "#ff5050" : "#444",
+                                  }}>
+                                    {overdue ? "⚠ " : "◷ "}{deadlineStr}
+                                  </span>
+                                  {!task.deadlineChanged && reward && (
+                                    <span style={{
+                                      fontFamily: "'DM Mono', monospace", fontSize: 8,
+                                      letterSpacing: 1, color: "#333",
+                                    }}>
+                                      +{reward.xp} XP · ⬡{reward.glifos}
+                                    </span>
+                                  )}
+                                  {task.deadlineChanged && (
+                                    <span style={{
+                                      fontFamily: "'DM Mono', monospace", fontSize: 8,
+                                      letterSpacing: 1, color: "#ff5050",
+                                    }}>
+                                      SEM BÔNUS
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              {/* Ações */}
+                              <div style={{ display: "flex", gap: 2, flexShrink: 0 }}>
+                                <button
+                                  onClick={() => rotaEditDeadline(task.id, (task.currentDeadline as string | null)?.slice(0, 10) ?? todayStr())}
+                                  title="Alterar prazo"
+                                  style={{
+                                    background: "none", border: "none",
+                                    color: "#333", cursor: "pointer",
+                                    width: 28, height: 28, display: "flex",
+                                    alignItems: "center", justifyContent: "center",
+                                    fontSize: 12, transition: "color 0.2s",
+                                  }}
+                                  onMouseEnter={e => (e.currentTarget.style.color = "#888")}
+                                  onMouseLeave={e => (e.currentTarget.style.color = "#333")}
+                                >✎</button>
+                                <button
+                                  onClick={() => deleteTaskMut.mutate({ taskId: task.id })}
+                                  title="Remover task"
+                                  style={{
+                                    background: "none", border: "none",
+                                    color: "#333", cursor: "pointer",
+                                    width: 28, height: 28, display: "flex",
+                                    alignItems: "center", justifyContent: "center",
+                                    fontSize: 12, transition: "color 0.2s",
+                                  }}
+                                  onMouseEnter={e => (e.currentTarget.style.color = "#ff5050")}
+                                  onMouseLeave={e => (e.currentTarget.style.color = "#333")}
+                                >✕</button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── Tab: HISTÓRICO ── */}
+              {rotaTab === "history" && (
+                <div>
+                  {/* Filtros */}
+                  <div style={{
+                    display: "flex", gap: 0,
+                    padding: "12px 24px", borderBottom: "1px solid #111",
+                  }}>
+                    {(["all", "week", "month"] as const).map(f => (
+                      <button
+                        key={f}
+                        onClick={() => { setRotaHistoryFilter(f); refetchHistory(); }}
+                        style={{
+                          flex: 1, padding: "8px 0",
+                          fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2,
+                          border: "1px solid",
+                          borderColor: rotaHistoryFilter === f ? "#fff" : "#1e1e1e",
+                          color: rotaHistoryFilter === f ? "#000" : "#444",
+                          background: rotaHistoryFilter === f ? "#fff" : "transparent",
+                          cursor: "pointer", transition: "all 0.15s",
+                        }}
+                      >
+                        {f === "all" ? "TUDO" : f === "week" ? "SEMANA" : "MÊS"}
+                      </button>
+                    ))}
+                  </div>
+
+                  {rotaHistory.length === 0 ? (
+                    <div style={{ padding: "48px 24px", textAlign: "center" }}>
+                      <div style={{
+                        fontFamily: "'Bebas Neue', sans-serif", fontSize: 48,
+                        letterSpacing: 4, color: "#1a1a1a", marginBottom: 12,
+                      }}>
+                        ○
+                      </div>
+                      <div style={{
+                        fontFamily: "'DM Mono', monospace", fontSize: 9,
+                        letterSpacing: 2, color: "#333",
+                      }}>
+                        NENHUMA TASK CONCLUÍDA
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ padding: "8px 0" }}>
+                      {rotaHistory.map(task => {
+                        const hasBonus = (task.xpEarned ?? 0) > 0;
+                        const date = task.completedAt
+                          ? new Date(task.completedAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })
+                          : "—";
+                        return (
+                          <div
+                            key={task.id}
+                            style={{
+                              padding: "14px 24px",
+                              borderBottom: "1px solid #0e0e0e",
+                              display: "flex", alignItems: "center", gap: 12,
+                            }}
+                          >
+                            <span style={{ color: "#2a2a2a", fontSize: 12, flexShrink: 0 }}>●</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{
+                                fontFamily: "'DM Sans', sans-serif", fontSize: 12,
+                                color: "#555", overflow: "hidden",
+                                textOverflow: "ellipsis", whiteSpace: "nowrap",
+                              }}>
+                                {task.title}
+                              </div>
+                              <div style={{
+                                fontFamily: "'DM Mono', monospace", fontSize: 8,
+                                color: "#2a2a2a", letterSpacing: 1, marginTop: 3,
+                              }}>
+                                {date}
+                              </div>
+                            </div>
+                            <div style={{
+                              fontFamily: "'DM Mono', monospace", fontSize: 8,
+                              letterSpacing: 1, whiteSpace: "nowrap",
+                              color: hasBonus ? "#666" : "#2a2a2a",
+                            }}>
+                              {hasBonus ? `+${task.xpEarned} XP · ⬡${task.glifosEarned}` : "⬡ 2"}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </>
   );

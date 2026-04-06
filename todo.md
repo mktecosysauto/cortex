@@ -227,3 +227,14 @@
 - [x] Animações de entrada: nexusSapoDrop (NEXUS), pageRevealFade (DASH)
 - [x] Toast de conquista: ícone + nome Bebas Neue + SAPO miniatura sapoCelebra
 - [x] Sistema automático de 14 conquistas no addXP (rank, foco, prompts, streak, imagens)
+
+## Redesign ROTA Popup (v12)
+- [x] Popup ROTA → painel lateral slide-in da direita (380px, altura 100vh)
+- [x] Header do painel: título ROTA em Bebas Neue 28px, contador de pendentes, botão fechar
+- [x] Tabs PENDENTES / HISTÓRICO com linha ativa animada
+- [x] Empty state elegante com ícone ◈ e CTA
+- [x] Card de task: título, dificuldade colorida com borda esquerda, prazo, botão completar
+- [x] Formulário nova task inline expansível (não modal separado)
+- [x] Animação de entrada do painel (rotaPanelSlideIn)
+- [x] Backdrop semitransparente com blur ao abrir o painel
+- [x] Hover states nos botões de ação (editar prazo, remover task)
