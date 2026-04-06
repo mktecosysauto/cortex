@@ -91,6 +91,12 @@ export async function getToolEventsInRange(userId: number, from: Date, to: Date)
 }
 
 // ─── Tasks (ROTA) ─────────────────────────────────────────────────────────────
+// Parse YYYY-MM-DD as local date (noon) to avoid UTC offset shifting the day
+function parseLocalDate(dateStr: string): Date {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(y, m - 1, d, 12, 0, 0);
+}
+
 export async function createTask(data: {
   userId: number;
   title: string;
@@ -106,8 +112,8 @@ export async function createTask(data: {
     userId: data.userId,
     title: data.title,
     difficulty: data.difficulty,
-    originalDeadline: data.originalDeadline ? new Date(data.originalDeadline) : null,
-    currentDeadline: data.currentDeadline ? new Date(data.currentDeadline) : null,
+    originalDeadline: data.originalDeadline ? parseLocalDate(data.originalDeadline) : null,
+    currentDeadline: data.currentDeadline ? parseLocalDate(data.currentDeadline) : null,
     toolContext: data.toolContext,
     displayOrder: data.displayOrder ?? 0,
     status: "pending" as const,
@@ -150,7 +156,29 @@ export async function changeTaskDeadline(taskId: number, userId: number, newDead
   const db = await getDb();
   if (!db) return;
   await db.update(cortexTasks)
-    .set({ currentDeadline: new Date(newDeadline), deadlineChanged: true, bonusEligible: false })
+    .set({ currentDeadline: parseLocalDate(newDeadline), deadlineChanged: true, bonusEligible: false })
+    .where(and(eq(cortexTasks.id, taskId), eq(cortexTasks.userId, userId)));
+}
+
+export async function updateTask(taskId: number, userId: number, data: {
+  title?: string;
+  difficulty?: "facil" | "media" | "dificil" | "lendaria";
+  newDeadline?: string;
+  deadlineChanged?: boolean;
+}) {
+  const db = await getDb();
+  if (!db) return;
+  const updates: Record<string, unknown> = {};
+  if (data.title !== undefined) updates.title = data.title;
+  if (data.difficulty !== undefined) updates.difficulty = data.difficulty;
+  if (data.newDeadline !== undefined) {
+    updates.currentDeadline = parseLocalDate(data.newDeadline);
+    updates.deadlineChanged = true;
+    updates.bonusEligible = false;
+  }
+  if (Object.keys(updates).length === 0) return;
+  await db.update(cortexTasks)
+    .set(updates)
     .where(and(eq(cortexTasks.id, taskId), eq(cortexTasks.userId, userId)));
 }
 

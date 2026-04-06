@@ -238,3 +238,9 @@
 - [x] Animação de entrada do painel (rotaPanelSlideIn)
 - [x] Backdrop semitransparente com blur ao abrir o painel
 - [x] Hover states nos botões de ação (editar prazo, remover task)
+
+## Correções ROTA v12.1
+- [x] Bug de timezone: parseLocalDate() usa new Date(y, m-1, d, 12) para evitar UTC offset
+- [x] Substituir window.prompt() por card de edição inline (título, dificuldade, data)
+- [x] Endpoint rota.update no servidor (título + dificuldade + prazo)
+- [x] Aviso visual ⚠ ALTERAR PRAZO CANCELA O BÔNUS quando data muda

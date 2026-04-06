@@ -124,6 +124,11 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
   const [rotaPos, setRotaPos] = useState({ x: 0, y: 0 });
   const rotaDragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
   const rotaRef = useRef<HTMLDivElement>(null);
+  // Edit task state
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDiff, setEditDiff] = useState<"facil" | "media" | "dificil" | "lendaria">("facil");
+  const [editDeadline, setEditDeadline] = useState("");
 
   const { data: rotaTasks = [], refetch: refetchTasks } = trpc.cortex.rota.list.useQuery(undefined, { enabled: isAuthenticated });
   const { data: rotaHistory = [], refetch: refetchHistory } = trpc.cortex.rota.history.useQuery(
@@ -146,6 +151,9 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
   });
   const changeDeadlineMut = trpc.cortex.rota.changeDeadline.useMutation({
     onSuccess: () => { refetchTasks(); toast("Prazo alterado. Bônus cancelado.", { duration: 3000 }); },
+  });
+  const updateTaskMut = trpc.cortex.rota.update.useMutation({
+    onSuccess: () => { refetchTasks(); setEditingTaskId(null); toast("Task atualizada.", { duration: 2000 }); },
   });
   const deleteTaskMut = trpc.cortex.rota.delete.useMutation({
     onSuccess: () => refetchTasks(),
@@ -172,14 +180,23 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
     window.addEventListener("mouseup", onUp);
   }
 
-  function rotaEditDeadline(taskId: number, current: string) {
-    const confirmed = window.prompt(
-      "Atenção: alterar o prazo cancela o bônus de XP e glifos.\n\nNovo prazo (AAAA-MM-DD):",
-      current
-    );
-    if (!confirmed || confirmed === current) return;
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(confirmed)) { toast.error("Formato inválido. Use AAAA-MM-DD"); return; }
-    changeDeadlineMut.mutate({ taskId, newDeadline: confirmed });
+  function openEditTask(task: { id: number; title: string; difficulty: string; currentDeadline: Date | string | null }) {
+    setEditingTaskId(task.id);
+    setEditTitle(task.title);
+    setEditDiff(task.difficulty as "facil" | "media" | "dificil" | "lendaria");
+    const dl = task.currentDeadline
+      ? new Date(task.currentDeadline as unknown as string | number | Date).toISOString().slice(0, 10)
+      : todayStr();
+    setEditDeadline(dl);
+  }
+  function submitEditTask() {
+    if (!editingTaskId || !editTitle.trim()) return;
+    updateTaskMut.mutate({
+      taskId: editingTaskId,
+      title: editTitle.trim(),
+      difficulty: editDiff,
+      newDeadline: editDeadline,
+    });
   }
 
   const pendingCount = rotaTasks.length;
@@ -761,17 +778,17 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                               {/* Ações */}
                               <div style={{ display: "flex", gap: 2, flexShrink: 0 }}>
                                 <button
-                                  onClick={() => rotaEditDeadline(task.id, task.currentDeadline ? new Date(task.currentDeadline as unknown as string | number | Date).toISOString().slice(0, 10) : todayStr())}
-                                  title="Alterar prazo"
+                                  onClick={() => openEditTask(task)}
+                                  title="Editar task"
                                   style={{
-                                    background: "none", border: "none",
-                                    color: "#333", cursor: "pointer",
+                                    background: editingTaskId === task.id ? "#1a1a1a" : "none", border: "none",
+                                    color: editingTaskId === task.id ? "#fff" : "#333", cursor: "pointer",
                                     width: 28, height: 28, display: "flex",
                                     alignItems: "center", justifyContent: "center",
                                     fontSize: 12, transition: "color 0.2s",
                                   }}
-                                  onMouseEnter={e => (e.currentTarget.style.color = "#888")}
-                                  onMouseLeave={e => (e.currentTarget.style.color = "#333")}
+                                  onMouseEnter={e => { if (editingTaskId !== task.id) e.currentTarget.style.color = "#888"; }}
+                                  onMouseLeave={e => { if (editingTaskId !== task.id) e.currentTarget.style.color = "#333"; }}
                                 >✎</button>
                                 <button
                                   onClick={() => deleteTaskMut.mutate({ taskId: task.id })}
@@ -788,6 +805,94 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                                 >✕</button>
                               </div>
                             </div>
+                            {/* Card de edição inline */}
+                            {editingTaskId === task.id && (
+                              <div style={{
+                                marginTop: 12, padding: "16px",
+                                background: "#0d0d0d", border: "1px solid #222",
+                                borderLeft: `2px solid ${diffColor}`,
+                              }}>
+                                {/* Título */}
+                                <div style={{ marginBottom: 12 }}>
+                                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2, color: "#333", marginBottom: 6 }}>TÍTULO</div>
+                                  <input
+                                    value={editTitle}
+                                    onChange={e => setEditTitle(e.target.value)}
+                                    onKeyDown={e => { if (e.key === "Enter") submitEditTask(); if (e.key === "Escape") setEditingTaskId(null); }}
+                                    autoFocus
+                                    style={{
+                                      width: "100%", background: "transparent",
+                                      border: "1px solid #1e1e1e", color: "#fff",
+                                      fontFamily: "'DM Mono', monospace", fontSize: 11,
+                                      padding: "8px 10px", boxSizing: "border-box",
+                                    }}
+                                  />
+                                </div>
+                                {/* Dificuldade */}
+                                <div style={{ marginBottom: 12 }}>
+                                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2, color: "#333", marginBottom: 6 }}>DIFICULDADE</div>
+                                  <div style={{ display: "flex", gap: 6 }}>
+                                    {(["facil", "media", "dificil", "lendaria"] as const).map(d => {
+                                      const dColors: Record<string, string> = { facil: "#3a8a3a", media: "#8a6a2a", dificil: "#8a3a3a", lendaria: "#6a3a8a" };
+                                      const dc = dColors[d] ?? "#444";
+                                      return (
+                                        <button key={d} onClick={() => setEditDiff(d)} style={{
+                                          flex: 1, padding: "6px 0",
+                                          fontFamily: "'DM Mono', monospace", fontSize: 7, letterSpacing: 1,
+                                          border: `1px solid ${editDiff === d ? dc : "#1e1e1e"}`,
+                                          color: editDiff === d ? "#fff" : "#444",
+                                          background: editDiff === d ? `${dc}22` : "transparent",
+                                          cursor: "pointer",
+                                        }}>{d.toUpperCase()}</button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                                {/* Prazo */}
+                                <div style={{ marginBottom: 14 }}>
+                                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2, color: "#333", marginBottom: 6 }}>PRAZO</div>
+                                  <input
+                                    type="date"
+                                    value={editDeadline}
+                                    onChange={e => setEditDeadline(e.target.value)}
+                                    style={{
+                                      width: "100%", background: "transparent",
+                                      border: "1px solid #1e1e1e", color: "#888",
+                                      fontFamily: "'DM Mono', monospace", fontSize: 11,
+                                      padding: "8px 10px", colorScheme: "dark", boxSizing: "border-box",
+                                    }}
+                                  />
+                                  {editDeadline !== (task.currentDeadline ? new Date(task.currentDeadline as unknown as string | number | Date).toISOString().slice(0, 10) : todayStr()) && (
+                                    <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, color: "#ff5050", marginTop: 4, letterSpacing: 1 }}>
+                                      ⚠ ALTERAR PRAZO CANCELA O BÔNUS
+                                    </div>
+                                  )}
+                                </div>
+                                {/* Botões */}
+                                <div style={{ display: "flex", gap: 8 }}>
+                                  <button
+                                    onClick={submitEditTask}
+                                    disabled={updateTaskMut.isPending || !editTitle.trim()}
+                                    style={{
+                                      flex: 1, padding: "10px 0",
+                                      fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2,
+                                      border: "none", color: "#000", background: "#fff",
+                                      cursor: updateTaskMut.isPending ? "default" : "pointer",
+                                      opacity: !editTitle.trim() ? 0.4 : 1,
+                                    }}
+                                  >{updateTaskMut.isPending ? "SALVANDO..." : "SALVAR"}</button>
+                                  <button
+                                    onClick={() => setEditingTaskId(null)}
+                                    style={{
+                                      padding: "10px 16px",
+                                      fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2,
+                                      border: "1px solid #222", color: "#444", background: "transparent",
+                                      cursor: "pointer",
+                                    }}
+                                  >CANCELAR</button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         );
                       })}

@@ -8,6 +8,7 @@ import {
   completeTask,
   createTask,
   deleteTask,
+  updateTask,
   getAllUsers,
   getLeaderboard,
   getSessionsInRange,
@@ -399,6 +400,22 @@ const rotaRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       await changeTaskDeadline(input.taskId, ctx.user.id, input.newDeadline);
+      return { success: true };
+    }),
+
+  update: protectedProcedure
+    .input(z.object({
+      taskId: z.number().int(),
+      title: z.string().min(1).max(200).optional(),
+      difficulty: z.enum(["facil", "media", "dificil", "lendaria"]).optional(),
+      newDeadline: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      await updateTask(input.taskId, ctx.user.id, {
+        title: input.title,
+        difficulty: input.difficulty,
+        newDeadline: input.newDeadline,
+      });
       return { success: true };
     }),
 
