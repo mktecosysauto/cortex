@@ -761,7 +761,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                               {/* Ações */}
                               <div style={{ display: "flex", gap: 2, flexShrink: 0 }}>
                                 <button
-                                  onClick={() => rotaEditDeadline(task.id, (task.currentDeadline as string | null)?.slice(0, 10) ?? todayStr())}
+                                  onClick={() => rotaEditDeadline(task.id, task.currentDeadline ? new Date(task.currentDeadline as unknown as string | number | Date).toISOString().slice(0, 10) : todayStr())}
                                   title="Alterar prazo"
                                   style={{
                                     background: "none", border: "none",
