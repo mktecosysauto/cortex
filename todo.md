@@ -244,3 +244,8 @@
 - [x] Substituir window.prompt() por card de edição inline (título, dificuldade, data)
 - [x] Endpoint rota.update no servidor (título + dificuldade + prazo)
 - [x] Aviso visual ⚠ ALTERAR PRAZO CANCELA O BÔNUS quando data muda
+
+## Bug Data ROTA v12.2
+- [x] Corrigir definitivamente timezone: dateValToStr() + formatDeadline() + isOverdue() sem new Date(string)
+- [x] todayStr() usa componentes locais (getFullYear/getMonth/getDate) sem toISOString()
+- [x] 5 pontos de conversão corrigidos no GlobalHeader

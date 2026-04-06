@@ -46,7 +46,38 @@ function fmt(sec: number) {
 }
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+}
+
+// Converte um valor Date|string do banco para string YYYY-MM-DD sem offset UTC
+function dateValToStr(val: Date | string | null | undefined): string {
+  if (!val) return todayStr();
+  if (typeof val === 'string') {
+    // Se já é YYYY-MM-DD, retorna direto (sem new Date!)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+    // Se é ISO com hora, extrai só a data local
+    const d = new Date(val);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+  // É objeto Date — usa componentes locais
+  return `${val.getFullYear()}-${String(val.getMonth() + 1).padStart(2, '0')}-${String(val.getDate()).padStart(2, '0')}`;
+}
+
+// Formata data para exibição DD/MM sem offset UTC
+function formatDeadline(val: Date | string | null | undefined): string {
+  if (!val) return '—';
+  const str = dateValToStr(val);
+  const [, m, d] = str.split('-');
+  return `${d}/${m}`;
+}
+
+// Verifica se a data está vencida sem offset UTC
+function isOverdue(val: Date | string | null | undefined): boolean {
+  if (!val) return false;
+  const str = dateValToStr(val);
+  const today = todayStr();
+  return str < today;
 }
 
 // ─── GlobalHeader ─────────────────────────────────────────────────────────────
@@ -184,9 +215,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
     setEditingTaskId(task.id);
     setEditTitle(task.title);
     setEditDiff(task.difficulty as "facil" | "media" | "dificil" | "lendaria");
-    const dl = task.currentDeadline
-      ? new Date(task.currentDeadline as unknown as string | number | Date).toISOString().slice(0, 10)
-      : todayStr();
+    const dl = task.currentDeadline ? dateValToStr(task.currentDeadline as Date | string) : todayStr();
     setEditDeadline(dl);
   }
   function submitEditTask() {
@@ -692,9 +721,8 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                   ) : (
                     <div style={{ padding: "8px 0" }}>
                       {rotaTasks.map(task => {
-                        const deadline = task.currentDeadline ? new Date(task.currentDeadline as unknown as string) : null;
-                        const overdue = deadline ? new Date() > new Date(deadline.getTime() + 24 * 60 * 60 * 1000) : false;
-                        const deadlineStr = deadline ? deadline.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "—";
+                        const deadlineStr = task.currentDeadline ? formatDeadline(task.currentDeadline as Date | string) : '—';
+                        const overdue = isOverdue(task.currentDeadline as Date | string | null);
                         const reward = ROTA_REWARDS[task.difficulty];
                         const diffColors: Record<string, string> = {
                           facil: "#3a8a3a", media: "#8a6a2a", dificil: "#8a3a3a", lendaria: "#6a3a8a",
@@ -862,7 +890,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                                       padding: "8px 10px", colorScheme: "dark", boxSizing: "border-box",
                                     }}
                                   />
-                                  {editDeadline !== (task.currentDeadline ? new Date(task.currentDeadline as unknown as string | number | Date).toISOString().slice(0, 10) : todayStr()) && (
+                                  {editDeadline !== (task.currentDeadline ? dateValToStr(task.currentDeadline as Date | string) : todayStr()) && (
                                     <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, color: "#ff5050", marginTop: 4, letterSpacing: 1 }}>
                                       ⚠ ALTERAR PRAZO CANCELA O BÔNUS
                                     </div>
@@ -948,7 +976,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                       {rotaHistory.map(task => {
                         const hasBonus = (task.xpEarned ?? 0) > 0;
                         const date = task.completedAt
-                          ? new Date(task.completedAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })
+                          ? formatDeadline(task.completedAt as Date | string)
                           : "—";
                         return (
                           <div
