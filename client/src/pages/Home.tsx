@@ -793,20 +793,26 @@ export default function Home() {
           />
 
           <ModuleDivider index={1} />
-
           <ModuleFrame
             number="02"
+            name="VERSO"
+            subtitle="Gerador de copy e textos criativos"
+            description="Crie captions, anúncios, headlines e emails com IA. Configure o tom de voz da sua marca e gere textos que soam como você — com XP a cada criação."
+            route="/verso"
+            reverse
+          />
+           <ModuleDivider index={2} />
+          <ModuleFrame
+            number="03"
             name="PALCO"
             subtitle="Templates para apresentações profissionais"
             description="Composições visuais para apresentar projetos, moodboards e conceitos criativos com precisão editorial."
             comingSoon
             reverse
           />
-
-          <ModuleDivider index={2} />
-
+          <ModuleDivider index={3} />
           <ModuleFrame
-            number="03"
+            number="04"
             name="ESTÚDIO"
             subtitle="Ferramentas de composição visual"
             description="Ambiente de criação para composições complexas com múltiplas referências, camadas e estilos."

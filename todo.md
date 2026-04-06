@@ -263,3 +263,7 @@
 - [x] VERSO na landing page (frame módulo)
 - [x] Rota /verso registrada no App.tsx
 - [x] GlobalHeader integrado na página VERSO com layout correto (sticky sub-header)
+
+## Correções VERSO v13.1
+- [x] Cursor personalizado ausente na página /verso (adicionar CustomCursor)
+- [x] Frame do módulo VERSO na landing page (como ARQUIVO e NEXUS)

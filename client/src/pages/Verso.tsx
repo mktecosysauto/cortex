@@ -6,6 +6,7 @@ import { Streamdown } from "streamdown";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { useNexus } from "@/contexts/NexusContext";
 import { toast } from "sonner";
+import { GrainOverlay, CustomCursor } from "@/components/CortexShell";
 
 // ─── Template definitions ─────────────────────────────────────────────────────
 
@@ -338,6 +339,8 @@ export default function Verso() {
 
    return (
     <div className="min-h-screen bg-black text-white" style={{ animation: "pageRevealFade 0.4s ease both", paddingTop: 56 }}>
+      <GrainOverlay />
+      <CustomCursor />
       <GlobalHeader currentPage="verso" />
       {showVoiceModal && (
         <BrandVoiceModal
