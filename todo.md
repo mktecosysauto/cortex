@@ -299,3 +299,8 @@
 - [x] Substituir proxy Anthropic direto pelo invokeLLM (sem precisar de chave do usuário)
 - [x] Ajustar frontend para não exigir chave Anthropic para melhorar/gerar prompts
 - [x] Novos endpoints: trpc.arquivo.editPrompt e trpc.arquivo.reverseEngineer (invokeLLM)
+
+## Bug FORMA — briefingId undefined (v15.2)
+- [x] Corrigir erro "briefingId: undefined" na mutation do FORMA
+- [x] Causa: cast errado do insertId (mysql2 retorna array, não objeto direto)
+- [x] Corrigido db-forma.ts e db-verso.ts: usar result[0].insertId

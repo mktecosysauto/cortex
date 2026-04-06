@@ -74,7 +74,7 @@ export async function createBriefing(data: {
     questionIds: data.questionIds,
     status: "draft",
   });
-  const id = (result as unknown as { insertId: number }).insertId;
+  const id = (result as unknown as [{ insertId: number }])[0].insertId;
   return { id, token };
 }
 
@@ -182,7 +182,7 @@ export async function createFollowup(briefingId: number, question: string) {
     question,
     status: "pending",
   });
-  return (result as unknown as { insertId: number }).insertId;
+  return (result as unknown as [{ insertId: number }])[0].insertId;
 }
 
 export async function answerFollowup(id: number, briefingId: number, answer: string) {

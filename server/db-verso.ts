@@ -96,7 +96,7 @@ export async function saveVersoText(
     toneSnapshot: data.toneSnapshot ?? null,
     inputFields: data.inputFields ?? null,
   });
-  const id = (result as unknown as { insertId: number }).insertId;
+  const id = (result as unknown as [{ insertId: number }])[0].insertId;
   const rows = await db
     .select()
     .from(versoTexts)
