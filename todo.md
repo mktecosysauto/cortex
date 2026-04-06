@@ -319,3 +319,11 @@
 - [x] VITE_PUBLIC_URL configurado com domínio público: https://cortexbrain.manus.space
 - [x] FormaDetail.tsx e Forma.tsx atualizados para usar VITE_PUBLIC_URL no link copiado
 - [x] Fallback para window.location.origin quando VITE_PUBLIC_URL não está definido
+
+## Correção definitiva rota pública /b/:token (v15.5)
+- [x] Causa raiz identificada: NexusProvider envolvia TODA a app incluindo /b/:token
+- [x] NexusProvider chama trpc.cortex.nexus.getProfile (protectedProcedure) ao montar
+- [x] Isso disparava redirectToLoginIfUnauthorized no main.tsx → redirect para manus.im
+- [x] App.tsx corrigido: /b/:token renderiza FormaBriefing FORA do NexusProvider
+- [x] main.tsx corrigido: redirectToLoginIfUnauthorized ignora caminhos /b/*
+- [x] Testado: /b/token-invalido mostra "LINK INVÁLIDO OU EXPIRADO" sem redirect

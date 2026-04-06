@@ -8,14 +8,23 @@ import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
 
+// ─── Public route prefixes: never redirect to login from these paths ──────────
+const PUBLIC_PATH_PREFIXES = ["/b/"];
+
+function isPublicPath(path: string): boolean {
+  return PUBLIC_PATH_PREFIXES.some((prefix) => path.startsWith(prefix));
+}
+
 const queryClient = new QueryClient();
 
 const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (!(error instanceof TRPCClientError)) return;
   if (typeof window === "undefined") return;
 
-  const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
+  // Never redirect to login when the user is on a public briefing form
+  if (isPublicPath(window.location.pathname)) return;
 
+  const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
   if (!isUnauthorized) return;
 
   window.location.href = getLoginUrl();
