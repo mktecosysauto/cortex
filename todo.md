@@ -208,3 +208,12 @@
 - [x] Ajuste visual do overlay de piscar via CSS (top/height/left/right ajustáveis)
 - [x] prefers-reduced-motion: animation none
 - [x] Animação celebrate ao comprar item na loja
+
+## Correções SAPO v10.1
+- [x] Re-upload PNGs corrigidos (skin-mago e base estavam invertidos)
+- [x] Ativar animações CSS no SapoAgent (sapoRespira, sapoFocado, sapoCelebra via inline style)
+- [x] SAPO em destaque no topo da página /nexus (hero section 280px)
+- [x] Uniformizar tamanho dos cards de skin na loja (grid 3 colunas, aspect-ratio 3:4)
+- [x] Aumentar tipografia base em 2pt globalmente (html font-size: 16px)
+- [x] Substituir SVG genérico pelo SapoAgent PNG na landing page (seção NEXUS)
+- [x] Corrigir estrutura @layer components no index.css (chaves desbalanceadas)

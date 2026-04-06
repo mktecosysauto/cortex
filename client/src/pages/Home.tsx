@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { GrainOverlay, CustomCursor } from "@/components/CortexShell";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { usePageTransition } from "@/contexts/PageTransitionContext";
-import { useNexus, renderAgentSVG } from "@/contexts/NexusContext";
+import { useNexus } from "@/contexts/NexusContext";
+import SapoAgent from "@/components/SapoAgent";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 
@@ -435,7 +436,7 @@ function NexusFrame() {
   const { nexus, getCurrentRankData } = useNexus();
   const { navigateTo } = usePageTransition();
   const rank = getCurrentRankData();
-  const agentSvg = renderAgentSVG("full", rank.color, nexus.agentAppearance.effectId, nexus.agentAppearance.silhouetteId);
+  const activeSkin = nexus.activeItems.find((id: string) => id.startsWith("skin-")) as any ?? "base";
 
   useEffect(() => {
     const el = frameRef.current;
@@ -529,7 +530,7 @@ function NexusFrame() {
             justifyContent: "center",
           }}>
             <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-            <div style={{ width: 120, height: 120 }} dangerouslySetInnerHTML={{ __html: agentSvg.replace('width="200" height="200"', 'width="120" height="120"') }} />
+            <SapoAgent skin={activeSkin} state="idle" size={200} />
             <div style={{ position: "absolute", bottom: 16, left: 0, right: 0, textAlign: "center" }}>
               <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 13, letterSpacing: 4, color: rank.color, opacity: 0.7 }}>
                 {nexus.agentName}

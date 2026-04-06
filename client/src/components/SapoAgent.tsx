@@ -3,13 +3,13 @@
  * Implementado conforme CORTEX_AGENTS_V2.md
  *
  * Skins disponíveis:
- *   base       — sapo sem equipamento (padrão)
+ *   base        — sapo sem equipamento (padrão)
  *   skin-espada — sapo guerreiro com espada e capa
- *   skin-mago  — sapo mago com chapéu e cajado
+ *   skin-mago   — sapo mago com chapéu e cajado
  *
  * Estados:
- *   idle    → animação sapoRespira (3.8s loop)
- *   focused → animação sapoFocado (5s loop, quando PULSO ativo)
+ *   idle      → animação sapoRespira (3.8s loop)
+ *   focused   → animação sapoFocado (5s loop, quando PULSO ativo)
  *   celebrate → animação sapoCelebra (0.6s × 3, ao ganhar XP/rank up)
  *
  * Piscar aleatório: intervalo 3–7s, duração 120ms
@@ -17,11 +17,11 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// CDN URLs dos PNGs enviados via manus-upload-file --webdev
+// CDN URLs dos PNGs — base e skin-mago corrigidos
 const SKIN_URLS: Record<string, string> = {
-  base: "https://d2xsxph8kpxj0f.cloudfront.net/310519663331012459/4RjPzBcDcvCdjPKo6zdctY/base_f26b4360.png",
+  base: "https://d2xsxph8kpxj0f.cloudfront.net/310519663331012459/4RjPzBcDcvCdjPKo6zdctY/base_72592774.png",
   "skin-espada": "https://d2xsxph8kpxj0f.cloudfront.net/310519663331012459/4RjPzBcDcvCdjPKo6zdctY/skin-espada_a1dbf67e.png",
-  "skin-mago": "https://d2xsxph8kpxj0f.cloudfront.net/310519663331012459/4RjPzBcDcvCdjPKo6zdctY/skin-mago_98b68b94.png",
+  "skin-mago": "https://d2xsxph8kpxj0f.cloudfront.net/310519663331012459/4RjPzBcDcvCdjPKo6zdctY/skin-mago_de5ef879.png",
 };
 
 export type SapoState = "idle" | "focused" | "celebrate";
@@ -32,7 +32,7 @@ interface SapoAgentProps {
   skin?: SapoSkin;
   /** Estado de animação */
   state?: SapoState;
-  /** Tamanho em pixels (largura = altura) */
+  /** Tamanho em pixels (largura) — altura é proporcional (×1.2) */
   size?: number;
   /** Classe CSS extra para o wrapper */
   className?: string;
@@ -50,7 +50,6 @@ export default function SapoAgent({
   const [isBlinking, setIsBlinking] = useState(false);
   const [currentState, setCurrentState] = useState<SapoState>(state);
   const blinkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const imgRef = useRef<HTMLImageElement>(null);
 
   // Sincronizar estado externo
   useEffect(() => {
@@ -60,7 +59,7 @@ export default function SapoAgent({
   // Piscar aleatório: intervalo 3–7s, duração 120ms
   useEffect(() => {
     function scheduleBlink() {
-      const delay = 3000 + Math.random() * 4000; // 3–7s
+      const delay = 3000 + Math.random() * 4000;
       blinkTimerRef.current = setTimeout(() => {
         setIsBlinking(true);
         setTimeout(() => {
@@ -69,7 +68,6 @@ export default function SapoAgent({
         }, 120);
       }, delay);
     }
-
     scheduleBlink();
     return () => {
       if (blinkTimerRef.current) clearTimeout(blinkTimerRef.current);
@@ -83,33 +81,55 @@ export default function SapoAgent({
     }
   }
 
-  // Classe de animação baseada no estado
-  const stateClass =
-    currentState === "celebrate"
-      ? "sapo-celebra"
-      : currentState === "focused"
-      ? "sapo-focado"
-      : "sapo-animado";
+  // Animação inline para garantir que funciona independente de especificidade CSS
+  const animationMap: Record<SapoState, string> = {
+    idle: "sapoRespira 3.8s ease-in-out infinite",
+    focused: "sapoFocado 5s ease-in-out infinite",
+    celebrate: "sapoCelebra 0.6s ease-in-out 3",
+  };
 
   const skinUrl = SKIN_URLS[skin] ?? SKIN_URLS["base"];
+  const wrapperH = Math.round(size * 1.2);
 
   return (
     <div
       className={`sapo-wrapper ${className}`}
-      style={{ width: size, height: size }}
+      style={{ width: size, height: wrapperH }}
     >
       <img
-        ref={imgRef}
         src={skinUrl}
         alt={`SAPO — ${skin}`}
-        className={`sapo-img ${stateClass}`}
-        onAnimationEnd={handleAnimationEnd}
         draggable={false}
+        onAnimationEnd={handleAnimationEnd}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "contain",
+          objectPosition: "bottom center",
+          display: "block",
+          userSelect: "none",
+          transformOrigin: "bottom center",
+          animation: animationMap[currentState],
+        }}
       />
       {/* Overlay de piscar — cobre os olhos do sapo */}
       <div
-        className={`sapo-blink-overlay${isBlinking ? " piscando" : ""}`}
         aria-hidden="true"
+        style={{
+          position: "absolute",
+          top: "18%",
+          left: "15%",
+          right: "15%",
+          height: isBlinking ? "14%" : "0%",
+          background: "#000",
+          borderRadius: "40%",
+          pointerEvents: "none",
+          transition: isBlinking
+            ? "height 0.05s ease-out, opacity 0.05s ease-out"
+            : "height 0.06s ease-in, opacity 0.06s ease-in",
+          opacity: isBlinking ? 1 : 0,
+          zIndex: 2,
+        }}
       />
     </div>
   );
@@ -117,7 +137,6 @@ export default function SapoAgent({
 
 /**
  * Hook utilitário para controlar o estado do SAPO externamente.
- * Expõe celebrate() que dispara a animação e volta para idle.
  */
 export function useSapoState(defaultState: SapoState = "idle") {
   const [sapoState, setSapoState] = useState<SapoState>(defaultState);

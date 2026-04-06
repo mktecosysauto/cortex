@@ -5,7 +5,6 @@ import { usePageTransition } from "@/contexts/PageTransitionContext";
 import {
   useNexus,
   RANKS,
-  getXpProgress,
 } from "@/contexts/NexusContext";
 import SapoAgent, { useSapoState, type SapoSkin } from "@/components/SapoAgent";
 
@@ -44,7 +43,6 @@ const SHOP_ITEMS = {
   ],
 };
 
-// Flat list of all items for lookups
 const ALL_ITEMS = [
   ...SHOP_ITEMS.skins,
   ...SHOP_ITEMS.appearance,
@@ -95,7 +93,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
       fontFamily: "'DM Mono', monospace",
-      fontSize: 10,
+      fontSize: 11,
       letterSpacing: 4,
       color: "#444",
       textTransform: "uppercase" as const,
@@ -108,10 +106,17 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ─── CDN URLs (for skin preview in shop) ─────────────────────────────────────
+// ─── CDN URLs (corrigidas) ────────────────────────────────────────────────────
 const SKIN_PREVIEW_URLS: Record<string, string> = {
+  "base":       "https://d2xsxph8kpxj0f.cloudfront.net/310519663331012459/4RjPzBcDcvCdjPKo6zdctY/base_72592774.png",
   "skin-espada": "https://d2xsxph8kpxj0f.cloudfront.net/310519663331012459/4RjPzBcDcvCdjPKo6zdctY/skin-espada_a1dbf67e.png",
-  "skin-mago":   "https://d2xsxph8kpxj0f.cloudfront.net/310519663331012459/4RjPzBcDcvCdjPKo6zdctY/skin-mago_98b68b94.png",
+  "skin-mago":   "https://d2xsxph8kpxj0f.cloudfront.net/310519663331012459/4RjPzBcDcvCdjPKo6zdctY/skin-mago_de5ef879.png",
+};
+
+const SKIN_LABEL: Record<string, string> = {
+  "base": "SAPO BASE",
+  "skin-espada": "GUERREIRO",
+  "skin-mago": "MAGO",
 };
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
@@ -125,7 +130,6 @@ export default function Nexus() {
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(nexus.agentName);
 
-  // SAPO animation state
   const { sapoState, celebrate, handleCelebrateEnd } = useSapoState("idle");
 
   const rank = getCurrentRankData();
@@ -136,7 +140,6 @@ export default function Nexus() {
     ? ALL_ITEMS.find((i) => i.id === nexus.agentAppearance.titleId)
     : null;
 
-  // Determine current skin for SapoAgent
   const currentSkin: SapoSkin = (activeSkin as SapoSkin) ?? "base";
 
   const saveName = () => {
@@ -151,7 +154,7 @@ export default function Nexus() {
     const ok = buyItem(itemId, item.type, item.price, item.name);
     if (ok) {
       showToast(`${item.name} adquirido — ⬡ ${item.price} glifos. Ative na loja.`, "success");
-      celebrate(); // SAPO celebrates on purchase!
+      celebrate();
     } else if (nexus.glifos < item.price) {
       showToast("Glifos insuficientes", "error");
     }
@@ -177,138 +180,172 @@ export default function Nexus() {
       <ToastContainer />
 
       <div style={{ minHeight: "100vh", background: "#000", color: "#fff" }}>
-        {/* ── Header ── */}
-        <header
-          style={{
-            position: "sticky",
-            top: 56,
-            zIndex: 100,
-            background: "rgba(0,0,0,0.95)",
-            borderBottom: "1px solid #1a1a1a",
-            backdropFilter: "blur(12px)",
+
+        {/* ══════════════════════════════════════════════════════
+            HERO — SAPO em destaque + identidade do agente
+        ══════════════════════════════════════════════════════ */}
+        <div style={{
+          borderBottom: "1px solid #1a1a1a",
+          background: "#000",
+        }}>
+          <div style={{
+            maxWidth: 960,
+            margin: "0 auto",
             padding: "0 32px",
-            height: 52,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <button
-            onClick={() => navigateTo("/")}
-            style={{ background: "none", border: "none", color: "#555", fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 2, cursor: "none", display: "flex", alignItems: "center", gap: 8 }}
-          >
-            ← CÓRTEX
-          </button>
-          <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, letterSpacing: 6, color: rank.color }}>
-            NEXUS
-          </span>
-          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#444", letterSpacing: 2 }}>
-            {rank.name} · Nv.0{rank.id}
-          </span>
-        </header>
+            display: "grid",
+            gridTemplateColumns: "280px 1fr",
+            gap: 0,
+            minHeight: 380,
+          }}>
 
-        {/* ── Content ── */}
-        <div style={{ maxWidth: 960, margin: "0 auto", padding: "48px 32px 120px" }}>
+            {/* ── SAPO — coluna esquerda ── */}
+            <div style={{
+              borderRight: "1px solid #1a1a1a",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              paddingBottom: 0,
+              paddingTop: 32,
+              position: "relative",
+            }}>
+              {/* Número do rank como watermark */}
+              <span style={{
+                position: "absolute",
+                top: 24,
+                left: 24,
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: 80,
+                color: "#fff",
+                opacity: 0.04,
+                lineHeight: 1,
+                userSelect: "none",
+              }}>
+                0{rank.id}
+              </span>
 
-          {/* ── AGENT section ── */}
-          <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 40, alignItems: "start", marginBottom: 64 }}>
-
-            {/* SAPO Agent */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
               <SapoAgent
                 skin={currentSkin}
                 state={sapoState}
-                size={160}
+                size={220}
                 onCelebrateEnd={handleCelebrateEnd}
               />
+
               {/* Skin label */}
-              <span style={{
+              <div style={{
+                width: "100%",
+                borderTop: "1px solid #1a1a1a",
+                padding: "10px 0",
+                textAlign: "center",
                 fontFamily: "'DM Mono', monospace",
-                fontSize: 8,
-                letterSpacing: 3,
+                fontSize: 10,
+                letterSpacing: 4,
                 color: "#333",
                 textTransform: "uppercase" as const,
               }}>
-                {currentSkin === "base" ? "SAPO BASE" : currentSkin === "skin-espada" ? "GUERREIRO" : "MAGO"}
-              </span>
+                {SKIN_LABEL[currentSkin] ?? "SAPO BASE"}
+              </div>
             </div>
 
-            {/* Info */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {/* Name */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                {editingName ? (
-                  <>
-                    <input
-                      value={nameInput}
-                      onChange={(e) => setNameInput(e.target.value)}
-                      onBlur={saveName}
-                      onKeyDown={(e) => e.key === "Enter" && saveName()}
-                      autoFocus
-                      style={{
-                        background: "#1a1a1a",
-                        border: "1px solid #2a2a2a",
-                        color: "#fff",
-                        fontFamily: "'Bebas Neue', sans-serif",
-                        fontSize: 28,
-                        letterSpacing: 3,
-                        padding: "4px 8px",
-                        outline: "none",
-                        width: 200,
-                      }}
-                    />
-                    <button onClick={saveName} style={{ background: "none", border: "none", color: "#666", cursor: "none", fontSize: 11 }}>✓</button>
-                  </>
-                ) : (
-                  <>
-                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, letterSpacing: 3, color: "#fff" }}>
-                      {nexus.agentName}
-                    </span>
-                    <button
-                      onClick={() => { setEditingName(true); setNameInput(nexus.agentName); }}
-                      style={{ background: "none", border: "none", color: "#333", cursor: "none", fontFamily: "'DM Mono', monospace", fontSize: 11 }}
-                    >
-                      ✎
-                    </button>
-                  </>
+            {/* ── Info — coluna direita ── */}
+            <div style={{
+              padding: "40px 0 40px 40px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}>
+              {/* Topo: label NEXUS + nome editável */}
+              <div>
+                <div style={{
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: 10,
+                  letterSpacing: 5,
+                  color: "#333",
+                  marginBottom: 16,
+                  textTransform: "uppercase" as const,
+                }}>
+                  NEXUS · AGENTE
+                </div>
+
+                {/* Nome */}
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                  {editingName ? (
+                    <>
+                      <input
+                        value={nameInput}
+                        onChange={(e) => setNameInput(e.target.value)}
+                        onBlur={saveName}
+                        onKeyDown={(e) => e.key === "Enter" && saveName()}
+                        autoFocus
+                        style={{
+                          background: "#1a1a1a",
+                          border: "1px solid #2a2a2a",
+                          color: "#fff",
+                          fontFamily: "'Bebas Neue', sans-serif",
+                          fontSize: 40,
+                          letterSpacing: 4,
+                          padding: "4px 12px",
+                          outline: "none",
+                          width: 280,
+                        }}
+                      />
+                      <button onClick={saveName} style={{ background: "none", border: "none", color: "#666", cursor: "none", fontSize: 14 }}>✓</button>
+                    </>
+                  ) : (
+                    <>
+                      <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 40, letterSpacing: 4, color: "#fff", lineHeight: 1 }}>
+                        {nexus.agentName}
+                      </span>
+                      <button
+                        onClick={() => { setEditingName(true); setNameInput(nexus.agentName); }}
+                        style={{ background: "none", border: "none", color: "#333", cursor: "none", fontFamily: "'DM Mono', monospace", fontSize: 13 }}
+                      >
+                        ✎
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {titleItem && "value" in titleItem && (
+                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#555", letterSpacing: 2, marginBottom: 8 }}>
+                    {titleItem.value as string}
+                  </div>
                 )}
+
+                {/* Rank */}
+                <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 20 }}>
+                  <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 48, letterSpacing: 6, color: rank.color, lineHeight: 1 }}>
+                    {rank.name}
+                  </span>
+                  <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#444", letterSpacing: 2 }}>
+                    Nível 0{rank.id}
+                  </span>
+                </div>
               </div>
 
-              {titleItem && "value" in titleItem && (
-                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#555", letterSpacing: 2 }}>
-                  {titleItem.value as string}
-                </span>
-              )}
-
-              {/* Rank display */}
-              <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
-                <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 56, lineHeight: 1, color: "#fff", opacity: 0.12 }}>
-                  0{rank.id}
-                </span>
-                <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 36, letterSpacing: 5, color: rank.color }}>
-                  {rank.name}
-                </span>
-              </div>
-
-              {/* XP bar */}
-              <div style={{ marginTop: 4 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#444", letterSpacing: 1, marginBottom: 6 }}>
+              {/* Meio: XP bar */}
+              <div style={{ marginBottom: 24 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#444", letterSpacing: 1, marginBottom: 8 }}>
                   <span>{nexus.xp.toLocaleString()} XP</span>
                   <span>{nextRank ? `próximo: ${nextRank.xpMin.toLocaleString()}` : "rank máximo"}</span>
                 </div>
-                <div style={{ height: 3, background: "#1a1a1a", width: "100%", maxWidth: 320 }}>
+                <div style={{ height: 3, background: "#1a1a1a", width: "100%" }}>
                   <div style={{ height: "100%", background: rank.color, width: `${pct}%`, transition: "width 0.6s ease" }} />
                 </div>
               </div>
 
-              {/* Glifos */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'DM Mono', monospace" }}>
-                <span style={{ fontSize: 18, color: rank.color }}>⬡</span>
-                <span style={{ fontSize: 22, color: "#fff", letterSpacing: 2 }}>{nexus.glifos.toLocaleString()}</span>
-                <span style={{ fontSize: 10, color: "#444", letterSpacing: 2 }}>GLIFOS</span>
+              {/* Base: Glifos */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, fontFamily: "'DM Mono', monospace" }}>
+                <span style={{ fontSize: 22, color: rank.color }}>⬡</span>
+                <span style={{ fontSize: 28, color: "#fff", letterSpacing: 2, lineHeight: 1 }}>{nexus.glifos.toLocaleString()}</span>
+                <span style={{ fontSize: 11, color: "#444", letterSpacing: 2 }}>GLIFOS</span>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* ── Content ── */}
+        <div style={{ maxWidth: 960, margin: "0 auto", padding: "48px 32px 120px" }}>
 
           {/* ── Stats ── */}
           <section style={{ marginBottom: 64 }}>
@@ -323,10 +360,10 @@ export default function Nexus() {
                 { value: s.imagesGenerated, label: "Imagens" },
               ].map((stat, i) => (
                 <div key={i} style={{ background: "#0d0d0d", padding: 20, display: "flex", flexDirection: "column", gap: 6 }}>
-                  <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 32, letterSpacing: 2, color: "#fff", lineHeight: 1 }}>
+                  <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 34, letterSpacing: 2, color: "#fff", lineHeight: 1 }}>
                     {stat.value || 0}
                   </span>
-                  <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 2, color: "#444", textTransform: "uppercase" as const }}>
+                  <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, letterSpacing: 2, color: "#444", textTransform: "uppercase" as const }}>
                     {stat.label}
                   </span>
                 </div>
@@ -346,7 +383,7 @@ export default function Nexus() {
                   <div
                     key={i}
                     title={`Dia ${30 - i}`}
-                    style={{ width: 14, height: 14, background: rank.color, opacity }}
+                    style={{ width: 16, height: 16, background: rank.color, opacity }}
                   />
                 );
               })}
@@ -366,9 +403,9 @@ export default function Nexus() {
                     style={{
                       background: "#0d0d0d",
                       border: `1px solid ${unlocked ? "#2a2a2a" : "#111"}`,
-                      padding: "10px 14px",
+                      padding: "10px 16px",
                       fontFamily: "'DM Mono', monospace",
-                      fontSize: 9,
+                      fontSize: 11,
                       letterSpacing: 2,
                       color: unlocked ? "#888" : "#2a2a2a",
                       textTransform: "uppercase" as const,
@@ -387,7 +424,7 @@ export default function Nexus() {
             <SectionTitle>Loja</SectionTitle>
 
             {/* Glifos display */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#555" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, fontFamily: "'DM Mono', monospace", fontSize: 12, color: "#555" }}>
               <span>Saldo:</span>
               <span style={{ color: "#fff" }}>⬡ {nexus.glifos.toLocaleString()}</span>
             </div>
@@ -403,9 +440,9 @@ export default function Nexus() {
                     border: `1px solid ${shopTab === tab ? "#fff" : "#2a2a2a"}`,
                     color: shopTab === tab ? "#fff" : "#555",
                     fontFamily: "'DM Mono', monospace",
-                    fontSize: 10,
+                    fontSize: 11,
                     letterSpacing: 2,
-                    padding: "8px 16px",
+                    padding: "8px 18px",
                     cursor: "none",
                     transition: "all 0.2s",
                     textTransform: "uppercase" as const,
@@ -419,7 +456,7 @@ export default function Nexus() {
             {/* Equipped panel */}
             {nexus.activeItems.length > 0 && (
               <div style={{ marginBottom: 20, padding: "12px 16px", background: "#0a0a0a", border: "1px solid #1a1a1a" }}>
-                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 3, color: "#444", marginBottom: 10, textTransform: "uppercase" as const }}>Equipado agora</div>
+                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 3, color: "#444", marginBottom: 10, textTransform: "uppercase" as const }}>Equipado agora</div>
                 <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
                   {nexus.activeItems.map((id) => {
                     const item = ALL_ITEMS.find((i) => i.id === id);
@@ -433,7 +470,7 @@ export default function Nexus() {
                           border: "1px solid rgba(255,255,255,0.15)",
                           color: "#ccc",
                           fontFamily: "'DM Mono', monospace",
-                          fontSize: 9,
+                          fontSize: 10,
                           letterSpacing: 2,
                           padding: "4px 10px",
                           cursor: "none",
@@ -443,9 +480,9 @@ export default function Nexus() {
                           textTransform: "uppercase" as const,
                         }}
                       >
-                        <span style={{ color: "#fff", fontSize: 8 }}>●</span>
+                        <span style={{ color: "#fff", fontSize: 9 }}>●</span>
                         {item.name}
-                        <span style={{ color: "#555", fontSize: 8 }}>✕</span>
+                        <span style={{ color: "#555", fontSize: 9 }}>✕</span>
                       </button>
                     );
                   })}
@@ -456,49 +493,111 @@ export default function Nexus() {
             {/* ── Skins tab ── */}
             {shopTab === "skins" && (
               <div>
-                {/* Base skin (always available) */}
-                <div style={{ marginBottom: 16, padding: "12px 16px", background: "#0a0a0a", border: "1px solid #1a1a1a", display: "flex", alignItems: "center", gap: 16 }}>
-                  <div style={{ width: 64, height: 64, display: "flex", alignItems: "center", justifyContent: "center", background: "#080808", border: "1px solid #1a1a1a", flexShrink: 0 }}>
-                    <SapoAgent skin="base" state="idle" size={56} />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 2, color: "#888", textTransform: "uppercase" as const, marginBottom: 4 }}>
-                      SAPO BASE
-                    </div>
-                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "#444" }}>
-                      Skin padrão do agente. Sempre disponível, sem equipamento.
-                    </div>
-                  </div>
-                  <div>
-                    {!activeSkin ? (
-                      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 2, color: "#555", border: "1px solid #2a2a2a", padding: "6px 12px" }}>
-                        ● ATIVO
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          // Deactivate current skin to go back to base
-                          if (activeSkin) toggleItem(activeSkin, "skin");
-                        }}
-                        style={{
-                          background: "none",
-                          border: "1px solid #2a2a2a",
-                          color: "#555",
-                          fontFamily: "'DM Mono', monospace",
-                          fontSize: 9,
-                          letterSpacing: 2,
-                          padding: "6px 12px",
-                          cursor: "none",
-                        }}
-                      >
-                        Usar Base
-                      </button>
-                    )}
-                  </div>
-                </div>
+                {/* Grid com 3 cards: base + 2 skins — mesmo tamanho */}
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, 1fr)",
+                  gap: 2,
+                }}>
+                  {/* ── Base skin ── */}
+                  {(() => {
+                    const isBaseActive = !activeSkin;
+                    return (
+                      <div style={{
+                        background: isBaseActive ? "rgba(255,255,255,0.03)" : "#0d0d0d",
+                        border: `1px solid ${isBaseActive ? "rgba(255,255,255,0.25)" : "#1a1a1a"}`,
+                        display: "flex",
+                        flexDirection: "column" as const,
+                        position: "relative" as const,
+                        overflow: "hidden",
+                      }}>
+                        {isBaseActive && (
+                          <div style={{
+                            position: "absolute" as const, top: 8, right: 8,
+                            fontFamily: "'DM Mono', monospace",
+                            fontSize: 9,
+                            letterSpacing: 2,
+                            color: "#fff",
+                            background: "rgba(255,255,255,0.1)",
+                            border: "1px solid rgba(255,255,255,0.2)",
+                            padding: "3px 7px",
+                            zIndex: 2,
+                          }}>
+                            ATIVO
+                          </div>
+                        )}
 
-                {/* Purchasable skins grid */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 2 }}>
+                        {/* Preview — mesmo aspect-ratio 3:4 */}
+                        <div style={{
+                          width: "100%",
+                          aspectRatio: "3 / 4",
+                          background: "#080808",
+                          borderBottom: "1px solid #1a1a1a",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          overflow: "hidden",
+                        }}>
+                          <img
+                            src={SKIN_PREVIEW_URLS["base"]}
+                            alt="SAPO BASE"
+                            style={{
+                              width: "80%",
+                              height: "80%",
+                              objectFit: "contain",
+                              objectPosition: "bottom center",
+                            }}
+                          />
+                        </div>
+
+                        <div style={{ padding: 16, display: "flex", flexDirection: "column" as const, gap: 8, flex: 1 }}>
+                          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, letterSpacing: 2, color: isBaseActive ? "#fff" : "#888", textTransform: "uppercase" as const }}>
+                            SAPO BASE
+                          </span>
+                          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "#444", lineHeight: 1.5 }}>
+                            Skin padrão do agente. Sempre disponível, sem equipamento.
+                          </span>
+                          <div style={{ marginTop: "auto" }}>
+                            {isBaseActive ? (
+                              <div style={{
+                                fontFamily: "'DM Mono', monospace",
+                                fontSize: 10,
+                                letterSpacing: 2,
+                                color: "#555",
+                                border: "1px solid #2a2a2a",
+                                padding: "8px 0",
+                                textAlign: "center",
+                              }}>
+                                ● EQUIPADO
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  if (activeSkin) toggleItem(activeSkin, "skin");
+                                }}
+                                style={{
+                                  width: "100%",
+                                  background: "none",
+                                  border: "1px solid #2a2a2a",
+                                  color: "#555",
+                                  fontFamily: "'DM Mono', monospace",
+                                  fontSize: 10,
+                                  letterSpacing: 2,
+                                  padding: "8px 0",
+                                  cursor: "none",
+                                  textTransform: "uppercase" as const,
+                                }}
+                              >
+                                ○ Usar Base
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* ── Purchasable skins ── */}
                   {SHOP_ITEMS.skins.map((item) => {
                     const owned = isPurchased(item.id);
                     const active = isActive(item.id);
@@ -512,7 +611,6 @@ export default function Nexus() {
                         style={{
                           background: bgColor,
                           border: `1px solid ${borderColor}`,
-                          padding: 0,
                           display: "flex",
                           flexDirection: "column" as const,
                           transition: "border-color 0.2s, background 0.2s",
@@ -520,12 +618,11 @@ export default function Nexus() {
                           overflow: "hidden",
                         }}
                       >
-                        {/* Active indicator */}
                         {active && (
                           <div style={{
                             position: "absolute" as const, top: 8, right: 8,
                             fontFamily: "'DM Mono', monospace",
-                            fontSize: 8,
+                            fontSize: 9,
                             letterSpacing: 2,
                             color: "#fff",
                             background: "rgba(255,255,255,0.1)",
@@ -537,47 +634,70 @@ export default function Nexus() {
                           </div>
                         )}
 
-                        {/* Skin preview */}
-                        <div className="shop-skin-preview" style={{ borderBottom: "1px solid #1a1a1a" }}>
+                        {/* Preview — mesmo aspect-ratio 3:4 */}
+                        <div style={{
+                          width: "100%",
+                          aspectRatio: "3 / 4",
+                          background: "#080808",
+                          borderBottom: "1px solid #1a1a1a",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          overflow: "hidden",
+                          position: "relative" as const,
+                        }}>
                           <img
                             src={SKIN_PREVIEW_URLS[item.id]}
                             alt={item.name}
-                            className={`shop-skin-img${!owned ? " skin-locked" : ""}`}
+                            style={{
+                              width: "80%",
+                              height: "80%",
+                              objectFit: "contain",
+                              objectPosition: "bottom center",
+                              filter: !owned ? "grayscale(100%) brightness(0.35)" : "none",
+                              transition: "transform 0.3s ease",
+                            }}
                           />
                           {!owned && (
-                            <div className="skin-lock-overlay">
+                            <div style={{
+                              position: "absolute" as const,
+                              bottom: 10,
+                              left: "50%",
+                              transform: "translateX(-50%)",
+                              fontFamily: "'DM Mono', monospace",
+                              fontSize: 11,
+                              letterSpacing: 2,
+                              color: "#666",
+                              background: "rgba(0,0,0,0.7)",
+                              padding: "4px 10px",
+                              whiteSpace: "nowrap" as const,
+                            }}>
                               ⬡ {item.price}
                             </div>
                           )}
                         </div>
 
                         {/* Info */}
-                        <div style={{ padding: 16, display: "flex", flexDirection: "column" as const, gap: 8 }}>
-                          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 2, color: active ? "#fff" : owned ? "#888" : "#666", textTransform: "uppercase" as const }}>
+                        <div style={{ padding: 16, display: "flex", flexDirection: "column" as const, gap: 8, flex: 1 }}>
+                          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, letterSpacing: 2, color: active ? "#fff" : owned ? "#888" : "#666", textTransform: "uppercase" as const }}>
                             {item.name}
                           </span>
-                          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "#444", lineHeight: 1.5 }}>
+                          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "#444", lineHeight: 1.5 }}>
                             {item.desc}
                           </span>
 
-                          {!owned && (
-                            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: canBuy ? "#666" : "#333", letterSpacing: 1 }}>
-                              ⬡ {item.price}
-                            </span>
-                          )}
-
-                          <div style={{ marginTop: "auto", display: "flex", gap: 4 }}>
+                          <div style={{ marginTop: "auto" }}>
                             {!owned ? (
                               <button
                                 onClick={() => shopBuy(item.id)}
                                 disabled={!canBuy}
                                 style={{
-                                  flex: 1,
+                                  width: "100%",
                                   background: "none",
                                   border: `1px solid ${canBuy ? "#444" : "#1a1a1a"}`,
                                   color: canBuy ? "#888" : "#2a2a2a",
                                   fontFamily: "'DM Mono', monospace",
-                                  fontSize: 9,
+                                  fontSize: 10,
                                   letterSpacing: 2,
                                   padding: "8px 0",
                                   cursor: canBuy ? "none" : "not-allowed",
@@ -591,12 +711,12 @@ export default function Nexus() {
                               <button
                                 onClick={() => shopToggle(item.id)}
                                 style={{
-                                  flex: 1,
+                                  width: "100%",
                                   background: active ? "rgba(255,255,255,0.08)" : "none",
                                   border: `1px solid ${active ? "rgba(255,255,255,0.3)" : "#2a2a2a"}`,
                                   color: active ? "#fff" : "#555",
                                   fontFamily: "'DM Mono', monospace",
-                                  fontSize: 9,
+                                  fontSize: 10,
                                   letterSpacing: 2,
                                   padding: "8px 0",
                                   cursor: "none",
@@ -618,7 +738,7 @@ export default function Nexus() {
 
             {/* ── Appearance / Features tabs ── */}
             {shopTab !== "skins" && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 2 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 2 }}>
                 {SHOP_ITEMS[shopTab].map((item) => {
                   const owned = isPurchased(item.id);
                   const active = isActive(item.id);
@@ -649,31 +769,31 @@ export default function Nexus() {
                         }} />
                       )}
 
-                      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 2, color: active ? "#fff" : owned ? "#888" : "#666", textTransform: "uppercase" as const }}>
+                      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, letterSpacing: 2, color: active ? "#fff" : owned ? "#888" : "#666", textTransform: "uppercase" as const }}>
                         {item.name}
                       </span>
-                      <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "#444", lineHeight: 1.5 }}>
+                      <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "#444", lineHeight: 1.5 }}>
                         {item.desc}
                       </span>
 
                       {!owned && (
-                        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: canBuy ? "#666" : "#333", letterSpacing: 1 }}>
+                        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, color: canBuy ? "#666" : "#333", letterSpacing: 1 }}>
                           ⬡ {item.price}
                         </span>
                       )}
 
-                      <div style={{ marginTop: "auto", display: "flex", gap: 4 }}>
+                      <div style={{ marginTop: "auto" }}>
                         {!owned ? (
                           <button
                             onClick={() => shopBuy(item.id)}
                             disabled={!canBuy}
                             style={{
-                              flex: 1,
+                              width: "100%",
                               background: "none",
                               border: `1px solid ${canBuy ? "#444" : "#1a1a1a"}`,
                               color: canBuy ? "#888" : "#2a2a2a",
                               fontFamily: "'DM Mono', monospace",
-                              fontSize: 9,
+                              fontSize: 10,
                               letterSpacing: 2,
                               padding: "8px 0",
                               cursor: canBuy ? "none" : "not-allowed",
@@ -687,12 +807,12 @@ export default function Nexus() {
                           <button
                             onClick={() => shopToggle(item.id)}
                             style={{
-                              flex: 1,
+                              width: "100%",
                               background: active ? "rgba(255,255,255,0.08)" : "none",
                               border: `1px solid ${active ? "rgba(255,255,255,0.3)" : "#2a2a2a"}`,
                               color: active ? "#fff" : "#555",
                               fontFamily: "'DM Mono', monospace",
-                              fontSize: 9,
+                              fontSize: 10,
                               letterSpacing: 2,
                               padding: "8px 0",
                               cursor: "none",
@@ -724,22 +844,22 @@ export default function Nexus() {
                       display: "flex",
                       alignItems: "center",
                       gap: 16,
-                      padding: "12px 16px",
+                      padding: "14px 16px",
                       background: isCurrent ? "#0d0d0d" : "transparent",
                       border: isCurrent ? `1px solid ${r.color}22` : "1px solid transparent",
                     }}
                   >
-                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: "#fff", opacity: 0.15, width: 28 }}>
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "#fff", opacity: 0.15, width: 28 }}>
                       0{r.id}
                     </span>
-                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, letterSpacing: 3, color: r.color, flex: 1 }}>
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, letterSpacing: 3, color: r.color, flex: 1 }}>
                       {r.name}
                     </span>
-                    <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#444", letterSpacing: 1 }}>
+                    <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#444", letterSpacing: 1 }}>
                       {r.id === 7 ? `${r.xpMin.toLocaleString()}+ XP` : `${r.xpMin.toLocaleString()} – ${r.xpMax.toLocaleString()} XP`}
                     </span>
                     {isCurrent && (
-                      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, color: r.color, letterSpacing: 2, border: `1px solid ${r.color}44`, padding: "2px 6px" }}>
+                      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: r.color, letterSpacing: 2, border: `1px solid ${r.color}44`, padding: "2px 8px" }}>
                         ATUAL
                       </span>
                     )}

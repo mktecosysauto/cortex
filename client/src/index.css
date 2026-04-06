@@ -92,7 +92,7 @@
     @apply border-border outline-ring/50;
     box-sizing: border-box;
   }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; font-size: 16px; }
   body {
     @apply bg-background text-foreground;
     font-family: 'DM Sans', sans-serif;
@@ -663,8 +663,6 @@
     body { cursor: auto; }
     button, a, input, textarea, select, [role="button"] { cursor: pointer; }
   }
-}
-
   @keyframes scanLine {
     0%   { transform: translateY(-100%); opacity: 0; }
     10%  { opacity: 1; }
