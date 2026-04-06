@@ -271,3 +271,20 @@
 ## Correções v13.2
 - [x] Cursor personalizado ausente no Dashboard (adicionar CustomCursor + GrainOverlay)
 - [x] Header global: remover nav pills de módulos (ARQUIVO, NEXUS, VERSO), manter apenas DASH no lado esquerdo
+
+## Módulo FORMA (v14)
+- [x] Schema Drizzle: tabelas forma_briefings, forma_responses, forma_followups
+- [x] Migration SQL executada no banco
+- [x] db-forma.ts: helpers de banco (CRUD briefings, responses, followups)
+- [x] Router tRPC forma: list, create, get, send, delete, submitResponses, generateAnalysis, addFollowup, getQuestionsBank, getByToken
+- [x] Banco de perguntas FORMA_QUESTIONS_BANK (7 categorias: identidade_visual, naming, campanha, social_media, publicidade, email_marketing, universal)
+- [x] Página /forma com lista de briefings e filtros por status
+- [x] Fluxo de criação em 3 passos (projeto, perguntas, identidade visual) integrado na página /forma
+- [x] Página /forma/:id com visão geral, respostas, análise IA e perguntas de acompanhamento
+- [x] Página pública /b/:token (formulário do cliente, sem auth, branding dinâmico)
+- [x] Formulário do cliente: uma pergunta por vez, navegação por teclado, progresso
+- [x] Análise IA sob demanda (resumo executivo, conceito criativo, próximos passos)
+- [x] XP rewards: +20 XP criar briefing, +35 XP gerar análise
+- [x] FORMA no header global (currentPage='forma') e na landing page (frame módulo 03)
+- [x] Rotas /forma, /forma/:id, /b/:token registradas no App.tsx
+- [x] Numeração dos frames atualizada: FORMA=03, PALCO=05, ESTÚDIO=06

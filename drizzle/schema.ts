@@ -146,3 +146,58 @@ export const versoTexts = mysqlTable("verso_texts", {
 
 export type VersoText = typeof versoTexts.$inferSelect;
 export type InsertVersoText = typeof versoTexts.$inferInsert;
+
+// ─── FORMA — Briefings ─────────────────────────────────────────────────────
+export const formaBriefings = mysqlTable("forma_briefings", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  title: varchar("title", { length: 200 }).notNull(),
+  projectType: varchar("projectType", { length: 64 }).notNull(),
+  clientName: varchar("clientName", { length: 200 }).notNull(),
+  clientEmail: varchar("clientEmail", { length: 200 }).notNull(),
+  publicToken: varchar("publicToken", { length: 64 }).notNull(),
+  brandLogoUrl: text("brandLogoUrl"),
+  brandColorPrimary: varchar("brandColorPrimary", { length: 16 }).default("#000000").notNull(),
+  brandColorSecondary: varchar("brandColorSecondary", { length: 16 }).default("#ffffff").notNull(),
+  brandNameDisplay: varchar("brandNameDisplay", { length: 200 }),
+  openingMessage: text("openingMessage"),
+  closingMessage: text("closingMessage"),
+  questionIds: json("questionIds").$type<string[]>().notNull(),
+  status: varchar("status", { length: 32 }).default("draft").notNull(),
+  aiSummary: text("aiSummary"),
+  aiConcept: text("aiConcept"),
+  aiNextSteps: text("aiNextSteps"),
+  aiGeneratedAt: timestamp("aiGeneratedAt"),
+  sentAt: timestamp("sentAt"),
+  answeredAt: timestamp("answeredAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type FormaBriefing = typeof formaBriefings.$inferSelect;
+export type InsertFormaBriefing = typeof formaBriefings.$inferInsert;
+
+// ─── FORMA — Responses ─────────────────────────────────────────────────────
+export const formaResponses = mysqlTable("forma_responses", {
+  id: int("id").autoincrement().primaryKey(),
+  briefingId: int("briefingId").notNull().references(() => formaBriefings.id),
+  questionId: varchar("questionId", { length: 64 }).notNull(),
+  questionText: text("questionText").notNull(),
+  answer: text("answer").notNull(),
+  isFollowup: boolean("isFollowup").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type FormaResponse = typeof formaResponses.$inferSelect;
+export type InsertFormaResponse = typeof formaResponses.$inferInsert;
+
+// ─── FORMA — Followups ─────────────────────────────────────────────────────
+export const formaFollowups = mysqlTable("forma_followups", {
+  id: int("id").autoincrement().primaryKey(),
+  briefingId: int("briefingId").notNull().references(() => formaBriefings.id),
+  question: text("question").notNull(),
+  answer: text("answer"),
+  status: varchar("status", { length: 32 }).default("pending").notNull(),
+  sentAt: timestamp("sentAt").defaultNow().notNull(),
+  answeredAt: timestamp("answeredAt"),
+});
+export type FormaFollowup = typeof formaFollowups.$inferSelect;
+export type InsertFormaFollowup = typeof formaFollowups.$inferInsert;

@@ -29,6 +29,13 @@
       "when": 1775441692365,
       "tag": "0003_natural_komodo",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1775473699454,
+      "tag": "0004_shiny_daimon_hellstrom",
+      "breakpoints": true
     }
   ]
 }

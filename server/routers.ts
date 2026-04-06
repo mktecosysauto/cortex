@@ -5,6 +5,7 @@ import { publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import { cortexRouter } from "./routers/cortex";
 import { versoRouter } from "./routers/verso";
+import { formaRouter } from "./routers/forma";
 
 // ─── Proxy helpers ────────────────────────────────────────────────────────────
 async function proxyAnthropicRequest(body: Record<string, unknown>, apiKey: string) {
@@ -98,6 +99,7 @@ export const appRouter = router({
   // ── CÓRTEX Features ──────────────────────────────────────────────────────────
   cortex: cortexRouter,
   verso: versoRouter,
+  forma: formaRouter,
 
   // ── Freepik Proxy ────────────────────────────────────────────────────────────
   freepik: router({

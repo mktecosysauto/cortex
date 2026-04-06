@@ -801,18 +801,26 @@ export default function Home() {
             route="/verso"
             reverse
           />
-           <ModuleDivider index={2} />
+          <ModuleDivider index={2} />
           <ModuleFrame
             number="03"
+            name="FORMA"
+            subtitle="Briefing inteligente para clientes"
+            description="Crie formulários de briefing personalizados com a identidade da sua marca. Envie ao cliente, receba respostas e gere análises com IA — tudo em um só lugar."
+            route="/forma"
+          />
+          <ModuleDivider index={4} />
+          <ModuleFrame
+            number="05"
             name="PALCO"
             subtitle="Templates para apresentações profissionais"
             description="Composições visuais para apresentar projetos, moodboards e conceitos criativos com precisão editorial."
             comingSoon
             reverse
           />
-          <ModuleDivider index={3} />
+          <ModuleDivider index={5} />
           <ModuleFrame
-            number="04"
+            number="06"
             name="ESTÚDIO"
             subtitle="Ferramentas de composição visual"
             description="Ambiente de criação para composições complexas com múltiplas referências, camadas e estilos."

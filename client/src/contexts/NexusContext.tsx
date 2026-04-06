@@ -91,6 +91,8 @@ export const XP_REWARDS: Record<string, { xp: number; glifos: number }> = {
   verso_save:          { xp: 5,  glifos: 3  },
   pulso_complete:      { xp: 15, glifos: 10 },
   rota_complete:       { xp: 25, glifos: 15 },
+  forma_create:        { xp: 20, glifos: 12 },
+  forma_analysis:      { xp: 35, glifos: 25 },
 };
 
 /** Maps item type to the agentAppearance key it controls */

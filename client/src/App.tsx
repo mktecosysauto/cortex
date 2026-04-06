@@ -14,6 +14,9 @@ import Admin from "./pages/Admin";
 import Login from "./pages/Login";
 import AgentProfile from "./pages/AgentProfile";
 import Verso from "./pages/Verso";
+import Forma from "./pages/Forma";
+import FormaDetail from "./pages/FormaDetail";
+import FormaBriefing from "./pages/FormaBriefing";
 import SplashScreen, { useSplashScreen } from "./components/SplashScreen";
 import RankUpOverlay from "./components/RankUpOverlay";
 import AchievementToastContainer from "./components/AchievementToast";
@@ -29,6 +32,9 @@ function Router() {
       <Route path={"/login"} component={Login} />
       <Route path={"/agente/:id"} component={AgentProfile} />
       <Route path={"/verso"} component={Verso} />
+      <Route path={"/forma"} component={Forma} />
+      <Route path={"/forma/:id"} component={FormaDetail} />
+      <Route path={"/b/:token"} component={FormaBriefing} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
