@@ -81,7 +81,7 @@ function isOverdue(val: Date | string | null | undefined): boolean {
 }
 
 // ─── GlobalHeader ─────────────────────────────────────────────────────────────
-export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" | "nexus" | "dashboard" | "admin" }) {
+export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" | "nexus" | "verso" | "dashboard" | "admin" }) {
   const { navigateTo } = usePageTransition();
   const { user, isAuthenticated, logout } = useAuth();
   const { nexus, addXP } = useNexus();
@@ -258,6 +258,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
           {[
             { key: "arquivo", label: "ARQUIVO", path: "/arquivo" },
             { key: "nexus",   label: "NEXUS",   path: "/nexus" },
+            { key: "verso",   label: "VERSO",   path: "/verso" },
             { key: "dashboard", label: "DASH", path: "/dashboard" },
           ].map(item => (
             <button

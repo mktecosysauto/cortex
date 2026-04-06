@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
 import AgentProfile from "./pages/AgentProfile";
+import Verso from "./pages/Verso";
 import SplashScreen, { useSplashScreen } from "./components/SplashScreen";
 import RankUpOverlay from "./components/RankUpOverlay";
 import AchievementToastContainer from "./components/AchievementToast";
@@ -27,6 +28,7 @@ function Router() {
       <Route path={"/admin"} component={Admin} />
       <Route path={"/login"} component={Login} />
       <Route path={"/agente/:id"} component={AgentProfile} />
+      <Route path={"/verso"} component={Verso} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

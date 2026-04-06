@@ -249,3 +249,17 @@
 - [x] Corrigir definitivamente timezone: dateValToStr() + formatDeadline() + isOverdue() sem new Date(string)
 - [x] todayStr() usa componentes locais (getFullYear/getMonth/getDate) sem toISOString()
 - [x] 5 pontos de conversão corrigidos no GlobalHeader
+
+## Módulo VERSO (v13)
+- [x] Schema Drizzle: tabelas verso_brand_voice e verso_texts
+- [x] Migration SQL executada no banco
+- [x] db-verso.ts: helpers de banco (CRUD brand_voice e texts)
+- [x] Router tRPC verso: getBrandVoice, saveBrandVoice, generate, refine, variations, saveText, getLibrary, updateText, deleteText
+- [x] Página /verso com layout sidebar + gerador + biblioteca + modais
+- [x] 8 templates VERSO_TEMPLATES (Redes Sociais, Publicidade, Apresentações, Email/CRM)
+- [x] Integração LLM via invokeLLM (não chamada direta Anthropic)
+- [x] XP e glifos ao gerar e salvar texto (+30 XP gerar, +10 XP refinar, +5 XP salvar)
+- [x] VERSO no header global (nav pill)
+- [x] VERSO na landing page (frame módulo)
+- [x] Rota /verso registrada no App.tsx
+- [x] GlobalHeader integrado na página VERSO com layout correto (sticky sub-header)

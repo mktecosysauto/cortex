@@ -112,3 +112,37 @@ export const cortexWeeklyInsights = mysqlTable("cortex_weekly_insights", {
 
 export type CortexWeeklyInsight = typeof cortexWeeklyInsights.$inferSelect;
 export type InsertCortexWeeklyInsight = typeof cortexWeeklyInsights.$inferInsert;
+
+// ─── Verso Brand Voice ─────────────────────────────────────────────────────
+export const versoBrandVoice = mysqlTable("verso_brand_voice", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  brandName: varchar("brandName", { length: 100 }).default("").notNull(),
+  brandDesc: text("brandDesc"),
+  toneKeywords: json("toneKeywords").$type<string[]>(),
+  toneAvoid: json("toneAvoid").$type<string[]>(),
+  exampleText: text("exampleText"),
+  persona: text("persona"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type VersoBrandVoice = typeof versoBrandVoice.$inferSelect;
+export type InsertVersoBrandVoice = typeof versoBrandVoice.$inferInsert;
+
+// ─── Verso Texts ───────────────────────────────────────────────────────────────
+export const versoTexts = mysqlTable("verso_texts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  title: varchar("title", { length: 200 }).default("Sem título").notNull(),
+  category: varchar("category", { length: 64 }).notNull(),
+  templateId: varchar("templateId", { length: 64 }).notNull(),
+  content: text("content").notNull(),
+  toneSnapshot: json("toneSnapshot"),
+  inputFields: json("inputFields"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type VersoText = typeof versoTexts.$inferSelect;
+export type InsertVersoText = typeof versoTexts.$inferInsert;

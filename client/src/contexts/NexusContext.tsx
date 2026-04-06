@@ -86,6 +86,11 @@ export const XP_REWARDS: Record<string, { xp: number; glifos: number }> = {
   prompt_editado:      { xp: 5,  glifos: 0  },
   imagem_gerada:       { xp: 8,  glifos: 0  },
   imagem_salva:        { xp: 5,  glifos: 0  },
+  verso_generate:      { xp: 30, glifos: 20 },
+  verso_refine:        { xp: 10, glifos: 5  },
+  verso_save:          { xp: 5,  glifos: 3  },
+  pulso_complete:      { xp: 15, glifos: 10 },
+  rota_complete:       { xp: 25, glifos: 15 },
 };
 
 /** Maps item type to the agentAppearance key it controls */

@@ -4,6 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import { cortexRouter } from "./routers/cortex";
+import { versoRouter } from "./routers/verso";
 
 // ─── Proxy helpers ────────────────────────────────────────────────────────────
 async function proxyAnthropicRequest(body: Record<string, unknown>, apiKey: string) {
@@ -96,6 +97,7 @@ export const appRouter = router({
 
   // ── CÓRTEX Features ──────────────────────────────────────────────────────────
   cortex: cortexRouter,
+  verso: versoRouter,
 
   // ── Freepik Proxy ────────────────────────────────────────────────────────────
   freepik: router({
