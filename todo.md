@@ -293,3 +293,9 @@
 - [x] Todos os módulos (VERSO, FORMA, Dashboard) já usam invokeLLM (GPT-4o via Manus)
 - [x] ARQUIVO usa proxy Anthropic separado (chave do usuário, intencional)
 - [x] Decisão: manter invokeLLM (sem custo extra, já usa GPT-4o)
+
+## Bug ARQUIVO — API Key (v15.1)
+- [x] Corrigir erro "invalid x-api-key" ao gerar prompt no ARQUIVO
+- [x] Substituir proxy Anthropic direto pelo invokeLLM (sem precisar de chave do usuário)
+- [x] Ajustar frontend para não exigir chave Anthropic para melhorar/gerar prompts
+- [x] Novos endpoints: trpc.arquivo.editPrompt e trpc.arquivo.reverseEngineer (invokeLLM)

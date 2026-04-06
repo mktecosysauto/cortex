@@ -184,7 +184,7 @@ function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: 
   const [loading, setLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const anthropicMut = trpc.anthropic.messages.useMutation();
+  const reverseEngineerMut = trpc.arquivo.reverseEngineer.useMutation();
 
   const handleFile = (file: File) => {
     const reader = new FileReader();
@@ -198,27 +198,13 @@ function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: 
   };
 
   const autoGeneratePrompt = async (imageData: string) => {
-    const key = getAnthKey();
-    if (!key) return; // Silent: user can still generate manually
     setLoading(true);
     try {
       const base64 = imageData.split(",")[1];
       const mediaType = imageData.split(";")[0].split(":")[1] || "image/jpeg";
-      const data = await anthropicMut.mutateAsync({
-        apiKey: key,
-        model: "claude-opus-4-5",
-        maxTokens: 1000,
-        messages: [{
-          role: "user",
-          content: [
-            { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } },
-            { type: "text", text: "Analyze this image and write a detailed image generation prompt that would reproduce this scene. Include: camera angle, lighting, atmosphere, subject details, background, color palette, depth of field, and photographic style. Write in English. Return ONLY the prompt, no explanation." },
-          ],
-        }],
-      });
-      const resp = data as { content?: { text?: string }[]; error?: { message?: string } };
-      if (!resp.error) {
-        setPrompt(resp.content?.[0]?.text || "");
+      const data = await reverseEngineerMut.mutateAsync({ imageBase64: base64, mediaType });
+      if (typeof data.text === "string" && data.text) {
+        setPrompt(data.text);
         showToast("Prompt gerado automaticamente", "success");
       }
     } catch { /* silent */ } finally {
@@ -235,28 +221,12 @@ function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: 
 
   const generatePrompt = async () => {
     if (!imgData) { showToast("Adicione uma imagem primeiro", "error"); return; }
-    const key = getAnthKey();
-    if (!key) { showToast("Configure a Anthropic API Key nas configurações", "error"); return; }
-
     setLoading(true);
     try {
       const base64 = imgData.split(",")[1];
       const mediaType = imgData.split(";")[0].split(":")[1] || "image/jpeg";
-      const data = await anthropicMut.mutateAsync({
-        apiKey: key,
-        model: "claude-opus-4-5",
-        maxTokens: 1000,
-        messages: [{
-          role: "user",
-          content: [
-            { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } },
-            { type: "text", text: "Analyze this image and write a detailed image generation prompt that would reproduce this scene. Include: camera angle, lighting, atmosphere, subject details, background, color palette, depth of field, and photographic style. Write in English. Return ONLY the prompt, no explanation." },
-          ],
-        }],
-      });
-      const resp = data as { content?: { text?: string }[]; error?: { message?: string } };
-      if (resp.error) throw new Error(resp.error.message);
-      setPrompt(resp.content?.[0]?.text || "");
+      const data = await reverseEngineerMut.mutateAsync({ imageBase64: base64, mediaType });
+      setPrompt(typeof data.text === "string" ? data.text : "");
       showToast("Prompt gerado com sucesso", "success");
     } catch (err: unknown) {
       showToast(`Erro: ${err instanceof Error ? err.message : String(err)}`, "error");
@@ -546,25 +516,15 @@ function PromptCard({ item, index, onDelete, onUpdateImg }: CardProps) {
     setEditOpen(false);
   };
 
-  const anthropicEditMut = trpc.anthropic.messages.useMutation();
+  const editPromptMut = trpc.arquivo.editPrompt.useMutation();
 
   const generatePrompt = async () => {
-    const key = getAnthKey();
-    if (!key) { showToast("Configure a Anthropic API Key nas configurações", "error"); return; }
     if (!editRequest.trim()) { showToast("Descreva o que você quer mudar", "error"); return; }
 
     setEditLoading(true);
     try {
-      const data = await anthropicEditMut.mutateAsync({
-        apiKey: key,
-        model: "claude-opus-4-5",
-        maxTokens: 1000,
-        system: "You are an expert at writing image generation prompts. Edit the prompt based on the user's request. Return ONLY the updated prompt, no explanation.",
-        messages: [{ role: "user", content: `Original prompt: ${editPrompt}\nRequest: ${editRequest}` }],
-      });
-      const resp = data as { content?: { text?: string }[]; error?: { message?: string } };
-      if (resp.error) throw new Error(resp.error.message);
-      setEditResult(resp.content?.[0]?.text || "");
+      const data = await editPromptMut.mutateAsync({ prompt: editPrompt, request: editRequest });
+      setEditResult(typeof data.text === "string" ? data.text : "");
       showToast("Prompt atualizado!", "success");
     } catch (err: unknown) {
       showToast(`Erro: ${err instanceof Error ? err.message : String(err)}`, "error");
