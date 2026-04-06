@@ -191,10 +191,14 @@ function BriefingList({ filterStatus, onNew }: { filterStatus: string; onNew: ()
                   {b.status === "draft" && (
                     <button
                       onClick={async () => {
-                        const result = await sendMutation.mutateAsync({ id: b.id });
+                        const result = await sendMutation.mutateAsync({ id: b.id, origin: window.location.origin });
                         const link = `${window.location.origin}/b/${result.token}`;
                         await navigator.clipboard.writeText(link);
-                        toast.success(`Link copiado!\n${link}`);
+                        if (result.emailSent) {
+                          toast.success(`Briefing enviado! Email enviado para ${b.clientEmail}. Link copiado.`);
+                        } else {
+                          toast.warning(`Briefing enviado! Email não pôde ser enviado automaticamente. Link copiado — envie manualmente.`);
+                        }
                       }}
                       className="font-mono text-[8px] tracking-[1px] uppercase text-[#BA7517] hover:text-[#d4891e] transition-colors"
                     >

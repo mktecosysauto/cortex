@@ -37,9 +37,35 @@ export default function FormaDetail() {
 
   const [activeTab, setActiveTab] = useState<"overview" | "responses" | "analysis" | "followup">("overview");
   const [followupQuestion, setFollowupQuestion] = useState("");
+  const [editOpen, setEditOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editClientName, setEditClientName] = useState("");
+  const [editClientEmail, setEditClientEmail] = useState("");
+  const [editOpeningMessage, setEditOpeningMessage] = useState("");
+  const [editClosingMessage, setEditClosingMessage] = useState("");
 
   const { data, isLoading, refetch } = trpc.forma.get.useQuery({ id }, { enabled: !!id });
-  const sendMutation = trpc.forma.send.useMutation({ onSuccess: () => refetch() });
+  const sendMutation = trpc.forma.send.useMutation({
+    onSuccess: (result) => {
+      refetch();
+      if (result.emailSent) {
+        toast.success(`Briefing enviado! Email enviado para ${data?.briefing?.clientEmail ?? "o cliente"}.`);
+      } else {
+        toast.warning("Briefing enviado! Email não pôde ser enviado automaticamente. Copie o link e envie manualmente.");
+      }
+    },
+    onError: (e) => toast.error(`Erro ao enviar: ${e.message}`),
+  });
+  const resendMutation = trpc.forma.resend.useMutation({
+    onSuccess: (result) => {
+      if (result.emailSent) {
+        toast.success("Email reenviado com sucesso!");
+      } else {
+        toast.warning(`Email não pôde ser enviado: ${result.emailError ?? "erro desconhecido"}. Copie o link e envie manualmente.`);
+      }
+    },
+    onError: (e) => toast.error(`Erro ao reenviar: ${e.message}`),
+  });
   const archiveMutation = trpc.forma.archive.useMutation({ onSuccess: () => refetch() });
   const generateAnalysisMutation = trpc.forma.generateAnalysis.useMutation({
     onSuccess: () => {
@@ -57,6 +83,23 @@ export default function FormaDetail() {
       refetch();
     },
   });
+  const updateMutation = trpc.forma.update.useMutation({
+    onSuccess: () => {
+      toast.success("Briefing atualizado!");
+      setEditOpen(false);
+      refetch();
+    },
+    onError: (e) => toast.error(`Erro ao atualizar: ${e.message}`),
+  });
+
+  function openEdit() {
+    setEditTitle(data?.briefing?.title ?? "");
+    setEditClientName(data?.briefing?.clientName ?? "");
+    setEditClientEmail(data?.briefing?.clientEmail ?? "");
+    setEditOpeningMessage(data?.briefing?.openingMessage ?? "");
+    setEditClosingMessage(data?.briefing?.closingMessage ?? "");
+    setEditOpen(true);
+  }
 
   if (isLoading) {
     return (
@@ -114,10 +157,9 @@ export default function FormaDetail() {
             {briefing.status === "draft" && (
               <button
                 onClick={async () => {
-                  const result = await sendMutation.mutateAsync({ id });
+                  const result = await sendMutation.mutateAsync({ id, origin: window.location.origin });
                   const link = `${window.location.origin}/b/${result.token}`;
                   await navigator.clipboard.writeText(link);
-                  toast.success("Briefing enviado! Link copiado.");
                 }}
                 disabled={sendMutation.isPending}
                 className="font-mono text-[9px] tracking-[2px] uppercase px-4 py-2 bg-[#BA7517] text-white hover:opacity-85 disabled:opacity-50 transition-opacity"
@@ -126,6 +168,26 @@ export default function FormaDetail() {
               </button>
             )}
             {briefing.status === "sent" && (
+              <>
+                <button
+                  onClick={() => resendMutation.mutate({ id, origin: window.location.origin })}
+                  disabled={resendMutation.isPending}
+                  className="font-mono text-[9px] tracking-[2px] uppercase px-4 py-2 border border-[rgba(186,117,23,0.4)] text-[#BA7517] hover:opacity-85 disabled:opacity-50 transition-opacity"
+                >
+                  {resendMutation.isPending ? "ENVIANDO..." : "REENVIAR EMAIL"}
+                </button>
+                <button
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(publicLink);
+                    toast.success("Link copiado!");
+                  }}
+                  className="font-mono text-[9px] tracking-[2px] uppercase px-4 py-2 border border-[#1a1a1a] text-[#555] hover:text-white hover:border-[#333] transition-colors"
+                >
+                  COPIAR LINK
+                </button>
+              </>
+            )}
+            {briefing.status === "answered" && (
               <button
                 onClick={async () => {
                   await navigator.clipboard.writeText(publicLink);
@@ -145,6 +207,12 @@ export default function FormaDetail() {
                 {generateAnalysisMutation.isPending ? "ANALISANDO..." : "GERAR ANÁLISE IA"}
               </button>
             )}
+            <button
+              onClick={openEdit}
+              className="font-mono text-[9px] tracking-[2px] uppercase text-[#444] hover:text-white transition-colors"
+            >
+              EDITAR
+            </button>
             {briefing.status !== "archived" && (
               <button
                 onClick={() => archiveMutation.mutate({ id })}
@@ -155,6 +223,93 @@ export default function FormaDetail() {
             )}
           </div>
         </div>
+
+        {/* Edit Modal */}
+        {editOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={() => setEditOpen(false)}>
+            <div
+              className="bg-[#0f0f0f] border border-[#1a1a1a] w-full max-w-lg mx-4 p-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-8">
+                <span className="font-mono text-[9px] tracking-[3px] text-[#555] uppercase">EDITAR BRIEFING</span>
+                <button onClick={() => setEditOpen(false)} className="font-mono text-[9px] text-[#333] hover:text-white">ESC</button>
+              </div>
+              <div className="space-y-5">
+                <div>
+                  <label className="font-mono text-[8px] tracking-[2px] text-[#444] uppercase block mb-2">NOME DO PROJETO</label>
+                  <input
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="w-full bg-[#0a0a0a] border border-[#1a1a1a] text-white font-mono text-[11px] px-4 py-3 focus:outline-none focus:border-[#333]"
+                    placeholder="Nome do projeto"
+                  />
+                </div>
+                <div>
+                  <label className="font-mono text-[8px] tracking-[2px] text-[#444] uppercase block mb-2">NOME DO CLIENTE</label>
+                  <input
+                    value={editClientName}
+                    onChange={(e) => setEditClientName(e.target.value)}
+                    className="w-full bg-[#0a0a0a] border border-[#1a1a1a] text-white font-mono text-[11px] px-4 py-3 focus:outline-none focus:border-[#333]"
+                    placeholder="Nome do cliente"
+                  />
+                </div>
+                <div>
+                  <label className="font-mono text-[8px] tracking-[2px] text-[#444] uppercase block mb-2">EMAIL DO CLIENTE</label>
+                  <input
+                    type="email"
+                    value={editClientEmail}
+                    onChange={(e) => setEditClientEmail(e.target.value)}
+                    className="w-full bg-[#0a0a0a] border border-[#1a1a1a] text-white font-mono text-[11px] px-4 py-3 focus:outline-none focus:border-[#333]"
+                    placeholder="email@cliente.com"
+                  />
+                </div>
+                <div>
+                  <label className="font-mono text-[8px] tracking-[2px] text-[#444] uppercase block mb-2">MENSAGEM DE ABERTURA</label>
+                  <textarea
+                    value={editOpeningMessage}
+                    onChange={(e) => setEditOpeningMessage(e.target.value)}
+                    rows={3}
+                    className="w-full bg-[#0a0a0a] border border-[#1a1a1a] text-white font-mono text-[11px] px-4 py-3 focus:outline-none focus:border-[#333] resize-none"
+                    placeholder="Mensagem exibida ao cliente no início do formulário"
+                  />
+                </div>
+                <div>
+                  <label className="font-mono text-[8px] tracking-[2px] text-[#444] uppercase block mb-2">MENSAGEM DE ENCERRAMENTO</label>
+                  <textarea
+                    value={editClosingMessage}
+                    onChange={(e) => setEditClosingMessage(e.target.value)}
+                    rows={3}
+                    className="w-full bg-[#0a0a0a] border border-[#1a1a1a] text-white font-mono text-[11px] px-4 py-3 focus:outline-none focus:border-[#333] resize-none"
+                    placeholder="Mensagem exibida ao cliente após responder"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-8">
+                <button
+                  onClick={() => updateMutation.mutate({
+                    id,
+                    title: editTitle,
+                    clientName: editClientName,
+                    clientEmail: editClientEmail,
+                    openingMessage: editOpeningMessage || null,
+                    closingMessage: editClosingMessage || null,
+                  })}
+                  disabled={updateMutation.isPending || !editTitle || !editClientName || !editClientEmail}
+                  className="flex-1 font-mono text-[9px] tracking-[2px] uppercase px-4 py-3 bg-white text-black hover:opacity-85 disabled:opacity-50 transition-opacity"
+                >
+                  {updateMutation.isPending ? "SALVANDO..." : "SALVAR ALTERAÇÕES"}
+                </button>
+                <button
+                  onClick={() => setEditOpen(false)}
+                  className="font-mono text-[9px] tracking-[2px] uppercase px-4 py-3 border border-[#1a1a1a] text-[#444] hover:text-white hover:border-[#333] transition-colors"
+                >
+                  CANCELAR
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="max-w-5xl mx-auto px-8 flex gap-0 border-t border-[#111]">

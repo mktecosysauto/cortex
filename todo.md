@@ -304,3 +304,12 @@
 - [x] Corrigir erro "briefingId: undefined" na mutation do FORMA
 - [x] Causa: cast errado do insertId (mysql2 retorna array, não objeto direto)
 - [x] Corrigido db-forma.ts e db-verso.ts: usar result[0].insertId
+
+## Bugs críticos FORMA (v15.3 — CORRIGIDOS)
+- [x] Rota pública /b/:token: getQuestionsBank migrado para publicProcedure
+- [x] Email via Resend configurado (RESEND_API_KEY ativa, domínio precisa ser verificado em resend.com/domains)
+- [x] Botão REENVIAR EMAIL adicionado no FormaDetail (status=sent)
+- [x] Botão COPIAR LINK adicionado em todos os estados (sent, answered)
+- [x] Modal EDITAR BRIEFING adicionado no FormaDetail (todos os campos editáveis)
+- [x] Endpoint forma.update criado no router
+- [x] Endpoint forma.resend criado no router

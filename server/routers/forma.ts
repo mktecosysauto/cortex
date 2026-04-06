@@ -17,6 +17,7 @@ import {
   answerFollowup,
 } from "../db-forma";
 import { storagePut } from "../storage";
+import { sendBriefingEmail } from "../email";
 
 // ─── Banco de perguntas ────────────────────────────────────────────────────────
 export const FORMA_QUESTIONS_BANK = {
@@ -205,14 +206,45 @@ export const formaRouter = router({
       return { ok: true };
     }),
 
-  // Send briefing to client (mark as sent)
+  // Send briefing to client (mark as sent + send email)
   send: protectedProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.number(), origin: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const briefing = await getBriefing(input.id, ctx.user.id);
       if (!briefing) throw new TRPCError({ code: "NOT_FOUND" });
       await updateBriefing(input.id, ctx.user.id, { status: "sent", sentAt: new Date() });
-      return { ok: true, token: briefing.publicToken };
+      const formLink = `${input.origin}/b/${briefing.publicToken}`;
+      const emailResult = await sendBriefingEmail({
+        clientEmail: briefing.clientEmail,
+        clientName: briefing.clientName,
+        projectName: briefing.title,
+        senderName: ctx.user.name ?? "CÓRTEX",
+        formLink,
+        brandColor: briefing.brandColorPrimary ?? undefined,
+        brandLogoUrl: briefing.brandLogoUrl ?? undefined,
+        customMessage: briefing.openingMessage ?? undefined,
+      });
+      return { ok: true, token: briefing.publicToken, emailSent: emailResult.ok, emailError: emailResult.error };
+    }),
+
+  // Resend briefing email
+  resend: protectedProcedure
+    .input(z.object({ id: z.number(), origin: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const briefing = await getBriefing(input.id, ctx.user.id);
+      if (!briefing) throw new TRPCError({ code: "NOT_FOUND" });
+      const formLink = `${input.origin}/b/${briefing.publicToken}`;
+      const emailResult = await sendBriefingEmail({
+        clientEmail: briefing.clientEmail,
+        clientName: briefing.clientName,
+        projectName: briefing.title,
+        senderName: ctx.user.name ?? "CÓRTEX",
+        formLink,
+        brandColor: briefing.brandColorPrimary ?? undefined,
+        brandLogoUrl: briefing.brandLogoUrl ?? undefined,
+        customMessage: briefing.openingMessage ?? undefined,
+      });
+      return { ok: true, emailSent: emailResult.ok, emailError: emailResult.error };
     }),
 
   // Archive a briefing
@@ -223,8 +255,8 @@ export const formaRouter = router({
       return { ok: true };
     }),
 
-  // Get the questions bank
-  getQuestionsBank: protectedProcedure.query(() => {
+  // Get the questions bank (public - needed for client form)
+  getQuestionsBank: publicProcedure.query(() => {
     return FORMA_QUESTIONS_BANK;
   }),
 
