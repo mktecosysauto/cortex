@@ -191,8 +191,9 @@ function BriefingList({ filterStatus, onNew }: { filterStatus: string; onNew: ()
                   {b.status === "draft" && (
                     <button
                       onClick={async () => {
-                        const result = await sendMutation.mutateAsync({ id: b.id, origin: window.location.origin });
-                        const link = `${window.location.origin}/b/${result.token}`;
+                        const siteOrigin = import.meta.env.VITE_PUBLIC_URL ?? window.location.origin;
+                        const result = await sendMutation.mutateAsync({ id: b.id, origin: siteOrigin });
+                        const link = `${siteOrigin}/b/${result.token}`;
                         await navigator.clipboard.writeText(link);
                         if (result.emailSent) {
                           toast.success(`Briefing enviado! Email enviado para ${b.clientEmail}. Link copiado.`);
@@ -208,7 +209,7 @@ function BriefingList({ filterStatus, onNew }: { filterStatus: string; onNew: ()
                   {b.status === "sent" && (
                     <button
                       onClick={async () => {
-                        const link = `${window.location.origin}/b/${b.publicToken}`;
+                        const link = `${import.meta.env.VITE_PUBLIC_URL ?? window.location.origin}/b/${b.publicToken}`;
                         await navigator.clipboard.writeText(link);
                         toast.success("Link copiado!");
                       }}

@@ -122,7 +122,8 @@ export default function FormaDetail() {
   }
 
   const { briefing, responses, followups } = data;
-  const publicLink = `${window.location.origin}/b/${briefing.publicToken}`;
+  const siteOrigin = import.meta.env.VITE_PUBLIC_URL ?? window.location.origin;
+  const publicLink = `${siteOrigin}/b/${briefing.publicToken}`;
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white" style={{ cursor: "none" }}>
@@ -157,8 +158,8 @@ export default function FormaDetail() {
             {briefing.status === "draft" && (
               <button
                 onClick={async () => {
-                  const result = await sendMutation.mutateAsync({ id, origin: window.location.origin });
-                  const link = `${window.location.origin}/b/${result.token}`;
+                  const result = await sendMutation.mutateAsync({ id, origin: siteOrigin });
+                  const link = `${siteOrigin}/b/${result.token}`;
                   await navigator.clipboard.writeText(link);
                 }}
                 disabled={sendMutation.isPending}
@@ -170,7 +171,7 @@ export default function FormaDetail() {
             {briefing.status === "sent" && (
               <>
                 <button
-                  onClick={() => resendMutation.mutate({ id, origin: window.location.origin })}
+                  onClick={() => resendMutation.mutate({ id, origin: siteOrigin })}
                   disabled={resendMutation.isPending}
                   className="font-mono text-[9px] tracking-[2px] uppercase px-4 py-2 border border-[rgba(186,117,23,0.4)] text-[#BA7517] hover:opacity-85 disabled:opacity-50 transition-opacity"
                 >

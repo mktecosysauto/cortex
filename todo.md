@@ -313,3 +313,9 @@
 - [x] Modal EDITAR BRIEFING adicionado no FormaDetail (todos os campos editáveis)
 - [x] Endpoint forma.update criado no router
 - [x] Endpoint forma.resend criado no router
+
+## Bug crítico FORMA — Rota pública /b/:token (v15.4 — CORRIGIDO)
+- [x] Link /b/:token redirecionava para login porque usava o domínio de preview (protegido)
+- [x] VITE_PUBLIC_URL configurado com domínio público: https://cortexbrain.manus.space
+- [x] FormaDetail.tsx e Forma.tsx atualizados para usar VITE_PUBLIC_URL no link copiado
+- [x] Fallback para window.location.origin quando VITE_PUBLIC_URL não está definido
