@@ -267,3 +267,7 @@
 ## Correções VERSO v13.1
 - [x] Cursor personalizado ausente na página /verso (adicionar CustomCursor)
 - [x] Frame do módulo VERSO na landing page (como ARQUIVO e NEXUS)
+
+## Correções v13.2
+- [x] Cursor personalizado ausente no Dashboard (adicionar CustomCursor + GrainOverlay)
+- [x] Header global: remover nav pills de módulos (ARQUIVO, NEXUS, VERSO), manter apenas DASH no lado esquerdo

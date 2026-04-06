@@ -253,29 +253,21 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
           CÓRTEX
         </button>
 
-        {/* Nav pills */}
+        {/* Nav pills — apenas DASH */}
         <div style={{ display: "flex", gap: 4, marginLeft: 8 }}>
-          {[
-            { key: "arquivo", label: "ARQUIVO", path: "/arquivo" },
-            { key: "nexus",   label: "NEXUS",   path: "/nexus" },
-            { key: "verso",   label: "VERSO",   path: "/verso" },
-            { key: "dashboard", label: "DASH", path: "/dashboard" },
-          ].map(item => (
-            <button
-              key={item.key}
-              onClick={() => navigateTo(item.path)}
-              style={{
-                fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 2,
-                padding: "4px 10px", border: "1px solid",
-                borderColor: currentPage === item.key ? "#fff" : "#333",
-                color: currentPage === item.key ? "#000" : "#666",
-                background: currentPage === item.key ? "#fff" : "transparent",
-                cursor: "pointer",
-              }}
-            >
-              {item.label}
-            </button>
-          ))}
+          <button
+            onClick={() => navigateTo("/dashboard")}
+            style={{
+              fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 2,
+              padding: "4px 10px", border: "1px solid",
+              borderColor: currentPage === "dashboard" ? "#fff" : "#333",
+              color: currentPage === "dashboard" ? "#000" : "#666",
+              background: currentPage === "dashboard" ? "#fff" : "transparent",
+              cursor: "pointer",
+            }}
+          >
+            DASH
+          </button>
         </div>
 
         <div style={{ flex: 1 }} />

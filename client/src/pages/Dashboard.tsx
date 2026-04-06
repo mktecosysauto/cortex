@@ -5,6 +5,7 @@ import { trpc } from "@/lib/trpc";
 import { getLoginUrl } from "@/const";
 import { useState, useMemo, useCallback } from "react";
 import { toast } from "sonner";
+import { GrainOverlay, CustomCursor } from "@/components/CortexShell";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function getWeekBounds(offset = 0) {
@@ -338,6 +339,8 @@ export default function Dashboard() {
 
   return (
     <div className="page-enter-nexus" style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text)" }}>
+      <GrainOverlay />
+      <CustomCursor />
       <GlobalHeader currentPage="dashboard" />
       {/* Header */}
       <div style={{ position: "sticky", top: 56, zIndex: 50, background: "var(--bg)", borderBottom: "1px solid var(--border)", padding: "0 24px", height: 52, display: "flex", alignItems: "center", gap: 16 }}>
