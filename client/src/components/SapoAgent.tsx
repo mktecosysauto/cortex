@@ -12,12 +12,15 @@
  *   focused   → animação sapoFocado (5s loop, quando PULSO ativo)
  *   celebrate → animação sapoCelebra (0.6s × 3, ao ganhar XP/rank up)
  *
- * Piscar aleatório: intervalo 3–7s, duração 120ms
+ * Piscar aleatório: intervalo 3–7s, duração 120ms via scaleY(0.08) nos olhos
+ *
+ * NOTA: os @keyframes sapoRespira/sapoFocado/sapoCelebra estão definidos
+ * FORA do @layer components no index.css para ficarem acessíveis globalmente.
  */
 
 import { useEffect, useRef, useState } from "react";
 
-// CDN URLs dos PNGs — base e skin-mago corrigidos
+// CDN URLs dos PNGs
 const SKIN_URLS: Record<string, string> = {
   base: "https://d2xsxph8kpxj0f.cloudfront.net/310519663331012459/4RjPzBcDcvCdjPKo6zdctY/base_72592774.png",
   "skin-espada": "https://d2xsxph8kpxj0f.cloudfront.net/310519663331012459/4RjPzBcDcvCdjPKo6zdctY/skin-espada_a1dbf67e.png",
@@ -81,7 +84,7 @@ export default function SapoAgent({
     }
   }
 
-  // Animação inline para garantir que funciona independente de especificidade CSS
+  // Animação da imagem principal — keyframes definidos globalmente no index.css
   const animationMap: Record<SapoState, string> = {
     idle: "sapoRespira 3.8s ease-in-out infinite",
     focused: "sapoFocado 5s ease-in-out infinite",
@@ -94,8 +97,15 @@ export default function SapoAgent({
   return (
     <div
       className={`sapo-wrapper ${className}`}
-      style={{ width: size, height: wrapperH }}
+      style={{
+        width: size,
+        height: wrapperH,
+        position: "relative",
+        display: "inline-block",
+        flexShrink: 0,
+      }}
     >
+      {/* Imagem principal com animação de respirar/focar/celebrar */}
       <img
         src={skinUrl}
         alt={`SAPO — ${skin}`}
@@ -110,25 +120,36 @@ export default function SapoAgent({
           userSelect: "none",
           transformOrigin: "bottom center",
           animation: animationMap[currentState],
+          willChange: "transform",
         }}
       />
-      {/* Overlay de piscar — cobre os olhos do sapo */}
+      {/*
+        Overlay de piscar — usa scaleY(0.08) para "fechar" os olhos.
+        Posicionado sobre a região dos olhos do sapo.
+        Cor transparente com backdrop-filter para funcionar em qualquer fundo.
+        Ajuste top/height conforme o PNG real via DevTools.
+      */}
       <div
         aria-hidden="true"
         style={{
           position: "absolute",
-          top: "18%",
-          left: "15%",
-          right: "15%",
-          height: isBlinking ? "14%" : "0%",
-          background: "#000",
-          borderRadius: "40%",
+          top: "22%",
+          left: "20%",
+          right: "20%",
+          height: "12%",
+          background: "currentColor",
+          color: "inherit",
+          borderRadius: "50%",
           pointerEvents: "none",
+          transformOrigin: "center center",
+          transform: isBlinking ? "scaleY(0.08)" : "scaleY(0)",
           transition: isBlinking
-            ? "height 0.05s ease-out, opacity 0.05s ease-out"
-            : "height 0.06s ease-in, opacity 0.06s ease-in",
+            ? "transform 0.04s ease-out"
+            : "transform 0.06s ease-in",
           opacity: isBlinking ? 1 : 0,
           zIndex: 2,
+          // Usa a cor do texto herdada — em fundo preto herda branco, em fundo branco herda preto
+          mixBlendMode: "difference",
         }}
       />
     </div>

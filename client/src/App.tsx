@@ -5,13 +5,17 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { PageTransitionProvider } from "./contexts/PageTransitionContext";
-import { NexusProvider } from "./contexts/NexusContext";
+import { NexusProvider, useNexus } from "./contexts/NexusContext";
 import Home from "./pages/Home";
 import Arquivo from "./pages/Arquivo";
 import Nexus from "./pages/Nexus";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
+import AgentProfile from "./pages/AgentProfile";
+import SplashScreen, { useSplashScreen } from "./components/SplashScreen";
+import RankUpOverlay from "./components/RankUpOverlay";
+import AchievementToastContainer from "./components/AchievementToast";
 
 function Router() {
   return (
@@ -22,9 +26,33 @@ function Router() {
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/admin"} component={Admin} />
       <Route path={"/login"} component={Login} />
+      <Route path={"/agente/:id"} component={AgentProfile} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
+  );
+}
+
+function AppInner() {
+  const { show, dismiss } = useSplashScreen();
+  const { rankUpEvent, clearRankUpEvent } = useNexus();
+  return (
+    <>
+      {show && <SplashScreen onDone={dismiss} />}
+      {rankUpEvent && (
+        <RankUpOverlay
+          show={!!rankUpEvent}
+          rankName={rankUpEvent.rankName}
+          rankColor={rankUpEvent.rankColor}
+          onDone={clearRankUpEvent}
+        />
+      )}
+      <AchievementToastContainer />
+      <PageTransitionProvider>
+        <Toaster />
+        <Router />
+      </PageTransitionProvider>
+    </>
   );
 }
 
@@ -34,10 +62,7 @@ function App() {
       <ThemeProvider defaultTheme="dark">
         <NexusProvider>
           <TooltipProvider>
-            <PageTransitionProvider>
-              <Toaster />
-              <Router />
-            </PageTransitionProvider>
+            <AppInner />
           </TooltipProvider>
         </NexusProvider>
       </ThemeProvider>

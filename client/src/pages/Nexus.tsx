@@ -199,7 +199,7 @@ export default function Nexus() {
           }}>
 
             {/* ── SAPO — coluna esquerda ── */}
-            <div style={{
+            <div className="page-enter-nexus-sapo" style={{
               borderRight: "1px solid #1a1a1a",
               display: "flex",
               flexDirection: "column",

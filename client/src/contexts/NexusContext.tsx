@@ -1,5 +1,23 @@
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode, useRef } from "react";
 import { trpc } from "@/lib/trpc";
+import { showAchievementToast } from "@/components/AchievementToast";
+
+// ─── Achievement definitions ──────────────────────────────────────────────────
+const ACHIEVEMENT_DEFS = [
+  { id: "first_prompt",  icon: "◈", name: "PRIMEIRO PROMPT",   desc: "Gerou o primeiro prompt",          color: "#888", check: (s: NexusStats, xp: number) => s.promptsGenerated >= 1 },
+  { id: "prompts_50",   icon: "◈", name: "MEIO CENTENA",       desc: "50 prompts gerados",               color: "#aaa", check: (s: NexusStats, xp: number) => s.promptsGenerated >= 50 },
+  { id: "focus_1",      icon: "◉", name: "PRIMEIRO FOCO",      desc: "Completou a primeira sessão",      color: "#888", check: (s: NexusStats, xp: number) => s.pomodoroCompleted >= 1 },
+  { id: "focus_10",     icon: "◉", name: "DÉCADA DE FOCO",      desc: "10 sessões de foco concluídas",    color: "#aaa", check: (s: NexusStats, xp: number) => s.pomodoroCompleted >= 10 },
+  { id: "focus_50",     icon: "◉", name: "CINQUENTA SESSÕES",  desc: "50 sessões de foco concluídas",    color: "#ccc", check: (s: NexusStats, xp: number) => s.pomodoroCompleted >= 50 },
+  { id: "tasks_10",     icon: "○", name: "10 TAREFAS",          desc: "10 tarefas concluídas",             color: "#888", check: (s: NexusStats, xp: number) => s.tasksCompleted >= 10 },
+  { id: "streak_3",     icon: "◆", name: "TRÍADE",              desc: "Streak de 3 dias consecutivos",    color: "#aaa", check: (s: NexusStats, xp: number) => s.bestStreak >= 3 },
+  { id: "streak_7",     icon: "◆", name: "SEMANA SÓLIDA",       desc: "Streak de 7 dias consecutivos",    color: "#fff", check: (s: NexusStats, xp: number) => s.bestStreak >= 7 },
+  { id: "images_10",    icon: "◇", name: "CRIADOR",             desc: "10 imagens geradas",               color: "#888", check: (s: NexusStats, xp: number) => s.imagesGenerated >= 10 },
+  { id: "rank_esboço",  icon: "◆", name: "ESBOÇO",              desc: "Alcançou rank ESBOÇO",             color: "#8fa", check: (s: NexusStats, xp: number) => xp >= 500 },
+  { id: "rank_forma",   icon: "◆", name: "FORMA",               desc: "Alcançou rank FORMA",              color: "#8cf", check: (s: NexusStats, xp: number) => xp >= 1500 },
+  { id: "rank_traço",   icon: "◆", name: "TRAÇO",               desc: "Alcançou rank TRAÇO",              color: "#fa8", check: (s: NexusStats, xp: number) => xp >= 4000 },
+  { id: "rank_autoria", icon: "◆", name: "AUTORIA",             desc: "Alcançou rank AUTORIA",            color: "#f8f", check: (s: NexusStats, xp: number) => xp >= 15000 },
+] as const;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface NexusStats {
@@ -245,6 +263,8 @@ export function showXPGain(xp: number, glifos: number) {
 interface NexusContextValue {
   nexus: NexusState;
   addXP: (type: string, isFocused?: boolean) => void;
+  rankUpEvent: { rankName: string; rankColor: string } | null;
+  clearRankUpEvent: () => void;
   updateNexus: (updater: (prev: NexusState) => NexusState) => void;
   getCurrentRankData: () => Rank;
   getProgress: () => number;
@@ -276,6 +296,8 @@ const NexusContext = createContext<NexusContextValue | null>(null);
 export function NexusProvider({ children }: { children: ReactNode }) {
   const [nexus, setNexus] = useState<NexusState>(() => loadNexusFromStorage());
   const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [rankUpEvent, setRankUpEvent] = useState<{ rankName: string; rankColor: string } | null>(null);
+  const clearRankUpEvent = useCallback(() => setRankUpEvent(null), []);
 
   // tRPC hooks for DB sync
   const profileQuery = trpc.cortex.nexus.getProfile.useQuery(undefined, {
@@ -441,23 +463,27 @@ export function NexusProvider({ children }: { children: ReactNode }) {
 
       if (newRank.id > prevRank.id) {
         setTimeout(() => {
-          const el = document.createElement("div");
-          el.style.cssText = `
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
-            background: rgba(0,0,0,0.95); border: 1px solid #fff;
-            padding: 32px 48px; z-index: 9999; text-align: center;
-            font-family: 'Bebas Neue', sans-serif; animation: fadeUp 0.4s ease;
-          `;
-          el.innerHTML = `
-            <div style="font-size:11px;letter-spacing:4px;color:#666;margin-bottom:8px;font-family:'DM Mono',monospace">RANK UP</div>
-            <div style="font-size:42px;letter-spacing:6px;color:${newRank.color}">${newRank.name}</div>
-          `;
-          document.body.appendChild(el);
-          setTimeout(() => el.remove(), 3000);
+          setRankUpEvent({ rankName: newRank.name, rankColor: newRank.color });
         }, 100);
       }
 
-      const next: NexusState = { ...prev, xp: newXp, glifos: newGlifos, rankId: newRank.id };
+      // ── Check achievements ──
+      const newlyUnlocked = ACHIEVEMENT_DEFS.filter(a => {
+        const alreadyHas = prev.achievements.includes(a.id);
+        if (alreadyHas) return false;
+        return a.check(prev.stats, newXp);
+      });
+      const newAchievements = newlyUnlocked.length > 0
+        ? [...prev.achievements, ...newlyUnlocked.map(a => a.id)]
+        : prev.achievements;
+      if (newlyUnlocked.length > 0) {
+        setTimeout(() => {
+          newlyUnlocked.forEach((a, i) => {
+            setTimeout(() => showAchievementToast({ icon: a.icon, name: a.name, desc: a.desc, color: a.color }), i * 800);
+          });
+        }, 200);
+      }
+      const next: NexusState = { ...prev, xp: newXp, glifos: newGlifos, rankId: newRank.id, achievements: newAchievements };
       saveNexusToStorage(next);
       return next;
     });
@@ -482,8 +508,9 @@ export function NexusProvider({ children }: { children: ReactNode }) {
 
   return (
     <NexusContext.Provider value={{
-      nexus, addXP, updateNexus, getCurrentRankData, getProgress, syncWithDB,
+        nexus, addXP, updateNexus, getCurrentRankData, getProgress, syncWithDB,
       buyItem, toggleItem, isActive, isPurchased, activeSkin,
+      rankUpEvent, clearRankUpEvent,
     }}>
       {children}
     </NexusContext.Provider>

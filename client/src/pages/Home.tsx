@@ -517,24 +517,60 @@ function NexusFrame() {
             </span>
           </div>
         </div>
-        {/* Visual side — AGENTE */}
-        <div style={{ opacity: visible ? 1 : 0, transition: "opacity 0.9s ease 0.35s" }}>
+        {/* Visual side — AGENTE hero redesign */}
+        <div style={{ opacity: visible ? 1 : 0, transition: "opacity 0.9s ease 0.35s", display: "flex", justifyContent: "center" }}>
           <div style={{
-            aspectRatio: "4/3",
-            background: "#080808",
-            border: `1px solid ${rank.color}22`,
             position: "relative",
-            overflow: "hidden",
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
+            gap: 0,
           }}>
-            <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-            <SapoAgent skin={activeSkin} state="idle" size={200} />
-            <div style={{ position: "absolute", bottom: 16, left: 0, right: 0, textAlign: "center" }}>
-              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 13, letterSpacing: 4, color: rank.color, opacity: 0.7 }}>
-                {nexus.agentName}
-              </span>
+            {/* Glow de fundo na cor do rank */}
+            <div style={{
+              position: "absolute",
+              bottom: 60,
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: 280,
+              height: 280,
+              borderRadius: "50%",
+              background: `radial-gradient(circle, ${rank.color}18 0%, ${rank.color}06 50%, transparent 75%)`,
+              filter: "blur(20px)",
+              pointerEvents: "none",
+              zIndex: 0,
+            }} />
+            {/* Grade sutil de fundo */}
+            <div style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
+              backgroundSize: "32px 32px",
+              pointerEvents: "none",
+              zIndex: 0,
+              maskImage: "radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%)",
+            }} />
+            {/* SAPO 340px */}
+            <div style={{ position: "relative", zIndex: 1 }}>
+              <SapoAgent skin={activeSkin} state="idle" size={280} />
+            </div>
+            {/* Nome do agente */}
+            <div style={{ position: "relative", zIndex: 1, textAlign: "center", marginTop: -8 }}>
+              <div style={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: 22,
+                letterSpacing: 6,
+                color: rank.color,
+                lineHeight: 1,
+              }}>{nexus.agentName}</div>
+              <div style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 9,
+                letterSpacing: 3,
+                color: `${rank.color}88`,
+                marginTop: 4,
+                textTransform: "uppercase",
+              }}>{rank.name} · {nexus.xp} XP</div>
             </div>
           </div>
         </div>

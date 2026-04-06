@@ -337,7 +337,7 @@ export default function Dashboard() {
   const maxToolMin = d ? Math.max(...(d.toolBreakdown.map(t => t.minutes)), 1) : 1;
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text)" }}>
+    <div className="page-enter-nexus" style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text)" }}>
       <GlobalHeader currentPage="dashboard" />
       {/* Header */}
       <div style={{ position: "sticky", top: 56, zIndex: 50, background: "var(--bg)", borderBottom: "1px solid var(--border)", padding: "0 24px", height: 52, display: "flex", alignItems: "center", gap: 16 }}>

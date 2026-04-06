@@ -32,6 +32,21 @@ const nexusRouter = router({
     return profile;
   }),
 
+  getPublicProfile: publicProcedure
+    .input(z.object({ userId: z.number().int() }))
+    .query(async ({ input }) => {
+      const profile = await getUserProfile(input.userId);
+      if (!profile) throw new TRPCError({ code: "NOT_FOUND", message: "Agente não encontrado" });
+      return {
+        id: profile.id,
+        agentName: profile.agentName ?? "AGENTE",
+        xp: profile.xp ?? 0,
+        rankId: profile.rankId ?? 1,
+        purchases: (profile.purchases as string[] | null) ?? [],
+        agentAppearance: profile.agentAppearance ?? null,
+      };
+    }),
+
   updateProfile: protectedProcedure
     .input(z.object({
       agentName: z.string().max(64).optional(),

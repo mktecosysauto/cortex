@@ -217,3 +217,13 @@
 - [x] Aumentar tipografia base em 2pt globalmente (html font-size: 16px)
 - [x] Substituir SVG genérico pelo SapoAgent PNG na landing page (seção NEXUS)
 - [x] Corrigir estrutura @layer components no index.css (chaves desbalanceadas)
+
+## Grande Atualização v11
+- [x] Corrigir SapoAgent: keyframes globais, piscar via scaleY (sem overlay preto)
+- [x] Splash screen: SAPO animado + CÓRTEX + barra de progresso (sessionStorage, 1x/dia)
+- [x] Redesign hero NEXUS na landing: SAPO 280px, glow radial do rank, grade sutil
+- [x] Level-up cinematográfico: RankUpOverlay fullscreen, SAPO sapoCelebra, partículas brancas
+- [x] Perfil público /agente/:id: skin ativa, rank, XP, conquistas, link compartilhável
+- [x] Animações de entrada: nexusSapoDrop (NEXUS), pageRevealFade (DASH)
+- [x] Toast de conquista: ícone + nome Bebas Neue + SAPO miniatura sapoCelebra
+- [x] Sistema automático de 14 conquistas no addXP (rank, foco, prompts, streak, imagens)

@@ -740,25 +740,7 @@
     transition: height 0.05s ease-out, opacity 0.05s ease-out;
   }
 
-  @keyframes sapoRespira {
-    0%, 100% { transform: translateY(0px) scaleY(1) scaleX(1); }
-    40%  { transform: translateY(-5px) scaleY(1.012) scaleX(0.993); }
-    50%  { transform: translateY(-6px) scaleY(1.015) scaleX(0.991); }
-    60%  { transform: translateY(-5px) scaleY(1.012) scaleX(0.993); }
-  }
-
-  @keyframes sapoFocado {
-    0%, 100% { transform: translateY(0px); }
-    50%       { transform: translateY(-3px); }
-  }
-
-  @keyframes sapoCelebra {
-    0%   { transform: translateY(0)     scale(1); }
-    25%  { transform: translateY(-12px) scale(1.06) rotate(-3deg); }
-    50%  { transform: translateY(-16px) scale(1.08) rotate(3deg); }
-    75%  { transform: translateY(-8px)  scale(1.04) rotate(-2deg); }
-    100% { transform: translateY(0)     scale(1); }
-  }
+    /* keyframes sapo — definidos globalmente abaixo do layer */
 
   .sapo-animado {
     animation: sapoRespira 3.8s ease-in-out infinite;
@@ -840,4 +822,86 @@
   @media (prefers-reduced-motion: reduce) {
     .sapo-animado, .sapo-focado, .sapo-celebra { animation: none !important; }
   }
+}
+
+/* ── SAPO keyframes (global, fora do @layer para funcionar com animation inline) ── */
+@keyframes sapoRespira {
+  0%, 100% { transform: translateY(0px) scaleY(1) scaleX(1); }
+  40%  { transform: translateY(-5px) scaleY(1.012) scaleX(0.993); }
+  50%  { transform: translateY(-6px) scaleY(1.015) scaleX(0.991); }
+  60%  { transform: translateY(-5px) scaleY(1.012) scaleX(0.993); }
+}
+@keyframes sapoFocado {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-3px); }
+}
+@keyframes sapoCelebra {
+  0%   { transform: translateY(0)     scale(1); }
+  25%  { transform: translateY(-12px) scale(1.06) rotate(-3deg); }
+  50%  { transform: translateY(-16px) scale(1.08) rotate(3deg); }
+  75%  { transform: translateY(-8px)  scale(1.04) rotate(-2deg); }
+  100% { transform: translateY(0)     scale(1); }
+}
+@keyframes sapoPiscar {
+  0%, 100% { transform: scaleY(1); }
+  50%       { transform: scaleY(0.08); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sapo-animado, .sapo-focado, .sapo-celebra { animation: none !important; }
+}
+
+/* ── Animações de entrada por página ── */
+@keyframes arquivoScan {
+  0%   { clip-path: inset(0 100% 0 0); opacity: 0; }
+  1%   { opacity: 1; }
+  100% { clip-path: inset(0 0% 0 0); opacity: 1; }
+}
+@keyframes nexusSapoDrop {
+  0%   { transform: translateY(-40px) scale(0.92); opacity: 0; }
+  60%  { transform: translateY(6px) scale(1.02); opacity: 1; }
+  80%  { transform: translateY(-3px) scale(0.99); }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes dashCascade {
+  0%   { transform: translateY(24px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes pageRevealFade {
+  0%   { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.page-enter-arquivo {
+  animation: arquivoScan 0.55s cubic-bezier(0.16,1,0.3,1) both;
+}
+.page-enter-nexus {
+  animation: pageRevealFade 0.5s cubic-bezier(0.16,1,0.3,1) both;
+}
+.page-enter-nexus-sapo {
+  animation: nexusSapoDrop 0.65s cubic-bezier(0.16,1,0.3,1) both;
+}
+.page-enter-dash {
+  animation: dashCascade 0.4s cubic-bezier(0.16,1,0.3,1) both;
+}
+.page-enter-dash:nth-child(1) { animation-delay: 0ms; }
+.page-enter-dash:nth-child(2) { animation-delay: 60ms; }
+.page-enter-dash:nth-child(3) { animation-delay: 120ms; }
+.page-enter-dash:nth-child(4) { animation-delay: 180ms; }
+.page-enter-dash:nth-child(5) { animation-delay: 240ms; }
+.page-enter-dash:nth-child(6) { animation-delay: 300ms; }
+
+/* ── AchievementToast keyframes ── */
+@keyframes achieveIn {
+  0%   { transform: translateX(120%) scale(0.9); opacity: 0; }
+  60%  { transform: translateX(-8px) scale(1.02); opacity: 1; }
+  80%  { transform: translateX(4px) scale(0.99); }
+  100% { transform: translateX(0) scale(1); opacity: 1; }
+}
+@keyframes achieveOut {
+  0%   { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(120%); opacity: 0; }
+}
+@keyframes achieveProgress {
+  0%   { transform: scaleX(1); }
+  100% { transform: scaleX(0); }
 }
