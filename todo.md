@@ -288,3 +288,8 @@
 - [x] FORMA no header global (currentPage='forma') e na landing page (frame módulo 03)
 - [x] Rotas /forma, /forma/:id, /b/:token registradas no App.tsx
 - [x] Numeração dos frames atualizada: FORMA=03, PALCO=05, ESTÚDIO=06
+
+## Integração IA (v15)
+- [x] Todos os módulos (VERSO, FORMA, Dashboard) já usam invokeLLM (GPT-4o via Manus)
+- [x] ARQUIVO usa proxy Anthropic separado (chave do usuário, intencional)
+- [x] Decisão: manter invokeLLM (sem custo extra, já usa GPT-4o)
