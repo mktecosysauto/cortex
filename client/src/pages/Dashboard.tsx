@@ -95,7 +95,7 @@ function HeatMap({ data }: { data: Record<string, number> }) {
           style={{
             width: 16, height: 16,
             background: `rgba(255,255,255,${c.opacity})`,
-            cursor: "default",
+            cursor: "none",
             transition: "opacity 0.2s",
           }}
         />
@@ -349,7 +349,7 @@ export default function Dashboard() {
       <GlobalHeader currentPage="dashboard" />
       {/* Header */}
       <div style={{ position: "sticky", top: 56, zIndex: 50, background: "var(--bg)", borderBottom: "1px solid var(--border)", padding: "0 24px", height: 52, display: "flex", alignItems: "center", gap: 16 }}>
-        <button onClick={() => navigateTo("/")} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 3, color: "var(--dim)", padding: 0 }}>
+        <button onClick={() => navigateTo("/")} style={{ background: "none", border: "none", cursor: "none", fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 3, color: "var(--dim)", padding: 0 }}>
           ← CÓRTEX
         </button>
         <div style={{ flex: 1, fontFamily: "Bebas Neue, sans-serif", fontSize: 18, letterSpacing: 6, color: "var(--text)" }}>
@@ -357,11 +357,11 @@ export default function Dashboard() {
         </div>
         {/* Week nav */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button onClick={() => setWeekOffset(o => o - 1)} style={{ background: "none", border: "1px solid var(--border)", cursor: "pointer", color: "var(--dim)", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>←</button>
+          <button onClick={() => setWeekOffset(o => o - 1)} style={{ background: "none", border: "1px solid var(--border)", cursor: "none", color: "var(--dim)", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>←</button>
           <span style={{ fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 2, color: "var(--mid)", minWidth: 140, textAlign: "center" }}>
             {getWeekLabel(weekStart)}
           </span>
-          <button onClick={() => setWeekOffset(o => Math.min(o + 1, 0))} disabled={weekOffset === 0} style={{ background: "none", border: "1px solid var(--border)", cursor: weekOffset === 0 ? "default" : "pointer", color: weekOffset === 0 ? "var(--border)" : "var(--dim)", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>→</button>
+          <button onClick={() => setWeekOffset(o => Math.min(o + 1, 0))} disabled={weekOffset === 0} style={{ background: "none", border: "1px solid var(--border)", cursor: "none", color: weekOffset === 0 ? "var(--border)" : "var(--dim)", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>→</button>
         </div>
         <span style={{ fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 2, color: "var(--dim)" }}>
           {user?.name?.toUpperCase()}
@@ -440,7 +440,7 @@ export default function Dashboard() {
                 <button
                   onClick={handleGenerateInsight}
                   disabled={generatingInsight}
-                  style={{ background: "none", border: "1px solid var(--border)", cursor: "pointer", fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 3, color: "var(--dim)", padding: "8px 16px", textTransform: "uppercase" }}
+                  style={{ background: "none", border: "1px solid var(--border)", cursor: "none", fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 3, color: "var(--dim)", padding: "8px 16px", textTransform: "uppercase" }}
                 >
                   {generatingInsight ? "GERANDO..." : "GERAR INSIGHT"}
                 </button>

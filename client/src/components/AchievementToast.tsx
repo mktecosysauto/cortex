@@ -81,7 +81,7 @@ export default function AchievementToastContainer() {
         background: "#080808",
         border: `1px solid ${color}44`,
         padding: "16px 20px",
-        cursor: "pointer",
+        cursor: "none",
         maxWidth: 340,
         animation: exiting
           ? "achieveOut 0.4s cubic-bezier(0.4,0,1,1) both"

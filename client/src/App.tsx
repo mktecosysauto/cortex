@@ -75,6 +75,8 @@ function AppInner() {
   const { rankUpEvent, clearRankUpEvent } = useNexus();
   return (
     <>
+      {/* CustomCursor global — cobre todas as rotas autenticadas */}
+      <CustomCursor />
       {show && <SplashScreen onDone={dismiss} />}
       {rankUpEvent && (
         <RankUpOverlay

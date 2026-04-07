@@ -108,7 +108,7 @@ function ActionBtn({
       style={{
         background: "none",
         border: `1px solid ${disabled ? "var(--border)" : c.border}`,
-        cursor: disabled ? "not-allowed" : "pointer",
+        cursor: "none",
         fontFamily: "DM Mono, monospace",
         fontSize: 9,
         letterSpacing: 3,
@@ -293,7 +293,7 @@ export default function Admin() {
       <GlobalHeader currentPage="admin" />
       {/* Header */}
       <div style={{ position: "sticky", top: 56, zIndex: 50, background: "var(--bg)", borderBottom: "1px solid var(--border)", padding: "0 24px", height: 52, display: "flex", alignItems: "center", gap: 16 }}>
-        <button onClick={() => navigateTo("/")} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 3, color: "var(--dim)", padding: 0 }}>← CÓRTEX</button>
+        <button onClick={() => navigateTo("/")} style={{ background: "none", border: "none", cursor: "none", fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 3, color: "var(--dim)", padding: 0 }}>← CÓRTEX</button>
         <div style={{ flex: 1, fontFamily: "Bebas Neue, sans-serif", fontSize: 18, letterSpacing: 6, color: "var(--text)" }}>ADMIN</div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <span style={{ fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 2, color: "var(--dim)" }}>{user?.name?.toUpperCase()}</span>
@@ -371,14 +371,14 @@ export default function Admin() {
           <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
             <div style={{ display: "flex", gap: 2 }}>
               {([1, 5, 20] as const).map(n => (
-                <button key={n} onClick={() => setSimCount(n)} style={{ background: "none", border: `1px solid ${simCount === n ? "var(--text)" : "var(--border)"}`, cursor: "pointer", fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 3, color: simCount === n ? "var(--text)" : "var(--dim)", padding: "8px 16px" }}>
+                <button key={n} onClick={() => setSimCount(n)} style={{ background: "none", border: `1px solid ${simCount === n ? "var(--text)" : "var(--border)"}`, cursor: "none", fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 3, color: simCount === n ? "var(--text)" : "var(--dim)", padding: "8px 16px" }}>
                   {n}×
                 </button>
               ))}
             </div>
             <div style={{ display: "flex", gap: 2 }}>
               {([25, 50] as const).map(d => (
-                <button key={d} onClick={() => setSimDur(d)} style={{ background: "none", border: `1px solid ${simDur === d ? "var(--text)" : "var(--border)"}`, cursor: "pointer", fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 3, color: simDur === d ? "var(--text)" : "var(--dim)", padding: "8px 16px" }}>
+                <button key={d} onClick={() => setSimDur(d)} style={{ background: "none", border: `1px solid ${simDur === d ? "var(--text)" : "var(--border)"}`, cursor: "none", fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 3, color: simDur === d ? "var(--text)" : "var(--dim)", padding: "8px 16px" }}>
                   {d}min
                 </button>
               ))}
@@ -410,7 +410,7 @@ export default function Admin() {
               </div>
               <div style={{ flex: 1, minWidth: 120 }}>
                 <div style={{ fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 2, color: "var(--dim)", marginBottom: 6 }}>RANK</div>
-                <select value={editRank} onChange={e => setEditRank(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
+                <select value={editRank} onChange={e => setEditRank(e.target.value)} style={{ ...inputStyle, cursor: "none" }}>
                   {RANK_NAMES.map((r, i) => <option key={r} value={i + 1}>{i + 1} — {r}</option>)}
                 </select>
               </div>

@@ -184,7 +184,7 @@ export default function Login() {
             textTransform: "uppercase",
             transition: "all 0.25s ease",
             animation: "fadeUp 0.6s ease 0.5s both",
-            cursor: "pointer",
+            cursor: "none",
           }}
         >
           <span style={{ fontSize: 14 }}>→</span>

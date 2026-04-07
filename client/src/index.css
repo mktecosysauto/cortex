@@ -1123,7 +1123,7 @@ button.bg-white:hover {
   font-size:   10px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  cursor:      pointer;
+  cursor:      none;
   transition:  background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 .modulo-btn:hover {

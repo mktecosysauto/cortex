@@ -206,7 +206,7 @@ function ModuleCard({ number, name, subtitle, description, route, comingSoon, ac
                 style={{
                   background: "none",
                   border: "none",
-                  cursor: "pointer",
+                  cursor: "none",
                   fontFamily: "'DM Mono', monospace",
                   fontSize: 11,
                   letterSpacing: 2,
@@ -432,7 +432,7 @@ function NexusSection() {
               style={{
                 background: "none",
                 border: "none",
-                cursor: "pointer",
+                cursor: "none",
                 fontFamily: "'DM Mono', monospace",
                 fontSize: 11,
                 letterSpacing: 2,
@@ -740,11 +740,11 @@ export default function Home() {
                   {user?.name?.toUpperCase()}
                 </span>
                 {user?.role === "admin" && (
-                  <button onClick={() => window.location.href = "/admin"} style={{ background: "none", border: "1px solid rgba(255,255,255,0.1)", cursor: "pointer", fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 3, color: "rgba(255,255,255,0.5)", padding: "4px 12px" }}>
+                  <button onClick={() => window.location.href = "/admin"} style={{ background: "none", border: "1px solid rgba(255,255,255,0.1)", cursor: "none", fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 3, color: "rgba(255,255,255,0.5)", padding: "4px 12px" }}>
                     ADMIN
                   </button>
                 )}
-                <button onClick={() => logout()} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 3, color: "rgba(255,255,255,0.3)", padding: 0 }}>
+                <button onClick={() => logout()} style={{ background: "none", border: "none", cursor: "none", fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 3, color: "rgba(255,255,255,0.3)", padding: 0 }}>
                   SAIR
                 </button>
               </>

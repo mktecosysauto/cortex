@@ -169,7 +169,7 @@ function BriefingList({ filterStatus, onNew }: { filterStatus: string; onNew: ()
             <tr key={b.id} className="group border-b border-[#0f0f0f] hover:bg-white/[0.02] transition-colors">
               <td className="py-4 pr-4">
                 <Link href={`/forma/${b.id}`}>
-                  <span className="font-mono text-[11px] text-[#888] group-hover:text-white transition-colors cursor-pointer">
+                  <span className="font-mono text-[11px] text-[#888] group-hover:text-white transition-colors cursor-none">
                     {b.title}
                   </span>
                 </Link>
@@ -603,7 +603,7 @@ function NewBriefing({ onSuccess, onCancel }: { onSuccess: () => void; onCancel:
                     type="color"
                     value={brandColorPrimary}
                     onChange={(e) => setBrandColorPrimary(e.target.value)}
-                    className="w-8 h-8 border border-[#2a2a2a] bg-transparent cursor-pointer"
+                    className="w-8 h-8 border border-[#2a2a2a] bg-transparent cursor-none"
                   />
                   <span className="font-mono text-[11px] text-[#999]">{brandColorPrimary}</span>
                 </div>
@@ -615,7 +615,7 @@ function NewBriefing({ onSuccess, onCancel }: { onSuccess: () => void; onCancel:
                     type="color"
                     value={brandColorSecondary}
                     onChange={(e) => setBrandColorSecondary(e.target.value)}
-                    className="w-8 h-8 border border-[#2a2a2a] bg-transparent cursor-pointer"
+                    className="w-8 h-8 border border-[#2a2a2a] bg-transparent cursor-none"
                   />
                   <span className="font-mono text-[11px] text-[#999]">{brandColorSecondary}</span>
                 </div>

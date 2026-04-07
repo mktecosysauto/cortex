@@ -250,7 +250,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
         {/* Left: wordmark */}
         <button
           onClick={() => navigateTo("/landing")}
-          style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, letterSpacing: 3, color: "#fff", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+          style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, letterSpacing: 3, color: "#fff", background: "none", border: "none", cursor: "none", padding: 0 }}
         >
           CÓRTEX
         </button>
@@ -265,7 +265,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
               borderColor: currentPage === "dashboard" ? "#fff" : "#333",
               color: currentPage === "dashboard" ? "#000" : "#666",
               background: currentPage === "dashboard" ? "#fff" : "transparent",
-              cursor: "pointer",
+              cursor: "none",
             }}
           >
             DASH
@@ -286,7 +286,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
               borderColor: pulsoActive ? "#fff" : "#333",
               color: pulsoActive ? "#000" : "#666",
               background: pulsoActive ? "#fff" : "transparent",
-              cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
+              cursor: "none", display: "flex", alignItems: "center", gap: 6,
             }}
           >
             {pulsoActive ? "●" : "○"} PULSO
@@ -302,7 +302,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                 padding: "5px 12px", border: "1px solid",
                 borderColor: pendingCount > 0 ? "#fff" : "#333",
                 color: "#999", background: "transparent",
-                cursor: "pointer", display: "flex", alignItems: "center", gap: 6, position: "relative",
+                cursor: "none", display: "flex", alignItems: "center", gap: 6, position: "relative",
               }}
             >
               ◈ ROTA
@@ -325,7 +325,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
               style={{
                 display: "flex", alignItems: "center", gap: 6,
                 padding: "4px 10px", border: "1px solid #222",
-                background: "transparent", cursor: "pointer",
+                background: "transparent", cursor: "none",
               }}
             >
               <span className="rank-dot" style={{ width: 16, height: 16, borderRadius: "50%", background: rankColor, display: "block", boxShadow: `0 0 8px ${rankColor}55` }} />
@@ -339,11 +339,11 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
           {isAuthenticated ? (
             <>
               {user?.role === "admin" && (
-                <button onClick={() => navigateTo("/admin")} style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2, padding: "4px 8px", border: "1px solid #333", color: "#999", background: "transparent", cursor: "pointer" }}>
+                <button onClick={() => navigateTo("/admin")} style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2, padding: "4px 8px", border: "1px solid #333", color: "#999", background: "transparent", cursor: "none" }}>
                   ADMIN
                 </button>
               )}
-              <button onClick={logout} style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2, padding: "4px 8px", border: "1px solid #333", color: "#999", background: "transparent", cursor: "pointer" }}>
+              <button onClick={logout} style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2, padding: "4px 8px", border: "1px solid #333", color: "#999", background: "transparent", cursor: "none" }}>
                 SAIR
               </button>
             </>
@@ -364,7 +364,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
             <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, letterSpacing: 3, color: "#fff" }}>PULSO</span>
-            <button onClick={() => setPulsoOpen(false)} style={{ background: "none", border: "none", color: "#999", cursor: "pointer", fontSize: 14 }}>✕</button>
+            <button onClick={() => setPulsoOpen(false)} style={{ background: "none", border: "none", color: "#999", cursor: "none", fontSize: 14 }}>✕</button>
           </div>
 
           {/* Duration selector */}
@@ -375,7 +375,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                   flex: 1, padding: "6px 0", fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 1,
                   border: "1px solid", borderColor: pulso.duration === d ? "#fff" : "#333",
                   color: pulso.duration === d ? "#000" : "#555",
-                  background: pulso.duration === d ? "#fff" : "transparent", cursor: "pointer",
+                  background: pulso.duration === d ? "#fff" : "transparent", cursor: "none",
                 }}>{d} MIN</button>
               ))}
             </div>
@@ -418,25 +418,25 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
             {pulso.status === "idle" && (
               <button onClick={pulsoStart} style={{
                 flex: 1, padding: "8px 0", fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 2,
-                border: "1px solid #fff", color: "#000", background: "#fff", cursor: "pointer",
+                border: "1px solid #fff", color: "#000", background: "#fff", cursor: "none",
               }}>INICIAR</button>
             )}
             {(pulso.status === "running" || pulso.status === "paused") && (
               <>
                 <button onClick={pulsoTogglePause} style={{
                   flex: 1, padding: "8px 0", fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 2,
-                  border: "1px solid #fff", color: "#000", background: "#fff", cursor: "pointer",
+                  border: "1px solid #fff", color: "#000", background: "#fff", cursor: "none",
                 }}>{pulso.status === "running" ? "PAUSAR" : "RETOMAR"}</button>
                 <button onClick={pulsoReset} style={{
                   padding: "8px 12px", fontFamily: "'DM Mono', monospace", fontSize: 10,
-                  border: "1px solid #333", color: "#999", background: "transparent", cursor: "pointer",
+                  border: "1px solid #333", color: "#999", background: "transparent", cursor: "none",
                 }}>↺</button>
               </>
             )}
             {pulso.status === "done" && (
               <button onClick={pulsoReset} style={{
                 flex: 1, padding: "8px 0", fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 2,
-                border: "1px solid #333", color: "#999", background: "transparent", cursor: "pointer",
+                border: "1px solid #333", color: "#999", background: "transparent", cursor: "none",
               }}>NOVA SESSÃO</button>
             )}
           </div>
@@ -500,7 +500,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                   onClick={() => setRotaOpen(false)}
                   style={{
                     background: "none", border: "1px solid #222",
-                    color: "#999", cursor: "pointer",
+                    color: "#999", cursor: "none",
                     width: 32, height: 32, display: "flex",
                     alignItems: "center", justifyContent: "center",
                     fontSize: 14, flexShrink: 0,
@@ -520,7 +520,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                       border: "none",
                       borderBottom: rotaTab === tab ? "2px solid #fff" : "2px solid transparent",
                       color: rotaTab === tab ? "#fff" : "#444",
-                      background: "transparent", cursor: "pointer",
+                      background: "transparent", cursor: "none",
                       transition: "color 0.2s, border-color 0.2s",
                     }}
                   >
@@ -593,7 +593,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                                 border: `1px solid ${rotaDiff === d.id ? d.color : "#1e1e1e"}`,
                                 color: rotaDiff === d.id ? "#fff" : "#444",
                                 background: rotaDiff === d.id ? `${d.color}22` : "transparent",
-                                cursor: "pointer", transition: "all 0.15s",
+                                cursor: "none", transition: "all 0.15s",
                               }}
                             >
                               {d.label}
@@ -650,7 +650,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                             flex: 1, padding: "12px 0",
                             fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 2,
                             border: "none", color: "#000", background: "#fff",
-                            cursor: createTaskMut.isPending || !rotaTitle.trim() ? "default" : "pointer",
+                            cursor: "none",
                             opacity: !rotaTitle.trim() ? 0.4 : 1,
                             transition: "opacity 0.2s",
                           }}
@@ -663,7 +663,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                             padding: "12px 16px",
                             fontFamily: "'DM Mono', monospace", fontSize: 9,
                             border: "1px solid #222", color: "#aaa",
-                            background: "transparent", cursor: "pointer",
+                            background: "transparent", cursor: "none",
                           }}
                         >
                           CANCELAR
@@ -678,7 +678,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                         fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 3,
                         color: "#999", background: "transparent",
                         border: "none", borderBottom: "1px solid #111",
-                        cursor: "pointer", display: "flex", alignItems: "center", gap: 8,
+                        cursor: "none", display: "flex", alignItems: "center", gap: 8,
                         transition: "color 0.2s",
                       }}
                       onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
@@ -743,7 +743,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                                 style={{
                                   width: 18, height: 18, borderRadius: "50%",
                                   border: `1px solid ${overdue ? "#ff5050" : "#333"}`,
-                                  background: "transparent", cursor: "pointer",
+                                  background: "transparent", cursor: "none",
                                   flexShrink: 0, marginTop: 2,
                                   transition: "border-color 0.2s, background 0.2s",
                                 }}
@@ -805,7 +805,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                                   title="Editar task"
                                   style={{
                                     background: editingTaskId === task.id ? "#1a1a1a" : "none", border: "none",
-                                    color: editingTaskId === task.id ? "#fff" : "#333", cursor: "pointer",
+                                    color: editingTaskId === task.id ? "#fff" : "#333", cursor: "none",
                                     width: 28, height: 28, display: "flex",
                                     alignItems: "center", justifyContent: "center",
                                     fontSize: 12, transition: "color 0.2s",
@@ -818,7 +818,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                                   title="Remover task"
                                   style={{
                                     background: "none", border: "none",
-                                    color: "#777", cursor: "pointer",
+                                    color: "#777", cursor: "none",
                                     width: 28, height: 28, display: "flex",
                                     alignItems: "center", justifyContent: "center",
                                     fontSize: 12, transition: "color 0.2s",
@@ -865,7 +865,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                                           border: `1px solid ${editDiff === d ? dc : "#1e1e1e"}`,
                                           color: editDiff === d ? "#fff" : "#444",
                                           background: editDiff === d ? `${dc}22` : "transparent",
-                                          cursor: "pointer",
+                                          cursor: "none",
                                         }}>{d.toUpperCase()}</button>
                                       );
                                     })}
@@ -900,7 +900,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                                       flex: 1, padding: "10px 0",
                                       fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2,
                                       border: "none", color: "#000", background: "#fff",
-                                      cursor: updateTaskMut.isPending ? "default" : "pointer",
+                                      cursor: "none",
                                       opacity: !editTitle.trim() ? 0.4 : 1,
                                     }}
                                   >{updateTaskMut.isPending ? "SALVANDO..." : "SALVAR"}</button>
@@ -910,7 +910,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                                       padding: "10px 16px",
                                       fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2,
                                       border: "1px solid #222", color: "#aaa", background: "transparent",
-                                      cursor: "pointer",
+                                      cursor: "none",
                                     }}
                                   >CANCELAR</button>
                                 </div>
@@ -943,7 +943,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                           borderColor: rotaHistoryFilter === f ? "#fff" : "#1e1e1e",
                           color: rotaHistoryFilter === f ? "#000" : "#444",
                           background: rotaHistoryFilter === f ? "#fff" : "transparent",
-                          cursor: "pointer", transition: "all 0.15s",
+                          cursor: "none", transition: "all 0.15s",
                         }}
                       >
                         {f === "all" ? "TUDO" : f === "week" ? "SEMANA" : "MÊS"}

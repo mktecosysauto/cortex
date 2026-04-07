@@ -305,7 +305,7 @@ export default function AgentProfile() {
               background: "none",
               border: "1px solid #1a1a1a",
               padding: "4px 10px",
-              cursor: "pointer",
+              cursor: "none",
               textTransform: "uppercase",
             }}
           >
