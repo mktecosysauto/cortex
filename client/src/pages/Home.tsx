@@ -664,52 +664,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── INTRO STATEMENT (fundo claro — contraste radical) ─────────────── */}
-      <section style={{
-        background: "#f0ede8",
-        padding: "clamp(80px, 12vw, 160px) clamp(24px, 6vw, 80px)",
-        position: "relative",
-        zIndex: 2,
-      }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <LineReveal>
-            <p style={{
-              fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: "clamp(36px, 5.5vw, 72px)",
-              lineHeight: 1.05,
-              letterSpacing: 1,
-              color: "#0a0a0a",
-              maxWidth: 800,
-            }}>
-              Transformamos estética em sistemas. Cada ferramenta do CÓRTEX foi construída para profissionais criativos que não aceitam mediocridade.
-            </p>
-          </LineReveal>
-          <div style={{ marginTop: 40, display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
-            <div style={{ width: 40, height: 1, background: "rgba(0,0,0,0.2)" }} />
-            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 4, color: "rgba(0,0,0,0.4)", textTransform: "uppercase" }}>
-              módulos do sistema
-            </span>
-            <button
-              onClick={() => navigateTo("/sobre")}
-              style={{
-                marginLeft: "auto",
-                fontFamily: "'DM Mono', monospace",
-                fontSize: 10,
-                letterSpacing: 2,
-                color: "#0a0a0a",
-                background: "none",
-                border: "1px solid rgba(0,0,0,0.25)",
-                padding: "10px 24px",
-                cursor: "pointer",
-                transition: "background 0.2s, border-color 0.2s",
-              }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,0,0,0.06)"; (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(0,0,0,0.5)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "none"; (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(0,0,0,0.25)"; }}
-            >CONHECER O SISTEMA →</button>
-          </div>
-        </div>
-      </section>
-
       {/* ── NEXUS ─────────────────────────────────────────────────────────── */}
       <NexusSection />
 

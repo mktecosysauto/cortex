@@ -359,3 +359,5 @@
 - [x] Alterar hero da landing: SISTEMA/CENTRAL/DE DESIGN. → CÓRTEX/SYSTEM.
 - [x] Criar página /sobre com texto conceitual, carrossel de módulos e botões login/cadastro
 - [x] Conectar bloco bege da landing ao /sobre
+- [x] Remover bloco bege com texto da landing interna
+- [x] Redirecionar não logados para /sobre ao acessar /

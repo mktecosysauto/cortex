@@ -1,7 +1,8 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch, useLocation } from "wouter";
+import { Route, Switch, useLocation, Redirect } from "wouter";
+import { useAuth } from "./_core/hooks/useAuth";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { PageTransitionProvider } from "./contexts/PageTransitionContext";
@@ -29,11 +30,20 @@ function isPublicRoute(path: string): boolean {
   return PUBLIC_PATHS.some((prefix) => path.startsWith(prefix));
 }
 
+// ─── HomeGuard: redireciona não logados para /sobre ─────────────────────────
+function HomeGuard() {
+  const { isAuthenticated, loading } = useAuth();
+  // Enquanto carrega, não redireciona (evita flash)
+  if (loading) return null;
+  if (!isAuthenticated) return <Redirect to="/sobre" />;
+  return <Home />;
+}
+
 // ─── Router ───────────────────────────────────────────────────────────────────
 function Router() {
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
+      <Route path={"/"} component={HomeGuard} />
       <Route path={"/arquivo"} component={Arquivo} />
       <Route path={"/nexus"} component={Nexus} />
       <Route path={"/dashboard"} component={Dashboard} />
