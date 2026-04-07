@@ -24,32 +24,34 @@ import RankUpOverlay from "./components/RankUpOverlay";
 import AchievementToastContainer from "./components/AchievementToast";
 
 // ─── Public route detection ───────────────────────────────────────────────────
-// Routes here are rendered WITHOUT NexusProvider to avoid protectedProcedure
+// Routes listed here are rendered WITHOUT NexusProvider to avoid protectedProcedure
 // calls from triggering the global auth redirect handler.
 const PUBLIC_PATH_PREFIXES = ["/b/", "/sobre"];
-const PUBLIC_PATH_EXACT = ["/"];
+const PUBLIC_PATH_EXACT = ["/"]; // "/" is handled by HomeGate (no Nexus needed)
 
 function isPublicRoute(path: string): boolean {
   if (PUBLIC_PATH_EXACT.includes(path)) return true;
   return PUBLIC_PATH_PREFIXES.some((prefix) => path.startsWith(prefix));
 }
 
-// ─── HomeGate: runs outside NexusProvider ────────────────────────────────────
-// Only performs a redirect decision — never renders components that need Nexus.
-// Non-authenticated → /sobre (public presentation page)
-// Authenticated → /dashboard (enters the full authenticated app)
+// ─── HomeGate ────────────────────────────────────────────────────────────────
+// Runs OUTSIDE NexusProvider (no protectedProcedure calls).
+// • Not authenticated → show /sobre (public presentation page)
+// • Authenticated     → redirect to /landing (Home inside NexusProvider)
 function HomeGate() {
   const { isAuthenticated, loading } = useAuth();
   if (loading) return null;
   if (!isAuthenticated) return <Redirect to="/sobre" />;
-  return <Redirect to="/dashboard" />;
+  // Redirect to /landing so Home renders inside NexusProvider
+  return <Redirect to="/landing" />;
 }
 
-// ─── Router (authenticated, inside NexusProvider) ────────────────────────────
+// ─── Authenticated Router (inside NexusProvider) ─────────────────────────────
 function Router() {
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
+      {/* /landing is the authenticated home — same component as Home */}
+      <Route path={"/landing"} component={Home} />
       <Route path={"/arquivo"} component={Arquivo} />
       <Route path={"/nexus"} component={Nexus} />
       <Route path={"/dashboard"} component={Dashboard} />
@@ -90,12 +92,10 @@ function AppInner() {
 }
 
 // ─── App root ─────────────────────────────────────────────────────────────────
-// Public routes (/, /sobre, /b/*) are rendered completely isolated from
-// NexusProvider. "/" only runs HomeGate which does a redirect — no Nexus needed.
-// Authenticated routes go through NexusProvider normally.
 function App() {
   const [location] = useLocation();
 
+  // Public routes: /, /sobre, /b/* — rendered without NexusProvider
   if (isPublicRoute(location)) {
     return (
       <ErrorBoundary>
@@ -114,6 +114,7 @@ function App() {
     );
   }
 
+  // Authenticated routes — inside NexusProvider
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">

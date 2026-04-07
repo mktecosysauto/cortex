@@ -249,7 +249,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
       }}>
         {/* Left: wordmark */}
         <button
-          onClick={() => navigateTo("/")}
+          onClick={() => navigateTo("/landing")}
           style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, letterSpacing: 3, color: "#fff", background: "none", border: "none", cursor: "pointer", padding: 0 }}
         >
           CÓRTEX
