@@ -201,3 +201,37 @@ export const formaFollowups = mysqlTable("forma_followups", {
 });
 export type FormaFollowup = typeof formaFollowups.$inferSelect;
 export type InsertFormaFollowup = typeof formaFollowups.$inferInsert;
+
+// ─── ARQUIVO — Collections ─────────────────────────────────────────────────
+export const arquivoCollections = mysqlTable("arquivo_collections", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  coverUrl: text("coverUrl"),
+  isSystem: boolean("isSystem").default(false).notNull(),
+  promptCount: int("promptCount").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ArquivoCollection = typeof arquivoCollections.$inferSelect;
+export type InsertArquivoCollection = typeof arquivoCollections.$inferInsert;
+
+// ─── ARQUIVO — Prompts ─────────────────────────────────────────────────────
+export const arquivoPrompts = mysqlTable("arquivo_prompts", {
+  id: int("id").autoincrement().primaryKey(),
+  collectionId: int("collectionId").notNull().references(() => arquivoCollections.id),
+  userId: int("userId").notNull().references(() => users.id),
+  title: varchar("title", { length: 200 }).notNull(),
+  tags: json("tags").$type<string[]>().default([]).notNull(),
+  prompt: text("prompt").notNull(),
+  imgUrl: text("imgUrl"),
+  isSystem: boolean("isSystem").default(false).notNull(),
+  displayOrder: int("displayOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ArquivoPrompt = typeof arquivoPrompts.$inferSelect;
+export type InsertArquivoPrompt = typeof arquivoPrompts.$inferInsert;

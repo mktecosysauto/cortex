@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { GrainOverlay, CustomCursor } from "@/components/CortexShell";
+import { GrainOverlay } from "@/components/CortexShell";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { usePageTransition } from "@/contexts/PageTransitionContext";
 import { trpc } from "@/lib/trpc";
@@ -7,6 +7,7 @@ import NexusBadge from "@/components/NexusBadge";
 import { useNexus } from "@/contexts/NexusContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
+import { useRoute } from "wouter";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface PromptItem {
@@ -18,46 +19,30 @@ interface PromptItem {
   isUser?: boolean;
 }
 
-// ─── BASE PROMPTS ─────────────────────────────────────────────────────────────
-const BASE_PROMPTS: PromptItem[] = [
-  { id: 1, vehicle: "PORSCHE 911 — BLACK", tags: ["Side Profile", "Misty Field", "Moody"], prompt: "A cinematic landscape image featuring a vintage black Porsche 911 parked on a straight road cutting through lush green field. Side view, crisp detailing. Moody atmosphere, vibrant foreground fading into soft mist. Mist blurs horizon. Atmospheric and dramatic, balance of realism and artistic mood." },
-  { id: 2, vehicle: "PORSCHE 911 — SILVER", tags: ["Front 3/4", "Golden Hour", "Country Road"], prompt: "Photorealistic. Classic Porsche 911 driving towards viewer on winding country road, golden hour. Road curves right, lush green banks, fallen leaves. Stone bridge, rolling sunlit hills, autumn foliage. Warm sunlight through branches, long soft shadows. Golden glow, pastel sky, wispy clouds. Ultra-sharp, cinematic lighting, HDR, realistic reflections." },
-  { id: 3, vehicle: "BMW F30 — BLACK", tags: ["Motion Shot", "Dirt Track", "8K"], prompt: "Photo of a black BMW F30 participating in a race on a track with flying 3D dirt and dust particles, motion shot, ultra-detailed photo, 8K quality." },
-  { id: 4, vehicle: "PORSCHE 911 DAKAR 930", tags: ["Ultra-Low Angle", "Forest Rally", "Mud Splatter"], prompt: "Rugged off-road rally scene, dense sunlit forest. Classic 911 Dakar (930) speeds on dirt trail. Ultra-low close-up, front right side, slight upward tilt, 20mm wide-angle near front left wheel. Headlight on, glowing warmly. Body splattered with mud. Rally tires kick up soil and dirt particles frozen mid-air. Sharp foreground dirt, slightly blurred background. Natural colors, cinematic lighting, photorealistic, high resolution." },
-  { id: 5, vehicle: "MERCEDES G-CLASS — MATURE", tags: ["Human Model", "Mountain Lake", "Mature Male"], prompt: "Casual spontaneous candid. Mature European man leaning against matte black Mercedes-Benz G-Class SUV beside tranquil mountain lake. Lived-in dark-gray wool jacket, black t-shirt, loose gray pants, crisp white sneakers. Lake reflects pine-covered peaks. Natural ambient light on jacket wool texture and worn SUV surface. Eye level, relaxed off-center composition. Authentic skin texture, fabric grain, environmental shadows. iPhone snapshot feel. Quietly contemplative. Urban style meets natural stillness." },
-  { id: 6, vehicle: "MERCEDES G-CLASS — YOUNG", tags: ["Human Model", "Mountain Lake", "Young Male"], prompt: "Casual spontaneous candid. Young European man leaning against matte black Mercedes-Benz G-Class SUV beside tranquil mountain lake. Dark-gray wool jacket, black t-shirt, loose gray pants, crisp white sneakers. Lake reflects pine-covered peaks. Natural ambient light. Eye level, relaxed off-center composition. Authentic skin texture, fabric grain. iPhone snapshot feel." },
-  { id: 7, vehicle: "RED SPORT COUPE", tags: ["Overhead Top-Down", "Male Model", "Editorial"], prompt: "High-end automotive campaign shot, overhead top-down composition, full red sport coupe fully visible, door open, male model as luxury streetwear, clean minimalist asphalt, softbox-like daylight, controlled shadows, immaculate reflections, premium editorial retouching, photoreal, no text, no watermark, no busy background." },
-  { id: 8, vehicle: "VINTAGE GREEN SEDAN", tags: ["Fashion Portrait", "Colonnade", "Retro Luxury"], prompt: "Cinematic fashion portrait. Asian man early 30s, vintage green classic sedan. Dark green fur coat, mustard-brown cardigan, patterned yellow shirt, olive tailored trousers, brown leather loafers, mustard socks, dark green fedora. Brown-tinted aviators, cigarette. Grand neoclassical colonnade, tall stone pillars, symmetrical corridor, black-and-white checkered marble floor. Soft morning fog, pink flowers. Soft cinematic daylight. Muted greens, warm mustard tones, teal shadows. Retro luxury. 50mm, shallow DOF." },
-  { id: 9, vehicle: "AUDI R8 — RED", tags: ["Overhead Top-Down", "Dark Garage", "Editorial"], prompt: "High-end automotive campaign shot, overhead top-down composition, full red Audi R8 fully visible, door open, male model in luxury streetwear, dark dramatic garage setting, controlled spotlights, immaculate reflections on polished floor, premium editorial retouching, photoreal, no text, no watermark." },
-  { id: 10, vehicle: "LAMBORGHINI URUS", tags: ["Low Angle Rear", "Off-Road Mud", "Action"], prompt: "Ultra-realistic action shot. Lamborghini Urus tearing through muddy off-road trail at high speed, low dynamic frontal angle. Mud splashes violently, flying debris and water droplets frozen mid-air. Massive wheels in motion, coated in thick mud, power and aggression. Dirt textures, reflections, realistic lighting on body contours. Cloudy sky, dramatic light breaking through. Intense motion blur, bokeh from mud and water splatter. Raw movement, energy, off-road domination, cinematic style." },
-  { id: 11, vehicle: "TOYOTA CARINA — WHITE", tags: ["Side 3/4", "Daisy Field", "Japanese"], prompt: "Photorealistic 1993 Toyota Carina, white. Parked in field among white daisies and green grass. Daisies in style of Japanese drawing. Japanese mountains background. Slightly sideways, hood facing viewer, right side forward. Cool wheels. Professional photography, natural lighting. --ar 3:4, --v7" },
-  { id: 12, vehicle: "PORSCHE 911 — NIGHT CITY", tags: ["Front 3/4", "Night", "Urban Neon"], prompt: "Photorealistic Porsche 911 parked on wet urban street at night. Front 3/4 view. Neon reflections on wet asphalt, city lights bokeh background. Low ambient light, dramatic highlights on bodywork. Cinematic night photography, shallow depth of field, 35mm lens." },
-  { id: 13, vehicle: "FERRARI — EDITORIAL", tags: ["Studio", "White Background", "Luxury"], prompt: "Studio automotive photography. Ferrari on pure white seamless background. Three-quarter front view. Professional automotive lighting setup, perfectly even illumination, subtle shadow under car. Ultra-sharp details, paint reflections, chrome details. Luxury car catalog style, photoreal, no text." },
-];
+// DB prompt adapted to PromptItem shape
+function dbToPromptItem(p: {
+  id: number;
+  title: string;
+  tags: string[] | null;
+  prompt: string;
+  imgUrl: string | null;
+  isSystem: boolean;
+}): PromptItem {
+  return {
+    id: p.id,
+    vehicle: p.title,
+    tags: p.tags ?? [],
+    prompt: p.prompt,
+    imgData: p.imgUrl ?? null,
+    isUser: !p.isSystem,
+  };
+}
 
-// ─── Storage helpers ──────────────────────────────────────────────────────────
-const LS_KEY = "apg_items_v2";
+// ─── API Key helpers (localStorage) ──────────────────────────────────────────
 const LS_FP = "apg_fp_key";
 const LS_ANTH = "apg_anth_key";
-
 function getFpKey() { return localStorage.getItem(LS_FP) || ""; }
 function getAnthKey() { return localStorage.getItem(LS_ANTH) || ""; }
-
-function loadUserItems(): PromptItem[] {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
-}
-
-function saveUserItems(items: PromptItem[]) {
-  try {
-    localStorage.setItem(LS_KEY, JSON.stringify(items));
-  } catch {
-    const noImg = items.map((it) => ({ ...it, imgData: null }));
-    localStorage.setItem(LS_KEY, JSON.stringify(noImg));
-  }
-}
 
 // ─── Polling helper ───────────────────────────────────────────────────────────
 async function fpPoll(taskUrl: string, fpKey: string, maxMs = 120000): Promise<{ images?: { url: string }[]; url?: string; video_url?: string; prompt?: string; data?: { prompt?: string } }> {
@@ -78,7 +63,6 @@ let _toastFn: ((msg: string, type?: string) => void) | null = null;
 function showToast(msg: string, type: "success" | "error" | "info" = "info") {
   _toastFn?.(msg, type);
 }
-
 function ToastContainer() {
   const [toasts, setToasts] = useState<{ id: number; msg: string; type: string }[]>([]);
   useEffect(() => {
@@ -98,7 +82,7 @@ function ToastContainer() {
   );
 }
 
-// ─── Thinking Dots ────────────────────────────────────────────────────────────
+// ─── ThinkingDots ─────────────────────────────────────────────────────────────
 function ThinkingDots({ label }: { label?: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 0" }}>
@@ -118,14 +102,12 @@ function ThinkingDots({ label }: { label?: string }) {
 function SettingsModal({ onClose }: { onClose: () => void }) {
   const [fpKey, setFpKey] = useState(getFpKey());
   const [anthKey, setAnthKey] = useState(getAnthKey());
-
   const save = () => {
     localStorage.setItem(LS_FP, fpKey.trim());
     localStorage.setItem(LS_ANTH, anthKey.trim());
     showToast("Configurações salvas", "success");
     onClose();
   };
-
   return (
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal-box">
@@ -135,7 +117,6 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
           </h2>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "#999", fontSize: 18, cursor: "none" }}>✕</button>
         </div>
-
         <div style={{ marginBottom: 24 }}>
           <label style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#999", letterSpacing: 1, display: "block", marginBottom: 8, textTransform: "uppercase" }}>
             Freepik API Key
@@ -151,7 +132,6 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
             {fpKey ? "● Configurada" : "○ Vazia"}
           </div>
         </div>
-
         <div style={{ marginBottom: 32 }}>
           <label style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#999", letterSpacing: 1, display: "block", marginBottom: 8, textTransform: "uppercase" }}>
             Anthropic API Key <span style={{ color: "#aaa" }}>(opcional)</span>
@@ -167,7 +147,6 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
             {anthKey ? "● Configurada" : "○ Vazia"}
           </div>
         </div>
-
         <button className="btn-cortex" style={{ width: "100%", justifyContent: "center" }} onClick={save}>
           Salvar
         </button>
@@ -176,12 +155,17 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ─── Upload Modal ─────────────────────────────────────────────────────────────
-function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: PromptItem) => void }) {
+// ─── Upload Modal (adapted for DB) ───────────────────────────────────────────
+interface UploadModalProps {
+  onClose: () => void;
+  onSave: (data: { title: string; tags: string[]; prompt: string; imgUrl?: string }) => Promise<void>;
+}
+function UploadModal({ onClose, onSave }: UploadModalProps) {
   const [imgData, setImgData] = useState<string | null>(null);
   const [vehicle, setVehicle] = useState("");
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const reverseEngineerMut = trpc.arquivo.reverseEngineer.useMutation();
@@ -191,7 +175,6 @@ function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: 
     reader.onload = (e) => {
       const data = e.target?.result as string;
       setImgData(data);
-      // Auto-generate prompt after image is loaded
       setTimeout(() => autoGeneratePrompt(data), 100);
     };
     reader.readAsDataURL(file);
@@ -235,20 +218,24 @@ function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: 
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!vehicle.trim()) { showToast("Informe o nome do veículo", "error"); return; }
     if (!prompt.trim()) { showToast("Gere ou escreva um prompt", "error"); return; }
-    const newItem: PromptItem = {
-      id: Date.now(),
-      vehicle: vehicle.toUpperCase(),
-      tags: [],
-      prompt,
-      imgData: imgData || null,
-      isUser: true,
-    };
-    onSave(newItem);
-    showToast("Referência salva na galeria", "success");
-    onClose();
+    setSaving(true);
+    try {
+      await onSave({
+        title: vehicle.toUpperCase(),
+        tags: [],
+        prompt,
+        imgUrl: imgData ?? undefined,
+      });
+      showToast("Referência salva na galeria", "success");
+      onClose();
+    } catch (err: unknown) {
+      showToast(`Erro ao salvar: ${err instanceof Error ? err.message : String(err)}`, "error");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -260,8 +247,6 @@ function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: 
           </h2>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "#999", fontSize: 18, cursor: "none" }}>✕</button>
         </div>
-
-        {/* Drop zone */}
         {!imgData ? (
           <div
             className={`drop-zone${dragOver ? " drag-over" : ""}`}
@@ -276,11 +261,6 @@ function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: 
             <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#999" }}>
               Arraste uma imagem ou clique para selecionar
             </p>
-            {!getAnthKey() && (
-              <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#aaa", marginTop: 8 }}>
-                ⚠ Configure a Anthropic API Key para gerar prompt automaticamente
-              </p>
-            )}
           </div>
         ) : (
           <div style={{ marginBottom: 20, position: "relative" }}>
@@ -291,7 +271,6 @@ function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: 
             >✕</button>
           </div>
         )}
-
         <div style={{ marginBottom: 16 }}>
           <input
             className="input-cortex"
@@ -300,19 +279,16 @@ function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: 
             onChange={(e) => setVehicle(e.target.value)}
           />
         </div>
-
         {loading && (
           <div style={{ marginBottom: 16, padding: "12px 0", borderTop: "1px solid #1a1a1a", borderBottom: "1px solid #1a1a1a" }}>
             <ThinkingDots label="Analisando imagem e gerando prompt..." />
           </div>
         )}
-
         {!loading && (
           <button className="btn-cortex" style={{ width: "100%", justifyContent: "center", marginBottom: 16 }} onClick={generatePrompt} disabled={loading}>
             → {prompt ? "Regerar Prompt" : "Gerar Prompt com IA"}
           </button>
         )}
-
         {prompt && (
           <>
             <textarea
@@ -325,16 +301,15 @@ function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: 
               <button className="btn-cortex sm ghost" onClick={() => { navigator.clipboard.writeText(prompt); showToast("Prompt copiado", "success"); }}>
                 Copiar Prompt
               </button>
-              <button className="btn-cortex sm" style={{ flex: 1, justifyContent: "center" }} onClick={handleSave}>
-                + Salvar na Galeria
+              <button className="btn-cortex sm" style={{ flex: 1, justifyContent: "center" }} onClick={handleSave} disabled={saving}>
+                {saving ? <ThinkingDots label="Salvando..." /> : "+ Salvar na Galeria"}
               </button>
             </div>
           </>
         )}
-
         {!prompt && (
-          <button className="btn-cortex sm" style={{ width: "100%", justifyContent: "center", marginTop: 8 }} onClick={handleSave}>
-            + Salvar na Galeria
+          <button className="btn-cortex sm" style={{ width: "100%", justifyContent: "center", marginTop: 8 }} onClick={handleSave} disabled={saving}>
+            {saving ? <ThinkingDots label="Salvando..." /> : "+ Salvar na Galeria"}
           </button>
         )}
       </div>
@@ -344,30 +319,25 @@ function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: 
 
 // ─── Freepik Panel ────────────────────────────────────────────────────────────
 type FpPanelType = "improve" | "generate" | "upscale" | "animate" | null;
-
 interface FreepikPanelProps {
   type: FpPanelType;
   prompt: string;
   imgData?: string | null;
   onUseImage?: (url: string) => void;
 }
-
 function FreepikPanel({ type, prompt, imgData, onUseImage }: FreepikPanelProps) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState("");
-
   const improvePromptMut = trpc.freepik.improvePrompt.useMutation();
   const generateImageMut = trpc.freepik.generateImage.useMutation();
   const upscaleImageMut = trpc.freepik.upscaleImage.useMutation();
   const animateImageMut = trpc.freepik.animateImage.useMutation();
-
   const run = async () => {
     const key = getFpKey();
     if (!key) { showToast("Configure a Freepik API Key nas configurações", "error"); return; }
     setLoading(true);
     setResult(null);
-
     try {
       if (type === "improve") {
         setStatusMsg("Melhorando prompt via servidor...");
@@ -376,18 +346,14 @@ function FreepikPanel({ type, prompt, imgData, onUseImage }: FreepikPanelProps) 
           || (data as { data?: { prompt?: string } }).data?.prompt || "";
         setResult(improved);
         showToast("Prompt melhorado!", "success");
-      }
-
-      else if (type === "generate") {
+      } else if (type === "generate") {
         setStatusMsg("Gerando imagem (pode levar 30-60s)...");
         const data = await generateImageMut.mutateAsync({ apiKey: key, prompt, aspectRatio: "3:4", realism: true });
         const imgUrl = (data as { images?: { url: string }[]; url?: string }).images?.[0]?.url
           || (data as { url?: string }).url || "";
         setResult(imgUrl);
         showToast("Imagem gerada!", "success");
-      }
-
-      else if (type === "upscale") {
+      } else if (type === "upscale") {
         if (!imgData) { showToast("Sem imagem para upscale", "error"); setLoading(false); return; }
         setStatusMsg("Fazendo upscale via servidor...");
         const base64 = imgData.includes(",") ? imgData.split(",")[1] : imgData;
@@ -395,9 +361,7 @@ function FreepikPanel({ type, prompt, imgData, onUseImage }: FreepikPanelProps) 
         setResult((data as { images?: { url: string }[]; url?: string }).images?.[0]?.url
           || (data as { url?: string }).url || "");
         showToast("Upscale concluído!", "success");
-      }
-
-      else if (type === "animate") {
+      } else if (type === "animate") {
         if (!imgData) { showToast("Sem imagem para animar", "error"); setLoading(false); return; }
         setStatusMsg("Gerando vídeo (pode levar até 4 min)...");
         const base64 = imgData.includes(",") ? imgData.split(",")[1] : imgData;
@@ -413,38 +377,32 @@ function FreepikPanel({ type, prompt, imgData, onUseImage }: FreepikPanelProps) 
       setStatusMsg("");
     }
   };
-
   const labels: Record<NonNullable<FpPanelType>, string> = {
     improve: "⚡ Melhorar Prompt",
     generate: "🎨 Gerar Imagem",
     upscale: "✨ Upscale",
     animate: "▶ Animar",
   };
-
   if (!type) return null;
-
   return (
     <div style={{ padding: "12px 14px", borderTop: "1px solid #2a2a2a" }}>
       <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#999", letterSpacing: 1, marginBottom: 10, textTransform: "uppercase" }}>
         {labels[type]}
       </div>
-
       {!result && !loading && (
         <button className="btn-cortex sm" style={{ width: "100%", justifyContent: "center" }} onClick={run}>
           → Executar
         </button>
       )}
-
       {loading && <ThinkingDots label={statusMsg} />}
-
       {result && !loading && (
         <div>
-          {(type === "improve") && (
+          {type === "improve" && (
             <>
               <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#999", lineHeight: 1.6, marginBottom: 10 }}>{result}</p>
               <div style={{ display: "flex", gap: 6 }}>
                 <button className="btn-cortex sm ghost" onClick={() => { navigator.clipboard.writeText(result); showToast("Copiado!", "success"); }}>Copiar</button>
-                <button className="btn-cortex sm ghost" onClick={() => { setResult(null); }}>Tentar novamente</button>
+                <button className="btn-cortex sm ghost" onClick={() => setResult(null)}>Tentar novamente</button>
               </div>
             </>
           )}
@@ -482,7 +440,6 @@ interface CardProps {
   onDelete?: (id: number) => void;
   onUpdateImg?: (id: number, url: string) => void;
 }
-
 function PromptCard({ item, index, onDelete, onUpdateImg }: CardProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [promptExpanded, setPromptExpanded] = useState(false);
@@ -494,7 +451,6 @@ function PromptCard({ item, index, onDelete, onUpdateImg }: CardProps) {
   const [cardImg, setCardImg] = useState<string | null>(item.imgData || null);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // Reveal animation
   useEffect(() => {
     const el = cardRef.current;
     if (!el) return;
@@ -510,17 +466,14 @@ function PromptCard({ item, index, onDelete, onUpdateImg }: CardProps) {
     setEditOpen((p) => !p);
     setActiveFpPanel(null);
   };
-
   const toggleFp = (panel: FpPanelType) => {
     setActiveFpPanel((p) => (p === panel ? null : panel));
     setEditOpen(false);
   };
 
   const editPromptMut = trpc.arquivo.editPrompt.useMutation();
-
   const generatePrompt = async () => {
     if (!editRequest.trim()) { showToast("Descreva o que você quer mudar", "error"); return; }
-
     setEditLoading(true);
     try {
       const data = await editPromptMut.mutateAsync({ prompt: editPrompt, request: editRequest });
@@ -580,13 +533,9 @@ function PromptCard({ item, index, onDelete, onUpdateImg }: CardProps) {
             </span>
           </div>
         )}
-
-        {/* Badge number */}
         <div style={{ position: "absolute", top: 8, left: 8, fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#999", background: "rgba(0,0,0,0.7)", padding: "2px 6px", letterSpacing: 1 }}>
           {item.id.toString().padStart(2, "0")}
         </div>
-
-        {/* Delete button (user items only) */}
         {item.isUser && (
           <button
             onClick={handleDelete}
@@ -594,14 +543,12 @@ function PromptCard({ item, index, onDelete, onUpdateImg }: CardProps) {
           >✕</button>
         )}
       </div>
-
       {/* Vehicle name */}
       <div style={{ padding: "12px 14px 8px", borderTop: "1px solid #2a2a2a" }}>
         <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 17, letterSpacing: 2, color: "#fff", lineHeight: 1 }}>
           {item.vehicle}
         </h3>
       </div>
-
       {/* Tags */}
       {item.tags.length > 0 && (
         <div style={{ padding: "0 14px 10px", display: "flex", flexWrap: "wrap", gap: 4 }}>
@@ -610,7 +557,6 @@ function PromptCard({ item, index, onDelete, onUpdateImg }: CardProps) {
           ))}
         </div>
       )}
-
       {/* Prompt preview */}
       <div style={{ padding: "0 14px 10px" }}>
         <div className={`prompt-preview${promptExpanded ? " expanded" : ""}`}>
@@ -619,67 +565,37 @@ function PromptCard({ item, index, onDelete, onUpdateImg }: CardProps) {
           </p>
         </div>
       </div>
-
       {/* Action buttons */}
       <div style={{ padding: "0 14px 10px", display: "flex", gap: 8 }}>
-        <button
-          className="btn-cortex sm ghost"
-          style={{ flex: 1, justifyContent: "center" }}
-          onClick={toggleEdit}
-        >
+        <button className="btn-cortex sm ghost" style={{ flex: 1, justifyContent: "center" }} onClick={toggleEdit}>
           ✦ Editar
         </button>
-        <button
-          className="btn-cortex sm ghost"
-          onClick={() => setPromptExpanded((p) => !p)}
-        >
+        <button className="btn-cortex sm ghost" onClick={() => setPromptExpanded((p) => !p)}>
           {promptExpanded ? "Menos" : "Ver tudo"}
         </button>
       </div>
-
       {/* Edit Panel */}
       <div className={`collapse-panel${editOpen ? " open" : ""}`}>
         <div style={{ padding: "12px 14px", borderTop: "1px solid #2a2a2a" }}>
           <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#999", letterSpacing: 1, marginBottom: 8, textTransform: "uppercase" }}>
             Editar Prompt
           </div>
-          <textarea
-            className="textarea-cortex"
-            style={{ minHeight: 80, marginBottom: 8 }}
-            value={editPrompt}
-            onChange={(e) => setEditPrompt(e.target.value)}
-          />
-          <input
-            className="input-cortex"
-            style={{ marginBottom: 8 }}
-            placeholder="O que você quer mudar?"
-            value={editRequest}
-            onChange={(e) => setEditRequest(e.target.value)}
-          />
-          <button
-            className="btn-cortex sm"
-            style={{ width: "100%", justifyContent: "center", marginBottom: 8 }}
-            onClick={generatePrompt}
-            disabled={editLoading}
-          >
+          <textarea className="textarea-cortex" style={{ minHeight: 80, marginBottom: 8 }} value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} />
+          <input className="input-cortex" style={{ marginBottom: 8 }} placeholder="O que você quer mudar?" value={editRequest} onChange={(e) => setEditRequest(e.target.value)} />
+          <button className="btn-cortex sm" style={{ width: "100%", justifyContent: "center", marginBottom: 8 }} onClick={generatePrompt} disabled={editLoading}>
             {editLoading ? <ThinkingDots label="Gerando..." /> : "→ Gerar Prompt Atualizado"}
           </button>
-
           {editResult && (
             <>
               <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#999", letterSpacing: 1, marginBottom: 6, textTransform: "uppercase" }}>Resultado</div>
               <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#999", lineHeight: 1.6, marginBottom: 8 }}>{editResult}</p>
-              <button
-                className="btn-cortex sm ghost"
-                onClick={() => { navigator.clipboard.writeText(editResult); showToast("Copiado!", "success"); }}
-              >
+              <button className="btn-cortex sm ghost" onClick={() => { navigator.clipboard.writeText(editResult); showToast("Copiado!", "success"); }}>
                 Copiar Resultado
               </button>
             </>
           )}
         </div>
       </div>
-
       {/* Freepik Bar */}
       <div className="fp-bar" style={{ borderTop: "1px solid #2a2a2a" }}>
         {(["improve", "generate", "upscale", "animate"] as FpPanelType[]).map((panel) => {
@@ -697,7 +613,6 @@ function PromptCard({ item, index, onDelete, onUpdateImg }: CardProps) {
           );
         })}
       </div>
-
       {/* Freepik Panels */}
       <div className={`collapse-panel${activeFpPanel ? " open" : ""}`}>
         {activeFpPanel && (
@@ -713,69 +628,107 @@ function PromptCard({ item, index, onDelete, onUpdateImg }: CardProps) {
   );
 }
 
-// ─── Main Arquivo Page ────────────────────────────────────────────────────────
-export default function Arquivo() {
-  const [userItems, setUserItems] = useState<PromptItem[]>(() => loadUserItems());
-  const [showSettings, setShowSettings] = useState(false);
-  const [showUpload, setShowUpload] = useState(false);
+// ─── Create Collection Modal ──────────────────────────────────────────────────
+interface CreateCollectionModalProps {
+  onClose: () => void;
+  onCreate: (name: string, description?: string) => Promise<void>;
+}
+function CreateCollectionModal({ onClose, onCreate }: CreateCollectionModalProps) {
+  const [name, setName] = useState("");
+  const [desc, setDesc] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const handleCreate = async () => {
+    if (!name.trim()) { showToast("Informe o nome da coleção", "error"); return; }
+    setSaving(true);
+    try {
+      await onCreate(name.toUpperCase().trim(), desc.trim() || undefined);
+      showToast("Coleção criada", "success");
+      onClose();
+    } catch (err: unknown) {
+      showToast(`Erro: ${err instanceof Error ? err.message : String(err)}`, "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="modal-box">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
+          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, letterSpacing: 2, color: "#fff" }}>
+            NOVA COLEÇÃO
+          </h2>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "#999", fontSize: 18, cursor: "none" }}>✕</button>
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#999", letterSpacing: 1, display: "block", marginBottom: 8, textTransform: "uppercase" }}>
+            Nome da Coleção
+          </label>
+          <input
+            className="input-cortex"
+            placeholder="Ex: URBANOS, MOTOS, CLÁSSICOS"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+          />
+        </div>
+        <div style={{ marginBottom: 32 }}>
+          <label style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#999", letterSpacing: 1, display: "block", marginBottom: 8, textTransform: "uppercase" }}>
+            Descrição <span style={{ color: "#555" }}>(opcional)</span>
+          </label>
+          <textarea
+            className="textarea-cortex"
+            style={{ minHeight: 60 }}
+            placeholder="Descreva o tema desta coleção..."
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+          />
+        </div>
+        <button className="btn-cortex" style={{ width: "100%", justifyContent: "center" }} onClick={handleCreate} disabled={saving}>
+          {saving ? <ThinkingDots label="Criando..." /> : "+ Criar Coleção"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Library Screen (tela de coleções) ───────────────────────────────────────
+function LibraryScreen() {
   const { navigateTo } = usePageTransition();
-  const { addXP, updateNexus } = useNexus();
   const { user, isAuthenticated, logout } = useAuth();
+  const [showSettings, setShowSettings] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const utils = trpc.useUtils();
 
-  const allItems = [...BASE_PROMPTS, ...userItems];
+  const { data: collections = [], isLoading } = trpc.arquivo.getCollections.useQuery();
+  const createCollectionMut = trpc.arquivo.createCollection.useMutation({
+    onSuccess: () => utils.arquivo.getCollections.invalidate(),
+  });
+  const deleteCollectionMut = trpc.arquivo.deleteCollection.useMutation({
+    onSuccess: () => utils.arquivo.getCollections.invalidate(),
+  });
 
-  const handleSaveItem = useCallback((item: PromptItem) => {
-    setUserItems((prev) => {
-      const next = [...prev, item];
-      saveUserItems(next);
-      return next;
-    });
-    // XP: imagem salva na galeria
-    addXP("imagem_salva");
-    updateNexus((prev) => ({ ...prev, stats: { ...prev.stats, imagesGenerated: prev.stats.imagesGenerated + 1 } }));
-  }, [addXP, updateNexus]);
+  const handleCreate = async (name: string, description?: string) => {
+    await createCollectionMut.mutateAsync({ name, description });
+  };
 
-  const handleDelete = useCallback((id: number) => {
-    setUserItems((prev) => {
-      const next = prev.filter((it) => it.id !== id);
-      saveUserItems(next);
-      return next;
-    });
-  }, []);
-
-  const handleUpdateImg = useCallback((id: number, url: string) => {
-    setUserItems((prev) => {
-      const next = prev.map((it) => it.id === id ? { ...it, imgData: url } : it);
-      saveUserItems(next);
-      return next;
-    });
-  }, []);
-
-  const clearUserItems = () => {
-    setUserItems([]);
-    saveUserItems([]);
-    showToast("Cards do usuário removidos", "success");
+  const handleDelete = async (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Deletar esta coleção e todos os seus prompts?")) return;
+    await deleteCollectionMut.mutateAsync({ id });
+    showToast("Coleção removida", "success");
   };
 
   return (
     <>
       <GrainOverlay />
-      <CustomCursor />
       <GlobalHeader currentPage="arquivo" />
       <ToastContainer />
 
-      {/* ── HEADER ─────────────────────────────────────────────────────────── */}
-      <header style={{
-        position: "sticky",
-        top: 56,
-        zIndex: 100,
-        background: "rgba(0,0,0,0.92)",
-        backdropFilter: "blur(14px)",
-        borderBottom: "1px solid #2a2a2a",
-        padding: "0 24px",
-      }}>
+      {/* Header */}
+      <header style={{ position: "sticky", top: 56, zIndex: 100, background: "rgba(0,0,0,0.92)", backdropFilter: "blur(14px)", borderBottom: "1px solid #2a2a2a", padding: "0 24px" }}>
         <div style={{ maxWidth: 1400, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 56 }}>
-          {/* Left: back + title */}
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
             <button
               style={{ background: "none", border: "none", color: "#999", fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 1, cursor: "none", display: "flex", alignItems: "center", gap: 6 }}
@@ -790,135 +743,314 @@ export default function Arquivo() {
                 ARQUIVO
               </div>
               <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#aaa", letterSpacing: 1 }}>
-                galeria · v2.0
+                biblioteca · {collections.length} {collections.length === 1 ? "coleção" : "coleções"}
               </div>
             </div>
           </div>
-
-          {/* Right: actions */}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {/* Badge */}
-            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 1, padding: "3px 8px", border: "1px solid #2a2a2a", color: "#999" }}>
-              {allItems.length} REF
-            </div>
             <NexusBadge />
-
-            {/* Auth button */}
             {isAuthenticated ? (
               <>
                 {user?.role === "admin" && (
-                  <button className="btn-cortex sm ghost" onClick={() => window.location.href = "/admin"} data-hover title="Painel Admin">
-                    ADMIN
-                  </button>
+                  <button className="btn-cortex sm ghost" onClick={() => window.location.href = "/admin"} data-hover>ADMIN</button>
                 )}
-                <button className="btn-cortex sm ghost" onClick={() => logout()} data-hover title="Sair">
-                  SAIR
-                </button>
+                <button className="btn-cortex sm ghost" onClick={() => logout()} data-hover>SAIR</button>
               </>
             ) : (
-              <a href={getLoginUrl()} className="btn-cortex sm" style={{ textDecoration: "none" }} data-hover>
-                ENTRAR
-              </a>
+              <a href={getLoginUrl()} className="btn-cortex sm" style={{ textDecoration: "none" }} data-hover>ENTRAR</a>
             )}
-
-            {userItems.length > 0 && (
-              <button className="btn-cortex sm ghost" onClick={clearUserItems} title="Limpar cards do usuário">
-                🗑
-              </button>
-            )}
-
-            <button className="btn-cortex sm" onClick={() => setShowUpload(true)} data-hover>
-              ↑
-            </button>
-
-            <button className="btn-cortex sm ghost" onClick={() => setShowSettings(true)} data-hover>
-              ⚙
-            </button>
+            <button className="btn-cortex sm" onClick={() => setShowCreate(true)} data-hover>+ Coleção</button>
+            <button className="btn-cortex sm ghost" onClick={() => setShowSettings(true)} data-hover>⚙</button>
           </div>
         </div>
       </header>
 
-      {/* ── GALLERY ────────────────────────────────────────────────────────── */}
+      {/* Main */}
+      <main style={{ background: "#000", minHeight: "100vh", padding: "40px 24px" }}>
+        <div style={{ maxWidth: 1400, margin: "0 auto" }}>
+          <div style={{ marginBottom: 32 }}>
+            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#555", letterSpacing: 1 }}>
+              SELECIONE UMA COLEÇÃO PARA VER OS PROMPTS
+            </p>
+          </div>
+
+          {isLoading ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "40px 0" }}>
+              <ThinkingDots label="Carregando coleções..." />
+            </div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 2 }}>
+              {collections.map((col, i) => (
+                <div
+                  key={col.id}
+                  data-hover
+                  onClick={() => navigateTo(`/arquivo/${col.id}`)}
+                  style={{
+                    background: "#0d0d0d",
+                    border: "1px solid #2a2a2a",
+                    padding: "32px 28px",
+                    cursor: "none",
+                    transition: "border-color 0.3s ease, background 0.3s ease",
+                    animation: `fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) ${i * 0.08}s both`,
+                    position: "relative",
+                    minHeight: 180,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; e.currentTarget.style.background = "#111"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#2a2a2a"; e.currentTarget.style.background = "#0d0d0d"; }}
+                >
+                  {/* System badge */}
+                  {col.isSystem && (
+                    <div style={{ position: "absolute", top: 12, right: 12, fontFamily: "'DM Mono', monospace", fontSize: 8, color: "#555", letterSpacing: 1, border: "1px solid #2a2a2a", padding: "2px 6px" }}>
+                      SISTEMA
+                    </div>
+                  )}
+                  {/* Delete button (non-system) */}
+                  {!col.isSystem && (
+                    <button
+                      onClick={(e) => handleDelete(col.id, e)}
+                      style={{ position: "absolute", top: 10, right: 10, background: "none", border: "none", color: "#444", fontSize: 14, cursor: "none", padding: 4 }}
+                      data-hover
+                    >✕</button>
+                  )}
+
+                  <div>
+                    <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#555", letterSpacing: 2, marginBottom: 12, textTransform: "uppercase" }}>
+                      {String(i + 1).padStart(2, "0")} / COLEÇÃO
+                    </div>
+                    <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 32, letterSpacing: 3, color: "#fff", lineHeight: 1, marginBottom: 12 }}>
+                      {col.name}
+                    </h2>
+                    {col.description && (
+                      <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#666", lineHeight: 1.6, marginBottom: 0 }}>
+                        {col.description}
+                      </p>
+                    )}
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 24 }}>
+                    <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#555", letterSpacing: 1 }}>
+                      {col.promptCount} {col.promptCount === 1 ? "PROMPT" : "PROMPTS"}
+                    </span>
+                    <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#444", letterSpacing: 1 }}>
+                      → ABRIR
+                    </span>
+                  </div>
+                </div>
+              ))}
+
+              {/* Add collection card */}
+              <div
+                data-hover
+                onClick={() => setShowCreate(true)}
+                style={{
+                  background: "#080808",
+                  border: "1px dashed #2a2a2a",
+                  padding: "32px 28px",
+                  cursor: "none",
+                  transition: "border-color 0.2s, background 0.2s",
+                  minHeight: 180,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 12,
+                  animation: `fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) ${collections.length * 0.08}s both`,
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)"; e.currentTarget.style.background = "#0d0d0d"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#2a2a2a"; e.currentTarget.style.background = "#080808"; }}
+              >
+                <div style={{ width: 40, height: 40, border: "1px solid #2a2a2a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, color: "rgba(255,255,255,0.15)" }}>+</div>
+                <div style={{ textAlign: "center" }}>
+                  <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#555", letterSpacing: 1 }}>NOVA COLEÇÃO</p>
+                  <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#333", marginTop: 4, letterSpacing: 0.5 }}>organize seus prompts por tema</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      {showCreate && <CreateCollectionModal onClose={() => setShowCreate(false)} onCreate={handleCreate} />}
+    </>
+  );
+}
+
+// ─── Collection Screen (tela de prompts de uma coleção) ───────────────────────
+function CollectionScreen({ collectionId }: { collectionId: number }) {
+  const { navigateTo } = usePageTransition();
+  const { user, isAuthenticated, logout } = useAuth();
+  const { addXP, updateNexus } = useNexus();
+  const [showSettings, setShowSettings] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
+  const utils = trpc.useUtils();
+
+  const { data: prompts = [], isLoading } = trpc.arquivo.getPrompts.useQuery({ collectionId });
+  const { data: collections = [] } = trpc.arquivo.getCollections.useQuery();
+  const collection = collections.find((c) => c.id === collectionId);
+
+  const createPromptMut = trpc.arquivo.createPrompt.useMutation({
+    onSuccess: () => {
+      utils.arquivo.getPrompts.invalidate({ collectionId });
+      utils.arquivo.getCollections.invalidate();
+    },
+  });
+  const deletePromptMut = trpc.arquivo.deletePrompt.useMutation({
+    onSuccess: () => {
+      utils.arquivo.getPrompts.invalidate({ collectionId });
+      utils.arquivo.getCollections.invalidate();
+    },
+  });
+  const updatePromptMut = trpc.arquivo.updatePrompt.useMutation({
+    onSuccess: () => utils.arquivo.getPrompts.invalidate({ collectionId }),
+  });
+
+  const allItems = prompts.map(dbToPromptItem);
+
+  const handleSaveItem = useCallback(async (data: { title: string; tags: string[]; prompt: string; imgUrl?: string }) => {
+    await createPromptMut.mutateAsync({ collectionId, ...data });
+    addXP("imagem_salva");
+    updateNexus((prev) => ({ ...prev, stats: { ...prev.stats, imagesGenerated: prev.stats.imagesGenerated + 1 } }));
+  }, [collectionId, createPromptMut, addXP, updateNexus]);
+
+  const handleDelete = useCallback((id: number) => {
+    deletePromptMut.mutate({ id });
+  }, [deletePromptMut]);
+
+  const handleUpdateImg = useCallback((id: number, url: string) => {
+    updatePromptMut.mutate({ id, imgUrl: url });
+  }, [updatePromptMut]);
+
+  return (
+    <>
+      <GrainOverlay />
+      <GlobalHeader currentPage="arquivo" />
+      <ToastContainer />
+
+      {/* Header */}
+      <header style={{ position: "sticky", top: 56, zIndex: 100, background: "rgba(0,0,0,0.92)", backdropFilter: "blur(14px)", borderBottom: "1px solid #2a2a2a", padding: "0 24px" }}>
+        <div style={{ maxWidth: 1400, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 56 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+            <button
+              style={{ background: "none", border: "none", color: "#999", fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 1, cursor: "none", display: "flex", alignItems: "center", gap: 6 }}
+              data-hover
+              onClick={() => navigateTo("/arquivo")}
+            >
+              ← ARQUIVO
+            </button>
+            <div style={{ width: 1, height: 20, background: "#2a2a2a" }} />
+            <div>
+              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, letterSpacing: 2, color: "#fff", lineHeight: 1 }}>
+                {collection?.name ?? "COLEÇÃO"}
+              </div>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#aaa", letterSpacing: 1 }}>
+                galeria · {allItems.length} ref
+              </div>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 1, padding: "3px 8px", border: "1px solid #2a2a2a", color: "#999" }}>
+              {allItems.length} REF
+            </div>
+            <NexusBadge />
+            {isAuthenticated ? (
+              <>
+                {user?.role === "admin" && (
+                  <button className="btn-cortex sm ghost" onClick={() => window.location.href = "/admin"} data-hover>ADMIN</button>
+                )}
+                <button className="btn-cortex sm ghost" onClick={() => logout()} data-hover>SAIR</button>
+              </>
+            ) : (
+              <a href={getLoginUrl()} className="btn-cortex sm" style={{ textDecoration: "none" }} data-hover>ENTRAR</a>
+            )}
+            <button className="btn-cortex sm" onClick={() => setShowUpload(true)} data-hover>↑</button>
+            <button className="btn-cortex sm ghost" onClick={() => setShowSettings(true)} data-hover>⚙</button>
+          </div>
+        </div>
+      </header>
+
+      {/* Gallery */}
       <main style={{ background: "#000", minHeight: "100vh", padding: "24px" }}>
         <div style={{ maxWidth: 1400, margin: "0 auto" }}>
-          {/* Gallery label */}
           <div style={{ marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
             <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#aaa", letterSpacing: 1 }}>
-              galeria de referências · edite qualquer prompt em linguagem natural
+              {collection?.description || "galeria de referências · edite qualquer prompt em linguagem natural"}
             </span>
-            <button
-              className="btn-cortex sm"
-              onClick={() => setShowUpload(true)}
-              data-hover
-              style={{ display: "flex", alignItems: "center", gap: 6 }}
-            >
+            <button className="btn-cortex sm" onClick={() => setShowUpload(true)} data-hover style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ fontSize: 12 }}>+</span> Adicionar imagem
             </button>
           </div>
 
-          {/* Grid */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))",
-            gap: 2,
-          }}>
-            {/* Add card — always first */}
-            <div
-              onClick={() => setShowUpload(true)}
-              data-hover
-              style={{
-                background: "#080808",
-                border: "1px dashed #2a2a2a",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                aspectRatio: "3/4",
-                cursor: "none",
-                transition: "border-color 0.2s, background 0.2s",
-                gap: 12,
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.3)";
-                (e.currentTarget as HTMLDivElement).style.background = "#0d0d0d";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLDivElement).style.borderColor = "#2a2a2a";
-                (e.currentTarget as HTMLDivElement).style.background = "#080808";
-              }}
-            >
-              <div style={{
-                width: 40, height: 40,
-                border: "1px solid #2a2a2a",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 20, color: "rgba(255,255,255,0.2)",
-              }}>+</div>
-              <div style={{ textAlign: "center" }}>
-                <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#aaa", letterSpacing: 1 }}>
-                  Adicionar imagem
-                </p>
-                <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#2a2a2a", marginTop: 4, letterSpacing: 0.5 }}>
-                  prompt gerado automaticamente
-                </p>
-              </div>
+          {isLoading ? (
+            <div style={{ padding: "40px 0" }}>
+              <ThinkingDots label="Carregando prompts..." />
             </div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))", gap: 2 }}>
+              {/* Add card */}
+              <div
+                onClick={() => setShowUpload(true)}
+                data-hover
+                style={{
+                  background: "#080808",
+                  border: "1px dashed #2a2a2a",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  aspectRatio: "3/4",
+                  cursor: "none",
+                  transition: "border-color 0.2s, background 0.2s",
+                  gap: 12,
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.3)"; (e.currentTarget as HTMLDivElement).style.background = "#0d0d0d"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = "#2a2a2a"; (e.currentTarget as HTMLDivElement).style.background = "#080808"; }}
+              >
+                <div style={{ width: 40, height: 40, border: "1px solid #2a2a2a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, color: "rgba(255,255,255,0.2)" }}>+</div>
+                <div style={{ textAlign: "center" }}>
+                  <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#aaa", letterSpacing: 1 }}>Adicionar imagem</p>
+                  <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#2a2a2a", marginTop: 4, letterSpacing: 0.5 }}>prompt gerado automaticamente</p>
+                </div>
+              </div>
 
-            {allItems.map((item, index) => (
-              <PromptCard
-                key={item.id}
-                item={item}
-                index={index}
-                onDelete={item.isUser ? handleDelete : undefined}
-                onUpdateImg={handleUpdateImg}
-              />
-            ))}
-          </div>
+              {allItems.map((item, index) => (
+                <PromptCard
+                  key={item.id}
+                  item={item}
+                  index={index}
+                  onDelete={item.isUser ? handleDelete : undefined}
+                  onUpdateImg={handleUpdateImg}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </main>
 
-      {/* ── MODALS ─────────────────────────────────────────────────────────── */}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
-      {showUpload && <UploadModal onClose={() => setShowUpload(false)} onSave={handleSaveItem} />}
+      {showUpload && (
+        <UploadModal
+          onClose={() => setShowUpload(false)}
+          onSave={handleSaveItem}
+        />
+      )}
     </>
   );
+}
+
+// ─── Main Export — routes to Library or Collection ────────────────────────────
+export default function Arquivo() {
+  const [matchCollection, paramsCollection] = useRoute("/arquivo/:id");
+
+  if (matchCollection && paramsCollection?.id) {
+    const collectionId = parseInt(paramsCollection.id, 10);
+    if (!isNaN(collectionId)) {
+      return <CollectionScreen collectionId={collectionId} />;
+    }
+  }
+
+  return <LibraryScreen />;
 }

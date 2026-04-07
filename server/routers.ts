@@ -6,6 +6,7 @@ import { z } from "zod";
 import { cortexRouter } from "./routers/cortex";
 import { versoRouter } from "./routers/verso";
 import { formaRouter } from "./routers/forma";
+import { arquivoRouter } from "./routers/arquivo";
 import { invokeLLM } from "./_core/llm";
 
 // ─── Proxy helpers ────────────────────────────────────────────────────────────
@@ -97,68 +98,8 @@ export const appRouter = router({
       }),
   }),
 
-  // ── ARQUIVO AI (via invokeLLM — sem chave do usuário) ─────────────────────────
-  arquivo: router({
-    /**
-     * Edit/improve a prompt using invokeLLM (GPT-4o). No user API key needed.
-     */
-    editPrompt: publicProcedure
-      .input(z.object({ prompt: z.string(), request: z.string() }))
-      .mutation(async ({ input }) => {
-        const content = await invokeLLM({
-          messages: [
-            {
-              role: "system",
-              content: "You are an expert at writing image generation prompts for automotive photography. Edit the prompt based on the user's request. Return ONLY the updated prompt, no explanation, no quotes.",
-            },
-            {
-              role: "user",
-              content: `Original prompt: ${input.prompt}\nRequest: ${input.request}`,
-            },
-          ],
-        });
-        const text = content?.choices?.[0]?.message?.content ?? "";
-        return { text };
-      }),
-
-    /**
-     * Reverse-engineer a prompt from an image (base64 or URL) using invokeLLM vision (GPT-4o).
-     */
-    reverseEngineer: publicProcedure
-      .input(z.object({
-        imageBase64: z.string().optional(),
-        mediaType: z.string().optional(),
-        imageUrl: z.string().optional(),
-      }))
-      .mutation(async ({ input }) => {
-        // Build the image URL: prefer base64 data URI, fall back to direct URL
-        const imageUrl = input.imageBase64
-          ? `data:${input.mediaType ?? "image/jpeg"};base64,${input.imageBase64}`
-          : (input.imageUrl ?? "");
-
-        if (!imageUrl) throw new Error("Provide imageBase64 or imageUrl");
-
-        const content = await invokeLLM({
-          messages: [
-            {
-              role: "user",
-              content: [
-                {
-                  type: "image_url",
-                  image_url: { url: imageUrl, detail: "high" },
-                },
-                {
-                  type: "text",
-                  text: "Analyze this image and write a detailed image generation prompt that would reproduce this scene. Include: camera angle, lighting, atmosphere, subject details, background, color palette, depth of field, and photographic style. Write in English. Return ONLY the prompt, no explanation.",
-                },
-              ],
-            },
-          ],
-        });
-        const text = content?.choices?.[0]?.message?.content ?? "";
-        return { text };
-      }),
-  }),
+  // ── ARQUIVO (coleções + prompts + AI) ──────────────────────────────────────
+  arquivo: arquivoRouter,
 
   // ── CÓRTEX Features ──────────────────────────────────────────────────────────
   cortex: cortexRouter,

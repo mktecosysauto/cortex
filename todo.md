@@ -361,3 +361,16 @@
 - [x] Conectar bloco bege da landing ao /sobre
 - [x] Remover bloco bege com texto da landing interna
 - [x] Redirecionar não logados para /sobre ao acessar /
+
+## Módulo ARQUIVO — Reestruturação (banco de dados + biblioteca)
+- [x] Migrar prompts do localStorage para banco de dados MySQL (arquivo_collections + arquivo_prompts)
+- [x] Tela de biblioteca de coleções (/arquivo) com cards de coleções
+- [x] Coleção AUTOMOTIVOS criada automaticamente como coleção do sistema com 13 prompts seed
+- [x] Tela de prompts por coleção (/arquivo/:id) com galeria de cards
+- [x] Criar nova coleção via modal (nome + descrição opcional)
+- [x] Deletar coleção (não-sistema) com confirmação
+- [x] Adicionar prompt a uma coleção via UploadModal adaptado para banco
+- [x] Deletar prompt da coleção
+- [x] Atualizar imagem do prompt (imgUrl) no banco
+- [x] Rota /arquivo/:id registrada no App.tsx
+- [x] Seed automático da coleção AUTOMOTIVOS na primeira visita do usuário

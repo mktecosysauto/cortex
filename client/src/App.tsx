@@ -54,6 +54,7 @@ function Router() {
       {/* /landing is the authenticated home — same component as Home */}
       <Route path={"/landing"} component={Home} />
       <Route path={"/arquivo"} component={Arquivo} />
+      <Route path={"/arquivo/:id"} component={Arquivo} />
       <Route path={"/nexus"} component={Nexus} />
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/admin"} component={Admin} />
