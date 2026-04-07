@@ -17,12 +17,13 @@ import Verso from "./pages/Verso";
 import Forma from "./pages/Forma";
 import FormaDetail from "./pages/FormaDetail";
 import FormaBriefing from "./pages/FormaBriefing";
+import Sobre from "./pages/Sobre";
 import SplashScreen, { useSplashScreen } from "./components/SplashScreen";
 import RankUpOverlay from "./components/RankUpOverlay";
 import AchievementToastContainer from "./components/AchievementToast";
 
 // ─── Public routes that must NOT trigger auth redirect ────────────────────────
-const PUBLIC_PATHS = ["/b/"];
+const PUBLIC_PATHS = ["/b/", "/sobre"];
 
 function isPublicRoute(path: string): boolean {
   return PUBLIC_PATHS.some((prefix) => path.startsWith(prefix));
@@ -42,6 +43,7 @@ function Router() {
       <Route path={"/verso"} component={Verso} />
       <Route path={"/forma"} component={Forma} />
       <Route path={"/forma/:id"} component={FormaDetail} />
+      <Route path={"/sobre"} component={Sobre} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
@@ -86,6 +88,7 @@ function App() {
             <Toaster />
             <Switch>
               <Route path={"/b/:token"} component={FormaBriefing} />
+              <Route path={"/sobre"} component={Sobre} />
               <Route component={NotFound} />
             </Switch>
           </TooltipProvider>

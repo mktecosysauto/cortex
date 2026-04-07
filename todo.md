@@ -356,3 +356,6 @@
 - [x] /nexus: barra de XP animada
 - [x] /nexus: hover scale nos cards de skin da loja
 - [x] /dashboard: stat cards com entrada em sequência
+- [x] Alterar hero da landing: SISTEMA/CENTRAL/DE DESIGN. → CÓRTEX/SYSTEM.
+- [x] Criar página /sobre com texto conceitual, carrossel de módulos e botões login/cadastro
+- [x] Conectar bloco bege da landing ao /sobre

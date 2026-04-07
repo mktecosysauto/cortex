@@ -514,6 +514,7 @@ function NexusSection() {
 // ─── Main Landing Page ────────────────────────────────────────────────────────
 export default function Home() {
   const { user, isAuthenticated, logout } = useAuth();
+  const { navigateTo } = usePageTransition();
   const [heroVisible, setHeroVisible] = useState(false);
 
   useEffect(() => {
@@ -596,7 +597,7 @@ export default function Home() {
               color: "#fff",
               transform: heroVisible ? "translateY(0)" : "translateY(110%)",
               transition: "transform 1s cubic-bezier(0.16,1,0.3,1) 0.1s",
-            }}>SISTEMA</div>
+            }}>CÓRTEX</div>
           </div>
 
           {/* Line 2 — indented */}
@@ -609,7 +610,7 @@ export default function Home() {
               color: "rgba(255,255,255,0.85)",
               transform: heroVisible ? "translateY(0)" : "translateY(110%)",
               transition: "transform 1s cubic-bezier(0.16,1,0.3,1) 0.18s",
-            }}>CENTRAL</div>
+            }}>SYSTEM.</div>
           </div>
 
           {/* Line 3 — right aligned, with period */}
@@ -622,6 +623,7 @@ export default function Home() {
               color: "rgba(255,255,255,0.7)",
               transform: heroVisible ? "translateY(0)" : "translateY(110%)",
               transition: "transform 1s cubic-bezier(0.16,1,0.3,1) 0.26s",
+              display: "none",
             }}>DE DESIGN.</div>
           </div>
         </div>
@@ -682,11 +684,28 @@ export default function Home() {
               Transformamos estética em sistemas. Cada ferramenta do CÓRTEX foi construída para profissionais criativos que não aceitam mediocridade.
             </p>
           </LineReveal>
-          <div style={{ marginTop: 40, display: "flex", alignItems: "center", gap: 24 }}>
+          <div style={{ marginTop: 40, display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
             <div style={{ width: 40, height: 1, background: "rgba(0,0,0,0.2)" }} />
             <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 4, color: "rgba(0,0,0,0.4)", textTransform: "uppercase" }}>
               módulos do sistema
             </span>
+            <button
+              onClick={() => navigateTo("/sobre")}
+              style={{
+                marginLeft: "auto",
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 10,
+                letterSpacing: 2,
+                color: "#0a0a0a",
+                background: "none",
+                border: "1px solid rgba(0,0,0,0.25)",
+                padding: "10px 24px",
+                cursor: "pointer",
+                transition: "background 0.2s, border-color 0.2s",
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,0,0,0.06)"; (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(0,0,0,0.5)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "none"; (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(0,0,0,0.25)"; }}
+            >CONHECER O SISTEMA →</button>
           </div>
         </div>
       </section>
