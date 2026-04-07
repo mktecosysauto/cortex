@@ -149,12 +149,17 @@ function TimelineItem({ session }: { session: {
 }
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
-function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function StatCard({ label, value, sub, index = 0 }: { label: string; value: string; sub?: string; index?: number }) {
   return (
     <div style={{
       background: "var(--surface)", border: "1px solid var(--border)",
       padding: "20px 24px",
-    }}>
+      animation: `fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) ${index * 0.07}s both`,
+      transition: "border-color 0.3s ease, box-shadow 0.3s ease",
+    }}
+    onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.5)"; }}
+    onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.boxShadow = "none"; }}
+    >
       <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 36, letterSpacing: 2, color: "var(--text)", lineHeight: 1 }}>
         {value}
       </div>
@@ -367,10 +372,10 @@ export default function Dashboard() {
         {/* Stat Cards */}
         <Section title="Resumo da semana">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, marginBottom: 2 }}>
-            <StatCard label="Foco total" value={d ? fmtMin(d.focusMinutes) : "—"} />
-            <StatCard label="Sessões" value={d ? String(d.sessionsDone) : "—"} sub={d && d.sessionsAbandoned > 0 ? `${d.sessionsAbandoned} abandonadas` : undefined} />
-            <StatCard label="XP ganho" value={d ? `+${d.xpEarned}` : "—"} />
-            <StatCard label="Glifos" value={d ? `+${d.glifosEarned}` : "—"} />
+            <StatCard label="Foco total" value={d ? fmtMin(d.focusMinutes) : "—"} index={0} />
+            <StatCard label="Sessões" value={d ? String(d.sessionsDone) : "—"} sub={d && d.sessionsAbandoned > 0 ? `${d.sessionsAbandoned} abandonadas` : undefined} index={1} />
+            <StatCard label="XP ganho" value={d ? `+${d.xpEarned}` : "—"} index={2} />
+            <StatCard label="Glifos" value={d ? `+${d.glifosEarned}` : "—"} index={3} />
           </div>
           {d?.bestDay && (
             <div style={{ fontFamily: "DM Mono, monospace", fontSize: 10, letterSpacing: 2, color: "var(--mid)", padding: "10px 0", borderTop: "1px solid var(--border)", textTransform: "uppercase" }}>

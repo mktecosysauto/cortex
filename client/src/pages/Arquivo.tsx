@@ -557,10 +557,11 @@ function PromptCard({ item, index, onDelete, onUpdateImg }: CardProps) {
         border: "1px solid #2a2a2a",
         display: "flex",
         flexDirection: "column",
-        opacity: 0,
-        transition: `opacity 0.5s ease ${Math.min(index * 0.05, 0.5)}s`,
-        animation: `fadeUp 0.5s ease ${Math.min(index * 0.05, 0.5)}s both`,
+        animation: `fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) ${Math.min(index * 0.06, 0.6)}s both`,
+        transition: "border-color 0.3s ease, box-shadow 0.3s ease",
       }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.6)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#2a2a2a"; e.currentTarget.style.boxShadow = "none"; }}
     >
       {/* Image */}
       <div style={{ position: "relative", aspectRatio: "3/4", overflow: "hidden", background: "#1a1a1a" }}>

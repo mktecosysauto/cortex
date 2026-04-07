@@ -242,8 +242,10 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000,
         height: 56, display: "flex", alignItems: "center",
         padding: "0 24px", gap: 12,
-        background: "rgba(0,0,0,0.92)", backdropFilter: "blur(12px)",
-        borderBottom: "1px solid #222",
+        background: "rgba(0,0,0,0.70)", backdropFilter: "blur(20px) saturate(1.8)",
+        WebkitBackdropFilter: "blur(20px) saturate(1.8)",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        transition: "padding 0.3s ease, height 0.3s ease",
       }}>
         {/* Left: wordmark */}
         <button
@@ -326,7 +328,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                 background: "transparent", cursor: "pointer",
               }}
             >
-              <span style={{ width: 16, height: 16, borderRadius: "50%", background: rankColor, display: "block" }} />
+              <span className="rank-dot" style={{ width: 16, height: 16, borderRadius: "50%", background: rankColor, display: "block", boxShadow: `0 0 8px ${rankColor}55` }} />
               <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, color: "#999", letterSpacing: 1 }}>
                 {nexus.xp ?? 0} XP
               </span>

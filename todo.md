@@ -328,3 +328,31 @@
 - [x] main.tsx corrigido: redirectToLoginIfUnauthorized ignora caminhos /b/*
 - [x] Testado: /b/token-invalido mostra "LINK INVÁLIDO OU EXPIRADO" sem redirect
 - [x] Adicionar botão ABRIR LINK clicável (target=_blank) na lista e detalhe do FORMA
+
+## Upgrade Visual Premium (CortexVisualUpgrade.md)
+- [x] CSS global: glassmorphism em modais/pop-ups
+- [x] CSS global: glow de foco em inputs/textareas
+- [x] CSS global: hover micro-elevação em botões primários
+- [x] CSS global: fallback mobile (sem backdrop-filter)
+- [x] CSS global: prefers-reduced-motion
+- [x] Header: glassmorphism + blur
+- [x] Header: compressão no scroll
+- [x] Header: hover nos botões do header
+- [x] Header: glow animado no badge de rank
+- [x] Landing hero: animação letra a letra do título CÓRTEX
+- [x] Landing hero: halo radial atrás do título
+- [x] Landing hero: sequência de entrada (tagline, manifesto, scroll)
+- [x] Landing hero: linha horizontal animada (scaleX)
+- [x] Landing hero: indicador SCROLL pulsante
+- [x] Landing: coluna vertebral com ponto animado por scroll
+- [x] Landing módulos: glassmorphism nos previews
+- [x] Landing módulos: animação whileInView (texto + preview)
+- [x] Landing módulos: hover nos botões de módulo
+- [x] Landing NEXUS: flutuação do sapo (sapoFloat)
+- [x] Landing NEXUS: glassmorphism no card do agente
+- [x] Footer: linha separadora, opacidade dos textos
+- [x] /arquivo: stagger de entrada nos cards
+- [x] /arquivo: hover scale na imagem do card
+- [x] /nexus: barra de XP animada
+- [x] /nexus: hover scale nos cards de skin da loja
+- [x] /dashboard: stat cards com entrada em sequência

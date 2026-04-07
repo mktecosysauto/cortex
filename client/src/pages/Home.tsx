@@ -296,6 +296,7 @@ function ModuleFrame({ number, name, subtitle, description, route, comingSoon, r
           }}
         >
           <div
+            className="modulo-preview"
             style={{
               aspectRatio: "4/3",
               background: "#080808",
@@ -518,7 +519,7 @@ function NexusFrame() {
           </div>
         </div>
         {/* Visual side — AGENTE hero redesign */}
-        <div style={{ opacity: visible ? 1 : 0, transition: "opacity 0.9s ease 0.35s", display: "flex", justifyContent: "center" }}>
+        <div className="nexus-agent-display" style={{ opacity: visible ? 1 : 0, transition: "opacity 0.9s ease 0.35s", display: "flex", justifyContent: "center", padding: "24px" }}>
           <div style={{
             position: "relative",
             display: "flex",
@@ -550,8 +551,8 @@ function NexusFrame() {
               zIndex: 0,
               maskImage: "radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%)",
             }} />
-            {/* SAPO 340px */}
-            <div style={{ position: "relative", zIndex: 1 }}>
+            {/* SAPO flutuante */}
+            <div id="sapo-landing" style={{ position: "relative", zIndex: 1, animation: "sapoFloat 4s ease-in-out infinite" }}>
               <SapoAgent skin={activeSkin} state="idle" size={280} />
             </div>
             {/* Nome do agente */}
@@ -637,40 +638,44 @@ export default function Home() {
             color: "#777",
             textTransform: "uppercase",
             marginBottom: 24,
-            animation: "fadeIn 1s ease 0.1s both",
+            animation: "fadeIn 1s ease 0.6s both",
           }}
         >
           Sistema Central de Design
         </div>
 
-        {/* Main title */}
-        <h1
-          style={{
-            fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: "clamp(72px, 14vw, 160px)",
-            lineHeight: 0.92,
-            letterSpacing: 6,
-            color: "#fff",
-            animation: "fadeUp 0.9s ease 0.15s both",
-            textAlign: "center",
-            position: "relative",
-          }}
-        >
-          CÓRTEX
-          {/* Glitch underline */}
-          <div
+        {/* Main title — letra a letra */}
+        <div style={{ position: "relative", textAlign: "center" }}>
+          {/* Halo radial atrás do título */}
+          <div className="hero-halo" />
+          <h1
+            className="cortex-title"
             style={{
-              position: "absolute",
-              bottom: -6,
-              left: "50%",
-              transform: "translateX(-50%)",
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontSize: "clamp(72px, 14vw, 160px)",
+              lineHeight: 0.92,
+              letterSpacing: 6,
+              color: "#fff",
+              textAlign: "center",
+              position: "relative",
+              zIndex: 1,
+            }}
+          >
+            {"CÓRTEX".split("").map((char, i) => (
+              <span key={i} className="letra" style={{ animationDelay: `${i * 0.08}s` }}>{char}</span>
+            ))}
+          </h1>
+          {/* Linha horizontal animada */}
+          <div
+            className="hero-line"
+            style={{
               width: "60%",
               height: 1,
               background: "linear-gradient(to right, transparent, rgba(255,255,255,0.5), transparent)",
-              animation: "fadeIn 1s ease 0.5s both",
+              margin: "8px auto 0",
             }}
           />
-        </h1>
+        </div>
 
         {/* Phrase — right below the title */}
         <div
@@ -709,12 +714,14 @@ export default function Home() {
           }}
         >
           <span
+            className="scroll-indicator"
             style={{
               fontFamily: "'DM Mono', monospace",
               fontSize: 8,
               letterSpacing: 3,
               color: "#777",
               textTransform: "uppercase",
+              display: "block",
             }}
           >
             scroll
@@ -724,7 +731,8 @@ export default function Home() {
               width: 1,
               height: 32,
               background: "rgba(255,255,255,0.2)",
-              animation: "pulseDot 2s ease-in-out infinite",
+              animation: "scrollBounce 2s ease-in-out infinite",
+              animationDelay: "1.6s",
             }}
           />
         </div>

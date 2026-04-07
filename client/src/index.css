@@ -916,3 +916,273 @@
   from { opacity: 0; }
   to   { opacity: 1; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UPGRADE VISUAL PREMIUM — CortexVisualUpgrade.md
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 9.1 Glassmorphism em modais e pop-ups ── */
+[class*="modal"],
+[class*="popup"],
+.modal-overlay > div,
+.rota-panel {
+  background:      rgba(8, 8, 8, 0.92) !important;
+  backdrop-filter: blur(24px) saturate(1.6) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(1.6) !important;
+  border:          1px solid rgba(255, 255, 255, 0.10) !important;
+}
+
+/* ── 9.6 Overlays de fundo ── */
+.modal-overlay,
+[class*="modal-overlay"] {
+  background: rgba(0, 0, 0, 0.80) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+}
+
+/* ── 9.3 Glow de foco em inputs e textareas ── */
+input:focus,
+textarea:focus,
+select:focus,
+[contenteditable]:focus {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15) !important;
+  outline: none !important;
+}
+
+/* ── 9.2 Micro-elevação em botões primários ── */
+.btn-cortex:not(.ghost),
+button[class*="btn-primary"],
+button.bg-white {
+  transition: opacity 0.2s ease, transform 0.2s ease !important;
+}
+.btn-cortex:not(.ghost):hover,
+button[class*="btn-primary"]:hover,
+button.bg-white:hover {
+  transform: translateY(-1px) !important;
+}
+
+/* ── 7.3 Hover nos botões do header ── */
+.cortex-header button,
+.header-icon-btn {
+  transition: background 0.15s ease !important;
+}
+.cortex-header button:hover,
+.header-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* ── 7.4 Glow animado no badge de rank ── */
+@keyframes rankGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(255, 255, 255, 0.2); }
+  50%       { box-shadow: 0 0 16px rgba(255, 255, 255, 0.5); }
+}
+.rank-dot,
+#header-rank-dot {
+  animation: rankGlow 2s ease-in-out infinite;
+}
+
+/* ── 6.1 Sapo flutuante ── */
+@keyframes sapoFloat {
+  0%, 100% { transform: translateY(0px);   }
+  50%       { transform: translateY(-10px); }
+}
+.sapo-animado img,
+#sapo-landing img,
+#sapo-nexus img {
+  animation: sapoFloat 4s ease-in-out infinite;
+}
+
+/* ── 3.4 Linha hero expandindo do centro ── */
+@keyframes lineExpand {
+  from { transform: scaleX(0); opacity: 0; }
+  to   { transform: scaleX(1); opacity: 1; }
+}
+.hero-line {
+  transform-origin: center;
+  animation: lineExpand 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
+}
+
+/* ── 3.5 SCROLL pulsante ── */
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0);  opacity: 0.6; }
+  50%       { transform: translateY(8px); opacity: 1;   }
+}
+.scroll-indicator {
+  animation: scrollBounce 2s ease-in-out infinite;
+  animation-delay: 1.4s;
+}
+
+/* ── 3.1 Animação letra a letra do título CÓRTEX ── */
+@keyframes letraEntrada {
+  from { transform: translateY(40px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.cortex-title .letra {
+  display: inline-block;
+  animation: letraEntrada 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.cortex-title .letra:nth-child(1) { animation-delay: 0.00s; }
+.cortex-title .letra:nth-child(2) { animation-delay: 0.08s; }
+.cortex-title .letra:nth-child(3) { animation-delay: 0.16s; }
+.cortex-title .letra:nth-child(4) { animation-delay: 0.24s; }
+.cortex-title .letra:nth-child(5) { animation-delay: 0.32s; }
+.cortex-title .letra:nth-child(6) { animation-delay: 0.40s; }
+
+/* ── 3.2 Halo atrás do título ── */
+.hero-halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 300px;
+  background: radial-gradient(ellipse at center, rgba(255,255,255,0.04) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── 4.1 Coluna vertebral ── */
+.vertebra-line {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  background: rgba(255, 255, 255, 0.07);
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+.vertebra-dot {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0.7;
+  pointer-events: none;
+  transition: top 0.1s linear;
+}
+
+/* ── 5.1 Glassmorphism nos previews dos módulos ── */
+.modulo-preview {
+  background:      rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  border:          1px solid rgba(255, 255, 255, 0.07);
+  border-radius:   4px;
+  transition:      transform 0.4s ease, border-color 0.3s ease;
+}
+.modulo-preview:hover {
+  transform:    scale(0.97);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+.modulo-preview-nome {
+  opacity: 0.04;
+  transition: opacity 0.3s ease;
+}
+.modulo-preview:hover .modulo-preview-nome {
+  opacity: 0.08;
+}
+
+/* ── 5.3 Hover no botão de módulo ── */
+.modulo-btn {
+  background:  transparent;
+  color:       #fff;
+  border:      1px solid rgba(255, 255, 255, 0.3);
+  padding:     10px 20px;
+  font-family: 'DM Mono', monospace;
+  font-size:   10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor:      pointer;
+  transition:  background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.modulo-btn:hover {
+  background:   #fff;
+  color:        #000;
+  border-color: #fff;
+}
+
+/* ── 6.2 Glassmorphism no card do agente (NEXUS) ── */
+.sapo-card,
+.agent-card,
+.nexus-agent-display {
+  background:      rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border:          1px solid rgba(255, 255, 255, 0.10);
+  border-radius:   4px;
+}
+
+/* ── 8. Footer ── */
+footer,
+.cortex-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.footer-copyright,
+footer p,
+.footer-links a {
+  opacity: 0.4;
+  transition: opacity 0.2s ease;
+}
+.footer-links a:hover {
+  opacity: 0.8;
+}
+
+/* ── 10.2 Hover na imagem dos cards do ARQUIVO ── */
+.card .card-image-wrap {
+  overflow: hidden;
+}
+.card .card-image-wrap img {
+  transition: transform 0.5s ease;
+}
+.card:hover .card-image-wrap img {
+  transform: scale(1.04);
+}
+
+/* ── 10.5 Hover nos cards de skin da loja NEXUS ── */
+.shop-skin-card .shop-skin-preview {
+  overflow: hidden;
+}
+.shop-skin-card .shop-skin-img {
+  transition: transform 0.3s ease;
+}
+.shop-skin-card:hover .shop-skin-img {
+  transform: scale(1.05);
+}
+
+/* ── 9.1 Glassmorphism em cards e painéis internos ── */
+.cortex-card,
+.section-panel {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ── 11.1 Desativar backdrop-filter em mobile ── */
+@media (max-width: 768px) {
+  .modulo-preview,
+  .sapo-card,
+  .agent-card,
+  .nexus-agent-display,
+  [class*="modal"],
+  [class*="popup"],
+  .rota-panel {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(8, 8, 8, 0.96) !important;
+  }
+}
+
+/* ── 11.2 Respeitar prefers-reduced-motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

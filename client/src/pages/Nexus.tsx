@@ -329,8 +329,15 @@ export default function Nexus() {
                   <span>{nexus.xp.toLocaleString()} XP</span>
                   <span>{nextRank ? `próximo: ${nextRank.xpMin.toLocaleString()}` : "rank máximo"}</span>
                 </div>
-                <div style={{ height: 3, background: "#1a1a1a", width: "100%" }}>
-                  <div style={{ height: "100%", background: rank.color, width: `${pct}%`, transition: "width 0.6s ease" }} />
+                <div style={{ height: 3, background: "#1a1a1a", width: "100%", position: "relative", overflow: "hidden" }}>
+                  <div style={{
+                    height: "100%",
+                    background: `linear-gradient(to right, ${rank.color}88, ${rank.color})`,
+                    width: `${pct}%`,
+                    transition: "width 1.2s cubic-bezier(0.16,1,0.3,1)",
+                    boxShadow: `0 0 8px ${rank.color}66`,
+                    position: "relative",
+                  }} />
                 </div>
               </div>
 
