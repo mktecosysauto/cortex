@@ -30,340 +30,281 @@ function ToastContainer() {
   );
 }
 
-// ─── Spine (coluna vertebral) ─────────────────────────────────────────────────
-// Runs full height of the page, visible at all times as background element
-function GlobalSpine() {
-  const lineRef = useRef<HTMLDivElement>(null);
-  const markerRef = useRef<HTMLDivElement>(null);
-  const glowRef = useRef<HTMLDivElement>(null);
-
+// ─── useReveal hook ───────────────────────────────────────────────────────────
+function useReveal(threshold = 0.2) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
   useEffect(() => {
-    const handleScroll = () => {
-      const marker = markerRef.current;
-      const glow = glowRef.current;
-      const line = lineRef.current;
-      if (!marker || !line) return;
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
+      { threshold, rootMargin: "0px 0px -60px 0px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return { ref, visible };
+}
 
-      const docH = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = docH > 0 ? Math.min(1, window.scrollY / docH) : 0;
-      const lineH = line.offsetHeight;
-
-      marker.style.top = `${progress * (lineH - 10)}px`;
-      if (glow) glow.style.top = `${progress * (lineH - 40)}px`;
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
+// ─── LineReveal ───────────────────────────────────────────────────────────────
+function LineReveal({ children, delay = 0, style = {} }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
+  const { ref, visible } = useReveal(0.1);
   return (
-    <div
-      style={{
-        position: "fixed",
-        left: "50%",
-        top: 0,
-        bottom: 0,
-        width: 1,
-        transform: "translateX(-50%)",
-        pointerEvents: "none",
-        zIndex: 1,
-      }}
-    >
-      {/* Main line */}
-      <div
-        ref={lineRef}
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.18) 10%, rgba(255,255,255,0.18) 90%, transparent 100%)",
-        }}
-      />
-      {/* Glow blob that follows scroll */}
-      <div
-        ref={glowRef}
-        style={{
-          position: "absolute",
-          left: "50%",
-          top: 0,
-          width: 120,
-          height: 80,
-          transform: "translateX(-50%)",
-          background: "radial-gradient(ellipse at center, rgba(255,255,255,0.07) 0%, transparent 70%)",
-          transition: "top 0.1s linear",
-          pointerEvents: "none",
-        }}
-      />
-      {/* Diamond marker */}
-      <div
-        ref={markerRef}
-        style={{
-          position: "absolute",
-          left: "50%",
-          top: 0,
-          width: 9,
-          height: 9,
-          border: "1px solid rgba(255,255,255,0.8)",
-          transform: "translateX(-50%) rotate(45deg)",
-          background: "#000",
-          transition: "top 0.08s linear",
-          boxShadow: "0 0 8px rgba(255,255,255,0.4)",
-        }}
-      />
-      {/* Tick marks at thirds */}
-      {[0.33, 0.66].map((p) => (
-        <div
-          key={p}
-          style={{
-            position: "absolute",
-            left: "50%",
-            top: `${p * 100}%`,
-            width: 5,
-            height: 1,
-            background: "rgba(255,255,255,0.25)",
-            transform: "translateX(-50%)",
-          }}
-        />
-      ))}
+    <div ref={ref} style={{ overflow: "hidden", ...style }}>
+      <div style={{
+        transform: visible ? "translateY(0)" : "translateY(110%)",
+        opacity: visible ? 1 : 0,
+        transition: `transform 0.9s cubic-bezier(0.16,1,0.3,1) ${delay}s, opacity 0.6s ease ${delay}s`,
+      }}>
+        {children}
+      </div>
     </div>
   );
 }
 
-// ─── Module Frame (scroll-triggered, one at a time) ───────────────────────────
-interface ModuleFrameProps {
+// ─── Module Card (novo design makemepulse-inspired) ───────────────────────────
+interface ModuleCardProps {
   number: string;
   name: string;
   subtitle: string;
   description: string;
   route?: string;
   comingSoon?: boolean;
-  reverse?: boolean;
   accent?: string;
+  dark?: boolean;
 }
 
-function ModuleFrame({ number, name, subtitle, description, route, comingSoon, reverse, accent = "#fff" }: ModuleFrameProps) {
-  const frameRef = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
+function ModuleCard({ number, name, subtitle, description, route, comingSoon, accent = "#fff", dark = true }: ModuleCardProps) {
+  const { ref, visible } = useReveal(0.15);
   const { navigateTo } = usePageTransition();
-
-  useEffect(() => {
-    const el = frameRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setVisible(true);
-      },
-      { threshold: 0.25, rootMargin: "0px 0px -80px 0px" }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
+  const bg = dark ? "#000" : "#f0ede8";
+  const fg = dark ? "#fff" : "#0a0a0a";
+  const fgDim = dark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.45)";
+  const fgMid = dark ? "rgba(255,255,255,0.65)" : "rgba(0,0,0,0.65)";
+  const borderC = dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)";
 
   return (
     <div
-      ref={frameRef}
+      ref={ref}
       style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(60px)",
-        transition: "opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1)",
+        background: bg,
+        borderTop: `1px solid ${borderC}`,
+        padding: "clamp(48px, 8vw, 96px) clamp(24px, 6vw, 80px)",
         position: "relative",
-        zIndex: 2,
+        overflow: "hidden",
+        opacity: comingSoon ? 0.5 : 1,
       }}
     >
-      <div
-        className={`module-frame${reverse ? " reverse" : ""}`}
-        style={{ opacity: comingSoon ? 0.45 : 1 }}
-      >
+      {/* Large background number */}
+      <div style={{
+        position: "absolute",
+        right: "clamp(24px, 5vw, 60px)",
+        top: "50%",
+        transform: "translateY(-50%)",
+        fontFamily: "'Bebas Neue', sans-serif",
+        fontSize: "clamp(120px, 20vw, 240px)",
+        color: dark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)",
+        lineHeight: 1,
+        letterSpacing: -4,
+        pointerEvents: "none",
+        userSelect: "none",
+      }}>
+        {number}
+      </div>
+
+      <div style={{
+        maxWidth: 1100,
+        margin: "0 auto",
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: "clamp(32px, 6vw, 80px)",
+        alignItems: "center",
+        position: "relative",
+        zIndex: 1,
+      }}>
         {/* Text side */}
-        <div className="flex flex-col gap-6">
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
+        <div>
+          {/* Tag row */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24, overflow: "hidden" }}>
+            <div style={{
+              transform: visible ? "translateX(0)" : "translateX(-30px)",
               opacity: visible ? 1 : 0,
-              transition: "opacity 0.6s ease 0.1s",
-            }}
-          >
-            <span
-              style={{
+              transition: `transform 0.7s cubic-bezier(0.16,1,0.3,1) 0.05s, opacity 0.5s ease 0.05s`,
+              display: "flex", alignItems: "center", gap: 12,
+            }}>
+              <span style={{
                 fontFamily: "'DM Mono', monospace",
                 fontSize: 10,
-                color: accent === "#fff" ? "rgba(255,255,255,0.3)" : accent,
-                letterSpacing: 4,
-                border: `1px solid ${accent === "#fff" ? "rgba(255,255,255,0.12)" : accent}`,
-                padding: "3px 8px",
-              }}
-            >
-              {number}
-            </span>
-            {comingSoon && (
-              <span
-                style={{
+                color: fgDim,
+                letterSpacing: 3,
+                border: `1px solid ${borderC}`,
+                padding: "3px 10px",
+              }}>{number}</span>
+              {comingSoon && (
+                <span style={{
                   fontFamily: "'DM Mono', monospace",
                   fontSize: 8,
                   letterSpacing: 2,
-                  color: "#aaa",
-                  border: "1px solid #222",
-                  padding: "2px 7px",
-                  textTransform: "uppercase",
-                }}
-              >
-                EM BREVE
-              </span>
-            )}
+                  color: fgDim,
+                  border: `1px solid ${borderC}`,
+                  padding: "2px 8px",
+                }}>EM BREVE</span>
+              )}
+            </div>
           </div>
 
-          <div
-            style={{
-              opacity: visible ? 1 : 0,
-              transition: "opacity 0.6s ease 0.2s",
-            }}
-          >
-            <h2
-              style={{
+          {/* Title — big, line reveal */}
+          <div style={{ marginBottom: 16 }}>
+            <LineReveal delay={0.1}>
+              <h2 style={{
                 fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: "clamp(52px, 9vw, 96px)",
-                lineHeight: 0.95,
-                letterSpacing: 3,
-                color: "#fff",
-              }}
-            >
-              {name}
-            </h2>
-            <p
-              style={{
-                fontFamily: "'DM Mono', monospace",
-                fontSize: 11,
-                color: "#999",
-                marginTop: 10,
-                letterSpacing: 1,
-              }}
-            >
-              {subtitle}
-            </p>
+                fontSize: "clamp(64px, 10vw, 120px)",
+                lineHeight: 0.92,
+                letterSpacing: 2,
+                color: fg,
+                margin: 0,
+              }}>{name}</h2>
+            </LineReveal>
           </div>
 
-          <p
-            style={{
+          {/* Subtitle */}
+          <LineReveal delay={0.2}>
+            <p style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: 11,
+              color: fgDim,
+              letterSpacing: 1,
+              margin: "0 0 20px",
+            }}>{subtitle}</p>
+          </LineReveal>
+
+          {/* Description */}
+          <div style={{ overflow: "hidden" }}>
+            <p style={{
               fontFamily: "'DM Sans', sans-serif",
               fontSize: 14,
-              color: "#888",
-              lineHeight: 1.7,
-              maxWidth: 380,
+              color: fgMid,
+              lineHeight: 1.75,
+              maxWidth: 420,
+              transform: visible ? "translateY(0)" : "translateY(20px)",
               opacity: visible ? 1 : 0,
-              transition: "opacity 0.6s ease 0.3s",
-            }}
-          >
-            {description}
-          </p>
+              transition: "transform 0.8s cubic-bezier(0.16,1,0.3,1) 0.3s, opacity 0.6s ease 0.3s",
+              margin: "0 0 32px",
+            }}>{description}</p>
+          </div>
 
-          <div
-            style={{
-              opacity: visible ? 1 : 0,
-              transition: "opacity 0.6s ease 0.4s",
-            }}
-          >
+          {/* CTA */}
+          <div style={{
+            transform: visible ? "translateY(0)" : "translateY(16px)",
+            opacity: visible ? 1 : 0,
+            transition: "transform 0.7s cubic-bezier(0.16,1,0.3,1) 0.4s, opacity 0.5s ease 0.4s",
+          }}>
             {!comingSoon ? (
               <button
-                className="btn-cortex"
-                data-hover
                 onClick={() => navigateTo(route || "/")}
-              >
-                → Acessar módulo
-              </button>
-            ) : (
-              <span
                 style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
                   fontFamily: "'DM Mono', monospace",
-                  fontSize: 9,
+                  fontSize: 11,
                   letterSpacing: 2,
-                  color: "#777",
-                  textTransform: "uppercase",
+                  color: fg,
+                  padding: 0,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  position: "relative",
+                }}
+                onMouseEnter={(e) => {
+                  const line = e.currentTarget.querySelector(".cta-line") as HTMLElement;
+                  if (line) line.style.width = "100%";
+                }}
+                onMouseLeave={(e) => {
+                  const line = e.currentTarget.querySelector(".cta-line") as HTMLElement;
+                  if (line) line.style.width = "0%";
                 }}
               >
-                — em desenvolvimento
-              </span>
+                <span style={{ position: "relative" }}>
+                  → ACESSAR MÓDULO
+                  <span className="cta-line" style={{
+                    position: "absolute",
+                    bottom: -2,
+                    left: 0,
+                    height: 1,
+                    width: "0%",
+                    background: fg,
+                    transition: "width 0.4s cubic-bezier(0.16,1,0.3,1)",
+                  }} />
+                </span>
+              </button>
+            ) : (
+              <span style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 9,
+                letterSpacing: 2,
+                color: fgDim,
+              }}>— em desenvolvimento</span>
             )}
           </div>
         </div>
 
-        {/* Visual side */}
-        <div
-          style={{
-            opacity: visible ? 1 : 0,
-            transition: "opacity 0.9s ease 0.35s",
-          }}
-        >
-          <div
-            className="modulo-preview"
-            style={{
-              aspectRatio: "4/3",
-              background: "#080808",
-              border: `1px solid ${comingSoon ? "#1a1a1a" : "rgba(255,255,255,0.1)"}`,
-              position: "relative",
-              overflow: "hidden",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {/* Grid pattern */}
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                backgroundImage:
-                  "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
-                backgroundSize: "40px 40px",
-              }}
-            />
+        {/* Visual side — abstract grid preview */}
+        <div style={{
+          transform: visible ? "translateY(0) scale(1)" : "translateY(30px) scale(0.97)",
+          opacity: visible ? 1 : 0,
+          transition: "transform 1s cubic-bezier(0.16,1,0.3,1) 0.2s, opacity 0.8s ease 0.2s",
+        }}>
+          <div style={{
+            aspectRatio: "4/3",
+            background: dark ? "#0a0a0a" : "#e8e4de",
+            border: `1px solid ${borderC}`,
+            position: "relative",
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
+            {/* Grid */}
+            <div style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: `linear-gradient(${dark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"} 1px, transparent 1px), linear-gradient(90deg, ${dark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"} 1px, transparent 1px)`,
+              backgroundSize: "40px 40px",
+            }} />
             {/* Corner marks */}
-            {[
-              { top: 12, left: 12 },
-              { top: 12, right: 12 },
-              { bottom: 12, left: 12 },
-              { bottom: 12, right: 12 },
-            ].map((pos, i) => (
-              <div
-                key={i}
-                style={{
-                  position: "absolute",
-                  width: 12,
-                  height: 12,
-                  borderTop: i < 2 ? `1px solid rgba(255,255,255,0.2)` : "none",
-                  borderBottom: i >= 2 ? `1px solid rgba(255,255,255,0.2)` : "none",
-                  borderLeft: i % 2 === 0 ? `1px solid rgba(255,255,255,0.2)` : "none",
-                  borderRight: i % 2 === 1 ? `1px solid rgba(255,255,255,0.2)` : "none",
-                  ...pos,
-                }}
-              />
+            {[{ top: 12, left: 12 }, { top: 12, right: 12 }, { bottom: 12, left: 12 }, { bottom: 12, right: 12 }].map((pos, i) => (
+              <div key={i} style={{
+                position: "absolute",
+                ...pos,
+                width: 12,
+                height: 12,
+                borderTop: i < 2 ? `1px solid ${dark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.15)"}` : undefined,
+                borderBottom: i >= 2 ? `1px solid ${dark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.15)"}` : undefined,
+                borderLeft: i % 2 === 0 ? `1px solid ${dark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.15)"}` : undefined,
+                borderRight: i % 2 === 1 ? `1px solid ${dark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.15)"}` : undefined,
+              }} />
             ))}
-            {/* Module name watermark */}
-            <span
-              style={{
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: "clamp(32px, 6vw, 56px)",
-                color: "rgba(255,255,255,0.04)",
-                letterSpacing: 10,
-                position: "relative",
-                zIndex: 1,
-                userSelect: "none",
-              }}
-            >
-              {name}
-            </span>
-            {/* Scan line effect */}
-            {!comingSoon && (
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: "linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.015) 50%, transparent 100%)",
-                  animation: "scanLine 4s ease-in-out infinite",
-                }}
-              />
-            )}
+            {/* Module name big */}
+            <span style={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontSize: "clamp(32px, 5vw, 56px)",
+              color: dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+              letterSpacing: 8,
+              userSelect: "none",
+            }}>{name}</span>
+            {/* Accent dot */}
+            <div style={{
+              position: "absolute",
+              bottom: 16,
+              right: 16,
+              width: 6,
+              height: 6,
+              borderRadius: "50%",
+              background: accent,
+              boxShadow: `0 0 12px ${accent}88`,
+            }} />
           </div>
         </div>
       </div>
@@ -371,207 +312,197 @@ function ModuleFrame({ number, name, subtitle, description, route, comingSoon, r
   );
 }
 
-// ─── Divider ──────────────────────────────────────────────────────────────────
-function ModuleDivider({ index }: { index: number }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0.5 });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
+// ─── NEXUS Section ────────────────────────────────────────────────────────────
+function NexusSection() {
+  const { ref, visible } = useReveal(0.15);
+  const { navigateTo } = usePageTransition();
+  const { nexus, getCurrentRankData, activeSkin } = useNexus();
+  const rank = getCurrentRankData();
+
   return (
     <div
       ref={ref}
       style={{
-        display: "flex",
+        background: "#000",
+        borderTop: "1px solid rgba(255,255,255,0.07)",
+        padding: "clamp(64px, 10vw, 120px) clamp(24px, 6vw, 80px)",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Glow de fundo */}
+      <div style={{
+        position: "absolute",
+        top: "50%",
+        right: "20%",
+        transform: "translate(50%, -50%)",
+        width: 400,
+        height: 400,
+        borderRadius: "50%",
+        background: `radial-gradient(circle, ${rank.color}12 0%, transparent 70%)`,
+        filter: "blur(40px)",
+        pointerEvents: "none",
+      }} />
+
+      <div style={{
+        maxWidth: 1100,
+        margin: "0 auto",
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: "clamp(32px, 6vw, 80px)",
         alignItems: "center",
-        gap: 16,
-        padding: "0 0",
         position: "relative",
-        zIndex: 2,
-      }}
-    >
-      <div
-        style={{
-          flex: 1,
-          height: 1,
-          background: visible
-            ? "linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent)"
-            : "transparent",
-          transition: "background 0.8s ease",
-        }}
-      />
-      <span
-        style={{
-          fontFamily: "'DM Mono', monospace",
-          fontSize: 8,
-          color: "#2a2a2a",
-          letterSpacing: 3,
-          opacity: visible ? 1 : 0,
-          transition: "opacity 0.6s ease 0.2s",
-        }}
-      >
-        {String(index).padStart(2, "0")}
-      </span>
-      <div
-        style={{
-          flex: 1,
-          height: 1,
-          background: visible
-            ? "linear-gradient(to left, transparent, rgba(255,255,255,0.08), transparent)"
-            : "transparent",
-          transition: "background 0.8s ease",
-        }}
-      />
-    </div>
-  );
-}
-
-// ─── NEXUS Frame (frame 00) ──────────────────────────────────────────────────
-function NexusFrame() {
-  const frameRef = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-  const { nexus, getCurrentRankData } = useNexus();
-  const { navigateTo } = usePageTransition();
-  const rank = getCurrentRankData();
-  const activeSkin = nexus.activeItems.find((id: string) => id.startsWith("skin-")) as any ?? "base";
-
-  useEffect(() => {
-    const el = frameRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
-      { threshold: 0.2, rootMargin: "0px 0px -60px 0px" }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
-  return (
-    <div
-      ref={frameRef}
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(60px)",
-        transition: "opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1)",
-        position: "relative",
-        zIndex: 2,
-      }}
-    >
-      <div className="module-frame">
-        {/* Text side */}
-        <div className="flex flex-col gap-6">
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{
-              fontFamily: "'DM Mono', monospace",
-              fontSize: 10,
-              color: rank.color,
-              letterSpacing: 4,
-              border: `1px solid ${rank.color}`,
-              padding: "3px 8px",
-              opacity: 0.7,
-            }}>00</span>
-            <span style={{
-              fontFamily: "'DM Mono', monospace",
-              fontSize: 8,
-              letterSpacing: 2,
-              color: "#aaa",
-              border: "1px solid #222",
-              padding: "2px 7px",
-              textTransform: "uppercase",
-            }}>SISTEMA CENTRAL</span>
+        zIndex: 1,
+      }}>
+        {/* Text */}
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24, overflow: "hidden" }}>
+            <div style={{
+              transform: visible ? "translateX(0)" : "translateX(-30px)",
+              opacity: visible ? 1 : 0,
+              transition: "transform 0.7s cubic-bezier(0.16,1,0.3,1) 0.05s, opacity 0.5s ease 0.05s",
+              display: "flex", alignItems: "center", gap: 12,
+            }}>
+              <span style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 10,
+                color: "rgba(255,255,255,0.3)",
+                letterSpacing: 3,
+                border: "1px solid rgba(255,255,255,0.07)",
+                padding: "3px 10px",
+              }}>00</span>
+              <span style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 9,
+                color: rank.color,
+                letterSpacing: 2,
+                border: `1px solid ${rank.color}44`,
+                padding: "3px 10px",
+              }}>SISTEMA CENTRAL</span>
+            </div>
           </div>
-          <div>
-            <h2 style={{
-              fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: "clamp(52px, 9vw, 96px)",
-              lineHeight: 0.95,
-              letterSpacing: 3,
-              color: rank.color,
-            }}>NEXUS</h2>
+
+          <div style={{ marginBottom: 16 }}>
+            <LineReveal delay={0.1}>
+              <h2 style={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: "clamp(64px, 10vw, 120px)",
+                lineHeight: 0.92,
+                letterSpacing: 2,
+                color: "#fff",
+                margin: 0,
+              }}>NEXUS</h2>
+            </LineReveal>
+          </div>
+
+          <LineReveal delay={0.2}>
             <p style={{
               fontFamily: "'DM Mono', monospace",
               fontSize: 11,
-              color: "#999",
-              marginTop: 10,
+              color: "rgba(255,255,255,0.4)",
               letterSpacing: 1,
+              margin: "0 0 20px",
             }}>Progressão · XP · Ranks · Conquistas</p>
+          </LineReveal>
+
+          <div style={{ overflow: "hidden" }}>
+            <p style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 14,
+              color: "rgba(255,255,255,0.6)",
+              lineHeight: 1.75,
+              maxWidth: 420,
+              transform: visible ? "translateY(0)" : "translateY(20px)",
+              opacity: visible ? 1 : 0,
+              transition: "transform 0.8s cubic-bezier(0.16,1,0.3,1) 0.3s, opacity 0.6s ease 0.3s",
+              margin: "0 0 32px",
+            }}>
+              Seu sistema de progressão pessoal dentro do CÓRTEX. Cada prompt gerado, imagem criada e sessão de foco concluída constrói o seu AGENTE.
+            </p>
           </div>
-          <p style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: 14,
-            color: "#888",
-            lineHeight: 1.7,
-            maxWidth: 380,
+
+          <div style={{
+            transform: visible ? "translateY(0)" : "translateY(16px)",
+            opacity: visible ? 1 : 0,
+            transition: "transform 0.7s cubic-bezier(0.16,1,0.3,1) 0.4s, opacity 0.5s ease 0.4s",
+            display: "flex", alignItems: "center", gap: 16,
           }}>
-            Seu sistema de progressão pessoal dentro do CÓRTEX. Cada prompt gerado, imagem criada e sessão de foco concluída constrói o seu AGENTE.
-          </p>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <button className="btn-cortex" data-hover onClick={() => navigateTo("/nexus")} style={{ borderColor: rank.color, color: rank.color }}>
-              → Acessar NEXUS
+            <button
+              onClick={() => navigateTo("/nexus")}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 11,
+                letterSpacing: 2,
+                color: rank.color,
+                padding: 0,
+              }}
+              onMouseEnter={(e) => {
+                const line = e.currentTarget.querySelector(".cta-line") as HTMLElement;
+                if (line) line.style.width = "100%";
+              }}
+              onMouseLeave={(e) => {
+                const line = e.currentTarget.querySelector(".cta-line") as HTMLElement;
+                if (line) line.style.width = "0%";
+              }}
+            >
+              <span style={{ position: "relative" }}>
+                → ACESSAR NEXUS
+                <span className="cta-line" style={{
+                  position: "absolute",
+                  bottom: -2,
+                  left: 0,
+                  height: 1,
+                  width: "0%",
+                  background: rank.color,
+                  transition: "width 0.4s cubic-bezier(0.16,1,0.3,1)",
+                }} />
+              </span>
             </button>
-            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#aaa", letterSpacing: 1 }}>
+            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "rgba(255,255,255,0.3)", letterSpacing: 1 }}>
               {rank.name} · {nexus.xp} XP
             </span>
           </div>
         </div>
-        {/* Visual side — AGENTE hero redesign */}
-        <div className="nexus-agent-display" style={{ opacity: visible ? 1 : 0, transition: "opacity 0.9s ease 0.35s", display: "flex", justifyContent: "center", padding: "24px" }}>
+
+        {/* Sapo */}
+        <div style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          transform: visible ? "translateY(0) scale(1)" : "translateY(30px) scale(0.97)",
+          opacity: visible ? 1 : 0,
+          transition: "transform 1s cubic-bezier(0.16,1,0.3,1) 0.2s, opacity 0.8s ease 0.2s",
+        }}>
           <div style={{
             position: "relative",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: 0,
           }}>
-            {/* Glow de fundo na cor do rank */}
+            {/* Grade sutil */}
             <div style={{
               position: "absolute",
-              bottom: 60,
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: 280,
-              height: 280,
-              borderRadius: "50%",
-              background: `radial-gradient(circle, ${rank.color}18 0%, ${rank.color}06 50%, transparent 75%)`,
-              filter: "blur(20px)",
-              pointerEvents: "none",
-              zIndex: 0,
-            }} />
-            {/* Grade sutil de fundo */}
-            <div style={{
-              position: "absolute",
-              inset: 0,
+              inset: -40,
               backgroundImage: "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
               backgroundSize: "32px 32px",
               pointerEvents: "none",
-              zIndex: 0,
               maskImage: "radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%)",
             }} />
-            {/* SAPO flutuante */}
-            <div id="sapo-landing" style={{ position: "relative", zIndex: 1, animation: "sapoFloat 4s ease-in-out infinite" }}>
-              <SapoAgent skin={activeSkin} state="idle" size={280} />
+            {/* Sapo flutuante */}
+            <div style={{ animation: "sapoFloat 4s ease-in-out infinite", position: "relative", zIndex: 1 }}>
+              <SapoAgent skin={(activeSkin ?? undefined) as import("@/components/SapoAgent").SapoSkin | undefined} state="idle" size={260} />
             </div>
-            {/* Nome do agente */}
-            <div style={{ position: "relative", zIndex: 1, textAlign: "center", marginTop: -8 }}>
-              <div style={{
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: 22,
-                letterSpacing: 6,
-                color: rank.color,
-                lineHeight: 1,
-              }}>{nexus.agentName}</div>
-              <div style={{
-                fontFamily: "'DM Mono', monospace",
-                fontSize: 9,
-                letterSpacing: 3,
-                color: `${rank.color}88`,
-                marginTop: 4,
-                textTransform: "uppercase",
-              }}>{rank.name} · {nexus.xp} XP</div>
+            {/* Nome */}
+            <div style={{ textAlign: "center", marginTop: -8, position: "relative", zIndex: 1 }}>
+              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, letterSpacing: 6, color: rank.color, lineHeight: 1 }}>
+                {nexus.agentName}
+              </div>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 3, color: `${rank.color}88`, marginTop: 4 }}>
+                {rank.name} · {nexus.xp} XP
+              </div>
             </div>
           </div>
         </div>
@@ -582,28 +513,12 @@ function NexusFrame() {
 
 // ─── Main Landing Page ────────────────────────────────────────────────────────
 export default function Home() {
-  const phraseRef = useRef<HTMLDivElement>(null);
-  const [scrollPct, setScrollPct] = useState(0);
   const { user, isAuthenticated, logout } = useAuth();
+  const [heroVisible, setHeroVisible] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => {
-      const docH = document.documentElement.scrollHeight - window.innerHeight;
-      setScrollPct(docH > 0 ? Math.min(1, window.scrollY / docH) : 0);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  useEffect(() => {
-    const el = phraseRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) el.classList.add("visible"); },
-      { threshold: 0.4 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
+    const t = setTimeout(() => setHeroVisible(true), 100);
+    return () => clearTimeout(t);
   }, []);
 
   return (
@@ -611,336 +526,261 @@ export default function Home() {
       <GrainOverlay />
       <CustomCursor />
       <GlobalHeader currentPage="home" />
-      <GlobalSpine />
       <ToastContainer />
 
-      {/* ── HERO (70vh) ──────────────────────────────────────────────────── */}
-      <section
-        style={{
-          minHeight: "70vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "flex-start",
-          paddingTop: "clamp(80px, 14vh, 140px)",
-          position: "relative",
-          background: "#000",
-          padding: "clamp(80px, 14vh, 140px) 24px 0",
-          zIndex: 2,
-        }}
-      >
-        {/* Top label */}
-        <div
-          style={{
-            fontFamily: "'DM Mono', monospace",
-            fontSize: 9,
-            letterSpacing: 5,
-            color: "#777",
-            textTransform: "uppercase",
-            marginBottom: 24,
-            animation: "fadeIn 1s ease 0.6s both",
-          }}
-        >
-          Sistema Central de Design
+      {/* ── HERO ──────────────────────────────────────────────────────────── */}
+      <section style={{
+        minHeight: "100vh",
+        background: "#000",
+        position: "relative",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "flex-end",
+        padding: "0 clamp(24px, 6vw, 80px) clamp(48px, 8vh, 80px)",
+        zIndex: 2,
+      }}>
+        {/* Top-right label */}
+        <div style={{
+          position: "absolute",
+          top: "clamp(80px, 12vh, 120px)",
+          right: "clamp(24px, 6vw, 80px)",
+          textAlign: "right",
+          opacity: heroVisible ? 1 : 0,
+          transform: heroVisible ? "translateY(0)" : "translateY(-10px)",
+          transition: "opacity 0.8s ease 0.4s, transform 0.8s ease 0.4s",
+        }}>
+          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 3, color: "rgba(255,255,255,0.3)", lineHeight: 1.8 }}>
+            SISTEMA CENTRAL<br />DE DESIGN
+          </div>
         </div>
 
-        {/* Main title — letra a letra */}
-        <div style={{ position: "relative", textAlign: "center" }}>
-          {/* Halo radial atrás do título */}
-          <div className="hero-halo" />
-          <h1
-            className="cortex-title"
-            style={{
+        {/* Top-left year */}
+        <div style={{
+          position: "absolute",
+          top: "clamp(80px, 12vh, 120px)",
+          left: "clamp(24px, 6vw, 80px)",
+          opacity: heroVisible ? 1 : 0,
+          transition: "opacity 0.8s ease 0.5s",
+        }}>
+          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 3, color: "rgba(255,255,255,0.2)" }}>
+            © 2026
+          </div>
+        </div>
+
+        {/* Main title — asymmetric, massive */}
+        <div style={{ position: "relative", zIndex: 2 }}>
+          {/* Halo */}
+          <div style={{
+            position: "absolute",
+            top: "50%",
+            left: "30%",
+            transform: "translate(-50%, -50%)",
+            width: "60vw",
+            height: "60vw",
+            maxWidth: 700,
+            maxHeight: 700,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 65%)",
+            filter: "blur(40px)",
+            pointerEvents: "none",
+          }} />
+
+          {/* Line 1 — left aligned */}
+          <div style={{ overflow: "hidden" }}>
+            <div style={{
               fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: "clamp(72px, 14vw, 160px)",
-              lineHeight: 0.92,
-              letterSpacing: 6,
+              fontSize: "clamp(80px, 16vw, 200px)",
+              lineHeight: 0.88,
+              letterSpacing: -2,
               color: "#fff",
-              textAlign: "center",
-              position: "relative",
-              zIndex: 1,
-            }}
-          >
-            {"CÓRTEX".split("").map((char, i) => (
-              <span key={i} className="letra" style={{ animationDelay: `${i * 0.08}s` }}>{char}</span>
-            ))}
-          </h1>
-          {/* Linha horizontal animada */}
-          <div
-            className="hero-line"
-            style={{
-              width: "60%",
-              height: 1,
-              background: "linear-gradient(to right, transparent, rgba(255,255,255,0.5), transparent)",
-              margin: "8px auto 0",
-            }}
-          />
+              transform: heroVisible ? "translateY(0)" : "translateY(110%)",
+              transition: "transform 1s cubic-bezier(0.16,1,0.3,1) 0.1s",
+            }}>SISTEMA</div>
+          </div>
+
+          {/* Line 2 — indented */}
+          <div style={{ overflow: "hidden", paddingLeft: "clamp(16px, 4vw, 60px)" }}>
+            <div style={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontSize: "clamp(80px, 16vw, 200px)",
+              lineHeight: 0.88,
+              letterSpacing: -2,
+              color: "rgba(255,255,255,0.85)",
+              transform: heroVisible ? "translateY(0)" : "translateY(110%)",
+              transition: "transform 1s cubic-bezier(0.16,1,0.3,1) 0.18s",
+            }}>CENTRAL</div>
+          </div>
+
+          {/* Line 3 — right aligned, with period */}
+          <div style={{ overflow: "hidden", display: "flex", justifyContent: "flex-end" }}>
+            <div style={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontSize: "clamp(80px, 16vw, 200px)",
+              lineHeight: 0.88,
+              letterSpacing: -2,
+              color: "rgba(255,255,255,0.7)",
+              transform: heroVisible ? "translateY(0)" : "translateY(110%)",
+              transition: "transform 1s cubic-bezier(0.16,1,0.3,1) 0.26s",
+            }}>DE DESIGN.</div>
+          </div>
         </div>
 
-        {/* Phrase — right below the title */}
-        <div
-          ref={phraseRef}
-          className="reveal"
-          style={{
-            marginTop: 40,
-            textAlign: "center",
-          }}
-        >
-          <p
-            style={{
-              fontFamily: "'DM Mono', monospace",
-              fontSize: "clamp(11px, 1.4vw, 14px)",
-              color: "#999",
-              lineHeight: 1.8,
-              letterSpacing: 2,
-              maxWidth: 420,
-            }}
-          >
-            "Ferramentas para quem cria.
-            <br />
+        {/* Bottom row */}
+        <div style={{
+          display: "flex",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          marginTop: "clamp(32px, 5vh, 56px)",
+          opacity: heroVisible ? 1 : 0,
+          transform: heroVisible ? "translateY(0)" : "translateY(16px)",
+          transition: "opacity 0.8s ease 0.7s, transform 0.8s ease 0.7s",
+          position: "relative",
+          zIndex: 2,
+        }}>
+          <p style={{
+            fontFamily: "'DM Mono', monospace",
+            fontSize: "clamp(10px, 1.2vw, 13px)",
+            color: "rgba(255,255,255,0.4)",
+            lineHeight: 1.7,
+            maxWidth: 320,
+            letterSpacing: 1,
+          }}>
+            "Ferramentas para quem cria.<br />
             Não um produto. Um sistema."
           </p>
-        </div>
 
-        {/* Scroll indicator */}
-        <div
-          style={{
-            marginTop: 48,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 6,
-            animation: "fadeIn 1.5s ease 0.8s both",
-          }}
-        >
-          <span
-            className="scroll-indicator"
-            style={{
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+            <div style={{
               fontFamily: "'DM Mono', monospace",
-              fontSize: 8,
+              fontSize: 9,
               letterSpacing: 3,
-              color: "#777",
-              textTransform: "uppercase",
-              display: "block",
-            }}
-          >
-            scroll
-          </span>
-          <div
-            style={{
-              width: 1,
-              height: 32,
-              background: "rgba(255,255,255,0.2)",
+              color: "rgba(255,255,255,0.25)",
               animation: "scrollBounce 2s ease-in-out infinite",
-              animationDelay: "1.6s",
-            }}
-          />
+            }}>SCROLL ↓</div>
+          </div>
         </div>
       </section>
 
-      {/* ── MODULES SECTION ──────────────────────────────────────────────── */}
-      <section
-        style={{
-          background: "#000",
-          position: "relative",
-          padding: "120px 0 160px",
-          zIndex: 2,
-        }}
-      >
-        {/* Section label */}
-        <div
-          style={{
-            textAlign: "center",
-            marginBottom: 80,
-            position: "relative",
-            zIndex: 2,
-          }}
-        >
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 16,
-            }}
-          >
-            <div style={{ width: 40, height: 1, background: "rgba(255,255,255,0.1)" }} />
-            <span
-              style={{
-                fontFamily: "'DM Mono', monospace",
-                fontSize: 9,
-                letterSpacing: 5,
-                color: "#777",
-                textTransform: "uppercase",
-              }}
-            >
+      {/* ── INTRO STATEMENT (fundo claro — contraste radical) ─────────────── */}
+      <section style={{
+        background: "#f0ede8",
+        padding: "clamp(80px, 12vw, 160px) clamp(24px, 6vw, 80px)",
+        position: "relative",
+        zIndex: 2,
+      }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <LineReveal>
+            <p style={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontSize: "clamp(36px, 5.5vw, 72px)",
+              lineHeight: 1.05,
+              letterSpacing: 1,
+              color: "#0a0a0a",
+              maxWidth: 800,
+            }}>
+              Transformamos estética em sistemas. Cada ferramenta do CÓRTEX foi construída para profissionais criativos que não aceitam mediocridade.
+            </p>
+          </LineReveal>
+          <div style={{ marginTop: 40, display: "flex", alignItems: "center", gap: 24 }}>
+            <div style={{ width: 40, height: 1, background: "rgba(0,0,0,0.2)" }} />
+            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 4, color: "rgba(0,0,0,0.4)", textTransform: "uppercase" }}>
               módulos do sistema
             </span>
-            <div style={{ width: 40, height: 1, background: "rgba(255,255,255,0.1)" }} />
           </div>
-        </div>
-
-        {/* Modules container */}
-        <div
-          style={{
-            maxWidth: 1100,
-            margin: "0 auto",
-            padding: "0 40px",
-          }}
-        >
-          {/* Frame 00 — NEXUS */}
-          <NexusFrame />
-
-          <ModuleDivider index={0} />
-
-          <ModuleFrame
-            number="01"
-            name="ARQUIVO"
-            subtitle="Galeria de prompts automotivos para IA"
-            description="Uma biblioteca editorial de prompts de alta precisão para geração de imagens automotivas. Edite, melhore e gere com Anthropic e Freepik."
-            route="/arquivo"
-          />
-
-          <ModuleDivider index={1} />
-          <ModuleFrame
-            number="02"
-            name="VERSO"
-            subtitle="Gerador de copy e textos criativos"
-            description="Crie captions, anúncios, headlines e emails com IA. Configure o tom de voz da sua marca e gere textos que soam como você — com XP a cada criação."
-            route="/verso"
-            reverse
-          />
-          <ModuleDivider index={2} />
-          <ModuleFrame
-            number="03"
-            name="FORMA"
-            subtitle="Briefing inteligente para clientes"
-            description="Crie formulários de briefing personalizados com a identidade da sua marca. Envie ao cliente, receba respostas e gere análises com IA — tudo em um só lugar."
-            route="/forma"
-          />
-          <ModuleDivider index={4} />
-          <ModuleFrame
-            number="05"
-            name="PALCO"
-            subtitle="Templates para apresentações profissionais"
-            description="Composições visuais para apresentar projetos, moodboards e conceitos criativos com precisão editorial."
-            comingSoon
-            reverse
-          />
-          <ModuleDivider index={5} />
-          <ModuleFrame
-            number="06"
-            name="ESTÚDIO"
-            subtitle="Ferramentas de composição visual"
-            description="Ambiente de criação para composições complexas com múltiplas referências, camadas e estilos."
-            comingSoon
-          />
-        </div>
-
-        {/* Progress indicator */}
-        <div
-          style={{
-            position: "absolute",
-            right: 32,
-            top: "50%",
-            transform: "translateY(-50%)",
-            display: "flex",
-            flexDirection: "column",
-            gap: 4,
-            alignItems: "center",
-            zIndex: 2,
-          }}
-        >
-          <div
-            style={{
-              width: 1,
-              height: 80,
-              background: "#111",
-              position: "relative",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: `${scrollPct * 100}%`,
-                background: "rgba(255,255,255,0.4)",
-                transition: "height 0.1s linear",
-              }}
-            />
-          </div>
-          <span
-            style={{
-              fontFamily: "'DM Mono', monospace",
-              fontSize: 8,
-              color: "#777",
-              letterSpacing: 1,
-              writingMode: "vertical-rl",
-              marginTop: 6,
-            }}
-          >
-            {Math.round(scrollPct * 100)}%
-          </span>
         </div>
       </section>
 
-      {/* ── FOOTER ───────────────────────────────────────────────────────── */}
-      <footer
-        style={{
-          borderTop: "1px solid rgba(255,255,255,0.05)",
-          padding: "48px 24px",
-          textAlign: "center",
-          background: "#000",
-          position: "relative",
-          zIndex: 2,
-        }}
-      >
-        <p
-          style={{
-            fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: 20,
-            letterSpacing: 6,
-            color: "rgba(255,255,255,0.15)",
-          }}
-        >
-          CÓRTEX
-        </p>
-        <p
-          style={{
-            fontFamily: "'DM Mono', monospace",
-            fontSize: 9,
-            letterSpacing: 3,
-            color: "#2a2a2a",
-            marginTop: 8,
-            textTransform: "uppercase",
-          }}
-        >
-          © 2026 — Sistema Central de Design
-        </p>
+      {/* ── NEXUS ─────────────────────────────────────────────────────────── */}
+      <NexusSection />
 
-        {/* Auth row */}
-        <div style={{ marginTop: 24, display: "flex", alignItems: "center", justifyContent: "center", gap: 16 }}>
-          {isAuthenticated ? (
-            <>
-              <span style={{ fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 2, color: "#777" }}>
-                {user?.name?.toUpperCase()}
-              </span>
-              {user?.role === "admin" && (
-                <button onClick={() => window.location.href = "/admin"} style={{ background: "none", border: "1px solid #222", cursor: "pointer", fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 3, color: "#999", padding: "4px 12px" }}>
-                  ADMIN
+      {/* ── MÓDULOS ───────────────────────────────────────────────────────── */}
+      <ModuleCard
+        number="01"
+        name="ARQUIVO"
+        subtitle="Galeria de prompts automotivos para IA"
+        description="Uma biblioteca editorial de prompts de alta precisão para geração de imagens automotivas. Edite, melhore e gere com Anthropic e Freepik."
+        route="/arquivo"
+        accent="rgba(255,255,255,0.6)"
+      />
+
+      <ModuleCard
+        number="02"
+        name="VERSO"
+        subtitle="Gerador de copy e textos criativos"
+        description="Crie captions, anúncios, headlines e emails com IA. Configure o tom de voz da sua marca e gere textos que soam como você — com XP a cada criação."
+        route="/verso"
+        dark={false}
+        accent="#0a0a0a"
+      />
+
+      <ModuleCard
+        number="03"
+        name="FORMA"
+        subtitle="Briefing inteligente para clientes"
+        description="Crie formulários de briefing personalizados com a identidade da sua marca. Envie ao cliente, receba respostas e gere análises com IA — tudo em um só lugar."
+        route="/forma"
+        accent="rgba(255,255,255,0.6)"
+      />
+
+      <ModuleCard
+        number="05"
+        name="PALCO"
+        subtitle="Templates para apresentações profissionais"
+        description="Composições visuais para apresentar projetos, moodboards e conceitos criativos com precisão editorial."
+        comingSoon
+        dark={false}
+        accent="#0a0a0a"
+      />
+
+      <ModuleCard
+        number="06"
+        name="ESTÚDIO"
+        subtitle="Ferramentas de composição visual"
+        description="Ambiente de criação para composições complexas com múltiplas referências, camadas e estilos."
+        comingSoon
+        accent="rgba(255,255,255,0.6)"
+      />
+
+      {/* ── FOOTER ───────────────────────────────────────────────────────── */}
+      <footer style={{
+        background: "#000",
+        borderTop: "1px solid rgba(255,255,255,0.06)",
+        padding: "clamp(48px, 8vw, 80px) clamp(24px, 6vw, 80px)",
+        position: "relative",
+        zIndex: 2,
+      }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 24 }}>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(28px, 4vw, 48px)", letterSpacing: 4, color: "rgba(255,255,255,0.12)", lineHeight: 1 }}>
+              CÓRTEX
+            </div>
+            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 3, color: "rgba(255,255,255,0.2)", marginTop: 8 }}>
+              © 2026 — Sistema Central de Design
+            </div>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            {isAuthenticated ? (
+              <>
+                <span style={{ fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 2, color: "rgba(255,255,255,0.3)" }}>
+                  {user?.name?.toUpperCase()}
+                </span>
+                {user?.role === "admin" && (
+                  <button onClick={() => window.location.href = "/admin"} style={{ background: "none", border: "1px solid rgba(255,255,255,0.1)", cursor: "pointer", fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 3, color: "rgba(255,255,255,0.5)", padding: "4px 12px" }}>
+                    ADMIN
+                  </button>
+                )}
+                <button onClick={() => logout()} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 3, color: "rgba(255,255,255,0.3)", padding: 0 }}>
+                  SAIR
                 </button>
-              )}
-              <button onClick={() => logout()} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 3, color: "#777", padding: 0 }}>
-                SAIR
-              </button>
-            </>
-          ) : (
-            <a href={getLoginUrl()} style={{ fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 3, color: "#aaa", textDecoration: "none", border: "1px solid #1a1a1a", padding: "6px 16px" }}>
-              ENTRAR
-            </a>
-          )}
+              </>
+            ) : (
+              <a href={getLoginUrl()} style={{ fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 3, color: "rgba(255,255,255,0.4)", textDecoration: "none", border: "1px solid rgba(255,255,255,0.1)", padding: "6px 16px" }}>
+                ENTRAR
+              </a>
+            )}
+          </div>
         </div>
       </footer>
     </>
