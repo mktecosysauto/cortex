@@ -177,6 +177,14 @@ export default function FormaDetail() {
                 >
                   {resendMutation.isPending ? "ENVIANDO..." : "REENVIAR EMAIL"}
                 </button>
+                <a
+                  href={publicLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-[9px] tracking-[2px] uppercase px-4 py-2 border border-[rgba(74,158,255,0.4)] text-[#4a9eff] hover:opacity-85 transition-opacity"
+                >
+                  ABRIR LINK ↗
+                </a>
                 <button
                   onClick={async () => {
                     await navigator.clipboard.writeText(publicLink);
@@ -189,15 +197,25 @@ export default function FormaDetail() {
               </>
             )}
             {briefing.status === "answered" && (
-              <button
-                onClick={async () => {
-                  await navigator.clipboard.writeText(publicLink);
-                  toast.success("Link copiado!");
-                }}
-                className="font-mono text-[9px] tracking-[2px] uppercase px-4 py-2 border border-[#1a1a1a] text-[#555] hover:text-white hover:border-[#333] transition-colors"
-              >
-                COPIAR LINK
-              </button>
+              <>
+                <a
+                  href={publicLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-[9px] tracking-[2px] uppercase px-4 py-2 border border-[rgba(74,158,255,0.4)] text-[#4a9eff] hover:opacity-85 transition-opacity"
+                >
+                  ABRIR LINK ↗
+                </a>
+                <button
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(publicLink);
+                    toast.success("Link copiado!");
+                  }}
+                  className="font-mono text-[9px] tracking-[2px] uppercase px-4 py-2 border border-[#1a1a1a] text-[#555] hover:text-white hover:border-[#333] transition-colors"
+                >
+                  COPIAR LINK
+                </button>
+              </>
             )}
             {briefing.status === "answered" && !briefing.aiSummary && (
               <button
@@ -375,16 +393,33 @@ export default function FormaDetail() {
               {briefing.status === "sent" && (
                 <div className="border border-[rgba(186,117,23,0.2)] p-4 bg-[rgba(186,117,23,0.03)]">
                   <p className="font-mono text-[8px] tracking-[3px] text-[#BA7517] uppercase mb-2">LINK DO FORMULÁRIO</p>
-                  <p className="font-mono text-[10px] text-[#666] break-all mb-3">{publicLink}</p>
-                  <button
-                    onClick={async () => {
-                      await navigator.clipboard.writeText(publicLink);
-                      toast.success("Link copiado!");
-                    }}
-                    className="font-mono text-[8px] tracking-[2px] uppercase text-[#BA7517] hover:text-[#d4891e] transition-colors"
+                  <a
+                    href={publicLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-[10px] text-[#4a9eff] break-all mb-3 block hover:underline"
                   >
-                    COPIAR LINK
-                  </button>
+                    {publicLink}
+                  </a>
+                  <div className="flex gap-3 mt-3">
+                    <a
+                      href={publicLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-[8px] tracking-[2px] uppercase text-[#4a9eff] hover:text-[#6bb3ff] transition-colors"
+                    >
+                      ABRIR LINK ↗
+                    </a>
+                    <button
+                      onClick={async () => {
+                        await navigator.clipboard.writeText(publicLink);
+                        toast.success("Link copiado!");
+                      }}
+                      className="font-mono text-[8px] tracking-[2px] uppercase text-[#BA7517] hover:text-[#d4891e] transition-colors"
+                    >
+                      COPIAR LINK
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

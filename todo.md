@@ -327,3 +327,4 @@
 - [x] App.tsx corrigido: /b/:token renderiza FormaBriefing FORA do NexusProvider
 - [x] main.tsx corrigido: redirectToLoginIfUnauthorized ignora caminhos /b/*
 - [x] Testado: /b/token-invalido mostra "LINK INVÁLIDO OU EXPIRADO" sem redirect
+- [x] Adicionar botão ABRIR LINK clicável (target=_blank) na lista e detalhe do FORMA

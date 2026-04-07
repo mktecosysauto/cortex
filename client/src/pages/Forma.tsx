@@ -207,16 +207,26 @@ function BriefingList({ filterStatus, onNew }: { filterStatus: string; onNew: ()
                     </button>
                   )}
                   {b.status === "sent" && (
-                    <button
-                      onClick={async () => {
-                        const link = `${import.meta.env.VITE_PUBLIC_URL ?? window.location.origin}/b/${b.publicToken}`;
-                        await navigator.clipboard.writeText(link);
-                        toast.success("Link copiado!");
-                      }}
-                      className="font-mono text-[8px] tracking-[1px] uppercase text-[#555] hover:text-white transition-colors"
-                    >
-                      COPIAR LINK
-                    </button>
+                    <>
+                      <a
+                        href={`${import.meta.env.VITE_PUBLIC_URL ?? window.location.origin}/b/${b.publicToken}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-mono text-[8px] tracking-[1px] uppercase text-[#4a9eff] hover:text-[#6bb3ff] transition-colors"
+                      >
+                        ABRIR LINK ↗
+                      </a>
+                      <button
+                        onClick={async () => {
+                          const link = `${import.meta.env.VITE_PUBLIC_URL ?? window.location.origin}/b/${b.publicToken}`;
+                          await navigator.clipboard.writeText(link);
+                          toast.success("Link copiado!");
+                        }}
+                        className="font-mono text-[8px] tracking-[1px] uppercase text-[#555] hover:text-white transition-colors"
+                      >
+                        COPIAR LINK
+                      </button>
+                    </>
                   )}
                   {b.status !== "archived" && (
                     <button
