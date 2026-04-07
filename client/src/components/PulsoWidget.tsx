@@ -221,7 +221,7 @@ export default function PulsoWidget() {
               <span style={{ fontSize: 10, letterSpacing: 4, color: "#fff", textTransform: "uppercase" }}>PULSO</span>
               <button
                 onClick={() => { if (!isActive) setExpanded(false); }}
-                style={{ background: "none", border: "none", color: "#666", cursor: "none", fontSize: 12, padding: 0 }}
+                style={{ background: "none", border: "none", color: "#999", cursor: "none", fontSize: 12, padding: 0 }}
               >
                 ✕
               </button>
@@ -308,7 +308,7 @@ export default function PulsoWidget() {
             </div>
 
             {/* Expected reward */}
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "#666", letterSpacing: 1, marginBottom: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "#999", letterSpacing: 1, marginBottom: 16 }}>
               <span>⬡ +{expectedReward.glifos} glifos</span>
               <span>+{expectedReward.xp} XP</span>
             </div>
@@ -358,7 +358,7 @@ export default function PulsoWidget() {
                       flex: 1,
                       background: "none",
                       border: "1px solid #2a2a2a",
-                      color: "#666",
+                      color: "#999",
                       fontFamily: "'DM Mono', monospace",
                       fontSize: 10,
                       padding: 10,
@@ -374,7 +374,7 @@ export default function PulsoWidget() {
             </div>
 
             {/* Streak */}
-            <div style={{ fontSize: 9, color: "#444", letterSpacing: 1, textAlign: "center" }}>
+            <div style={{ fontSize: 9, color: "#aaa", letterSpacing: 1, textAlign: "center" }}>
               {state.streakCount > 0
                 ? `STREAK ${state.streakCount}× ${state.streakCount >= 3 ? "🔥" : ""}`
                 : "Sem streak ativo"}

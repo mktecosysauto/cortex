@@ -38,8 +38,8 @@
   --cortex-accent:   #ffffff;
   --accent2:  #c8c8c8;
   --cortex-text:     #ffffff;
-  --dim:      #666666;
-  --mid:      #999999;
+  --dim:      #888888;
+  --mid:      #aaaaaa;
   --red:      #ff4444;
   --green:    #44ff88;
 
@@ -75,7 +75,7 @@
   --secondary: oklch(10.2% 0 0);
   --secondary-foreground: oklch(100% 0 0);
   --muted: oklch(10.2% 0 0);
-  --muted-foreground: oklch(40% 0 0);
+  --muted-foreground: oklch(58% 0 0);
   --accent: oklch(10.2% 0 0);
   --accent-foreground: oklch(100% 0 0);
   --destructive: oklch(55% 0.22 25);
@@ -183,8 +183,8 @@
     font-size: 9px;
     letter-spacing: 0.5px;
     padding: 2px 7px;
-    border: 1px solid #2a2a2a;
-    color: #666;
+    border: 1px solid #3a3a3a;
+    color: #999;
     white-space: nowrap;
   }
 
@@ -249,7 +249,7 @@
   .fp-bar-btn {
     background: #0d0d0d;
     border: none;
-    color: #666;
+    color: #999;
     font-family: 'DM Mono', monospace;
     font-size: 9px;
     letter-spacing: 0.5px;
@@ -277,7 +277,7 @@
   }
   .btn-cortex:hover { background: #fff; color: #000; }
   .btn-cortex.sm { font-size: 9px; padding: 6px 12px; letter-spacing: 1px; }
-  .btn-cortex.ghost { border-color: #2a2a2a; color: #666; }
+  .btn-cortex.ghost { border-color: #3a3a3a; color: #999; }
   .btn-cortex.ghost:hover { border-color: #c8c8c8; color: #fff; background: transparent; }
 
   .input-cortex, .textarea-cortex {
@@ -293,7 +293,7 @@
     resize: none;
   }
   .input-cortex:focus, .textarea-cortex:focus { border-color: #c8c8c8; }
-  .input-cortex::placeholder, .textarea-cortex::placeholder { color: #666; }
+  .input-cortex::placeholder, .textarea-cortex::placeholder { color: #777; }
 
   .modal-overlay {
     position: fixed;
@@ -427,8 +427,8 @@
     font-size: 9px;
     letter-spacing: 0.5px;
     padding: 2px 7px;
-    border: 1px solid #2a2a2a;
-    color: #666;
+    border: 1px solid #3a3a3a;
+    color: #999;
     white-space: nowrap;
   }
 
@@ -498,7 +498,7 @@
   .fp-bar-btn {
     background: #0d0d0d;
     border: none;
-    color: #666;
+    color: #999;
     font-family: 'DM Mono', monospace;
     font-size: 9px;
     letter-spacing: 0.5px;
@@ -527,7 +527,7 @@
   }
   .btn-cortex:hover { background: #fff; color: #000; }
   .btn-cortex.sm { font-size: 9px; padding: 6px 12px; letter-spacing: 1px; }
-  .btn-cortex.ghost { border-color: #2a2a2a; color: #666; }
+  .btn-cortex.ghost { border-color: #3a3a3a; color: #999; }
   .btn-cortex.ghost:hover { border-color: #c8c8c8; color: #fff; background: transparent; }
 
   /* Input / Textarea */
@@ -544,7 +544,7 @@
     resize: none;
   }
   .input-cortex:focus, .textarea-cortex:focus { border-color: #c8c8c8; }
-  .input-cortex::placeholder, .textarea-cortex::placeholder { color: #666; }
+  .input-cortex::placeholder, .textarea-cortex::placeholder { color: #777; }
 
   /* Modal */
   .modal-overlay {

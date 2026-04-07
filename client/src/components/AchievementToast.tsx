@@ -101,7 +101,7 @@ export default function AchievementToastContainer() {
           fontFamily: "'DM Mono', monospace",
           fontSize: 8,
           letterSpacing: 3,
-          color: "#444",
+          color: "#aaa",
           textTransform: "uppercase",
           marginBottom: 4,
         }}>
@@ -127,7 +127,7 @@ export default function AchievementToastContainer() {
           fontFamily: "'DM Mono', monospace",
           fontSize: 9,
           letterSpacing: 1,
-          color: "#555",
+          color: "#999",
           lineHeight: 1.4,
         }}>
           {visible.desc}

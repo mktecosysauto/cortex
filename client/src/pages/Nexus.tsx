@@ -95,7 +95,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
       fontFamily: "'DM Mono', monospace",
       fontSize: 11,
       letterSpacing: 4,
-      color: "#444",
+      color: "#aaa",
       textTransform: "uppercase" as const,
       borderBottom: "1px solid #1a1a1a",
       paddingBottom: 10,
@@ -240,7 +240,7 @@ export default function Nexus() {
                 fontFamily: "'DM Mono', monospace",
                 fontSize: 10,
                 letterSpacing: 4,
-                color: "#333",
+                color: "#777",
                 textTransform: "uppercase" as const,
               }}>
                 {SKIN_LABEL[currentSkin] ?? "SAPO BASE"}
@@ -260,7 +260,7 @@ export default function Nexus() {
                   fontFamily: "'DM Mono', monospace",
                   fontSize: 10,
                   letterSpacing: 5,
-                  color: "#333",
+                  color: "#777",
                   marginBottom: 16,
                   textTransform: "uppercase" as const,
                 }}>
@@ -289,7 +289,7 @@ export default function Nexus() {
                           width: 280,
                         }}
                       />
-                      <button onClick={saveName} style={{ background: "none", border: "none", color: "#666", cursor: "none", fontSize: 14 }}>✓</button>
+                      <button onClick={saveName} style={{ background: "none", border: "none", color: "#999", cursor: "none", fontSize: 14 }}>✓</button>
                     </>
                   ) : (
                     <>
@@ -298,7 +298,7 @@ export default function Nexus() {
                       </span>
                       <button
                         onClick={() => { setEditingName(true); setNameInput(nexus.agentName); }}
-                        style={{ background: "none", border: "none", color: "#333", cursor: "none", fontFamily: "'DM Mono', monospace", fontSize: 13 }}
+                        style={{ background: "none", border: "none", color: "#777", cursor: "none", fontFamily: "'DM Mono', monospace", fontSize: 13 }}
                       >
                         ✎
                       </button>
@@ -307,7 +307,7 @@ export default function Nexus() {
                 </div>
 
                 {titleItem && "value" in titleItem && (
-                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#555", letterSpacing: 2, marginBottom: 8 }}>
+                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#999", letterSpacing: 2, marginBottom: 8 }}>
                     {titleItem.value as string}
                   </div>
                 )}
@@ -317,7 +317,7 @@ export default function Nexus() {
                   <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 48, letterSpacing: 6, color: rank.color, lineHeight: 1 }}>
                     {rank.name}
                   </span>
-                  <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#444", letterSpacing: 2 }}>
+                  <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#aaa", letterSpacing: 2 }}>
                     Nível 0{rank.id}
                   </span>
                 </div>
@@ -325,7 +325,7 @@ export default function Nexus() {
 
               {/* Meio: XP bar */}
               <div style={{ marginBottom: 24 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#444", letterSpacing: 1, marginBottom: 8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#aaa", letterSpacing: 1, marginBottom: 8 }}>
                   <span>{nexus.xp.toLocaleString()} XP</span>
                   <span>{nextRank ? `próximo: ${nextRank.xpMin.toLocaleString()}` : "rank máximo"}</span>
                 </div>
@@ -338,7 +338,7 @@ export default function Nexus() {
               <div style={{ display: "flex", alignItems: "center", gap: 10, fontFamily: "'DM Mono', monospace" }}>
                 <span style={{ fontSize: 22, color: rank.color }}>⬡</span>
                 <span style={{ fontSize: 28, color: "#fff", letterSpacing: 2, lineHeight: 1 }}>{nexus.glifos.toLocaleString()}</span>
-                <span style={{ fontSize: 11, color: "#444", letterSpacing: 2 }}>GLIFOS</span>
+                <span style={{ fontSize: 11, color: "#aaa", letterSpacing: 2 }}>GLIFOS</span>
               </div>
             </div>
           </div>
@@ -363,7 +363,7 @@ export default function Nexus() {
                   <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 34, letterSpacing: 2, color: "#fff", lineHeight: 1 }}>
                     {stat.value || 0}
                   </span>
-                  <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, letterSpacing: 2, color: "#444", textTransform: "uppercase" as const }}>
+                  <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, letterSpacing: 2, color: "#aaa", textTransform: "uppercase" as const }}>
                     {stat.label}
                   </span>
                 </div>
@@ -424,7 +424,7 @@ export default function Nexus() {
             <SectionTitle>Loja</SectionTitle>
 
             {/* Glifos display */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, fontFamily: "'DM Mono', monospace", fontSize: 12, color: "#555" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, fontFamily: "'DM Mono', monospace", fontSize: 12, color: "#999" }}>
               <span>Saldo:</span>
               <span style={{ color: "#fff" }}>⬡ {nexus.glifos.toLocaleString()}</span>
             </div>
@@ -456,7 +456,7 @@ export default function Nexus() {
             {/* Equipped panel */}
             {nexus.activeItems.length > 0 && (
               <div style={{ marginBottom: 20, padding: "12px 16px", background: "#0a0a0a", border: "1px solid #1a1a1a" }}>
-                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 3, color: "#444", marginBottom: 10, textTransform: "uppercase" as const }}>Equipado agora</div>
+                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 3, color: "#aaa", marginBottom: 10, textTransform: "uppercase" as const }}>Equipado agora</div>
                 <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
                   {nexus.activeItems.map((id) => {
                     const item = ALL_ITEMS.find((i) => i.id === id);
@@ -482,7 +482,7 @@ export default function Nexus() {
                       >
                         <span style={{ color: "#fff", fontSize: 9 }}>●</span>
                         {item.name}
-                        <span style={{ color: "#555", fontSize: 9 }}>✕</span>
+                        <span style={{ color: "#999", fontSize: 9 }}>✕</span>
                       </button>
                     );
                   })}
@@ -554,7 +554,7 @@ export default function Nexus() {
                           <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, letterSpacing: 2, color: isBaseActive ? "#fff" : "#888", textTransform: "uppercase" as const }}>
                             SAPO BASE
                           </span>
-                          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "#444", lineHeight: 1.5 }}>
+                          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "#aaa", lineHeight: 1.5 }}>
                             Skin padrão do agente. Sempre disponível, sem equipamento.
                           </span>
                           <div style={{ marginTop: "auto" }}>
@@ -563,7 +563,7 @@ export default function Nexus() {
                                 fontFamily: "'DM Mono', monospace",
                                 fontSize: 10,
                                 letterSpacing: 2,
-                                color: "#555",
+                                color: "#999",
                                 border: "1px solid #2a2a2a",
                                 padding: "8px 0",
                                 textAlign: "center",
@@ -579,7 +579,7 @@ export default function Nexus() {
                                   width: "100%",
                                   background: "none",
                                   border: "1px solid #2a2a2a",
-                                  color: "#555",
+                                  color: "#999",
                                   fontFamily: "'DM Mono', monospace",
                                   fontSize: 10,
                                   letterSpacing: 2,
@@ -667,7 +667,7 @@ export default function Nexus() {
                               fontFamily: "'DM Mono', monospace",
                               fontSize: 11,
                               letterSpacing: 2,
-                              color: "#666",
+                              color: "#999",
                               background: "rgba(0,0,0,0.7)",
                               padding: "4px 10px",
                               whiteSpace: "nowrap" as const,
@@ -682,7 +682,7 @@ export default function Nexus() {
                           <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, letterSpacing: 2, color: active ? "#fff" : owned ? "#888" : "#666", textTransform: "uppercase" as const }}>
                             {item.name}
                           </span>
-                          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "#444", lineHeight: 1.5 }}>
+                          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "#aaa", lineHeight: 1.5 }}>
                             {item.desc}
                           </span>
 
@@ -772,7 +772,7 @@ export default function Nexus() {
                       <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, letterSpacing: 2, color: active ? "#fff" : owned ? "#888" : "#666", textTransform: "uppercase" as const }}>
                         {item.name}
                       </span>
-                      <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "#444", lineHeight: 1.5 }}>
+                      <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "#aaa", lineHeight: 1.5 }}>
                         {item.desc}
                       </span>
 
@@ -855,7 +855,7 @@ export default function Nexus() {
                     <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, letterSpacing: 3, color: r.color, flex: 1 }}>
                       {r.name}
                     </span>
-                    <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#444", letterSpacing: 1 }}>
+                    <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#aaa", letterSpacing: 1 }}>
                       {r.id === 7 ? `${r.xpMin.toLocaleString()}+ XP` : `${r.xpMin.toLocaleString()} – ${r.xpMax.toLocaleString()} XP`}
                     </span>
                     {isCurrent && (

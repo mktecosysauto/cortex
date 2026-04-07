@@ -41,7 +41,7 @@ export default function NexusBadge() {
       </div>
 
       {/* Glifos */}
-      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#666", letterSpacing: 1, marginLeft: 2 }}>
+      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#999", letterSpacing: 1, marginLeft: 2 }}>
         ⬡{nexus.glifos}
       </span>
     </button>

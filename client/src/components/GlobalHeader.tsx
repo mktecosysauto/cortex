@@ -299,7 +299,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                 fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 2,
                 padding: "5px 12px", border: "1px solid",
                 borderColor: pendingCount > 0 ? "#fff" : "#333",
-                color: "#666", background: "transparent",
+                color: "#999", background: "transparent",
                 cursor: "pointer", display: "flex", alignItems: "center", gap: 6, position: "relative",
               }}
             >
@@ -327,7 +327,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
               }}
             >
               <span style={{ width: 16, height: 16, borderRadius: "50%", background: rankColor, display: "block" }} />
-              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, color: "#666", letterSpacing: 1 }}>
+              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, color: "#999", letterSpacing: 1 }}>
                 {nexus.xp ?? 0} XP
               </span>
             </button>
@@ -337,11 +337,11 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
           {isAuthenticated ? (
             <>
               {user?.role === "admin" && (
-                <button onClick={() => navigateTo("/admin")} style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2, padding: "4px 8px", border: "1px solid #333", color: "#555", background: "transparent", cursor: "pointer" }}>
+                <button onClick={() => navigateTo("/admin")} style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2, padding: "4px 8px", border: "1px solid #333", color: "#999", background: "transparent", cursor: "pointer" }}>
                   ADMIN
                 </button>
               )}
-              <button onClick={logout} style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2, padding: "4px 8px", border: "1px solid #333", color: "#555", background: "transparent", cursor: "pointer" }}>
+              <button onClick={logout} style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2, padding: "4px 8px", border: "1px solid #333", color: "#999", background: "transparent", cursor: "pointer" }}>
                 SAIR
               </button>
             </>
@@ -362,7 +362,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
             <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, letterSpacing: 3, color: "#fff" }}>PULSO</span>
-            <button onClick={() => setPulsoOpen(false)} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: 14 }}>✕</button>
+            <button onClick={() => setPulsoOpen(false)} style={{ background: "none", border: "none", color: "#999", cursor: "pointer", fontSize: 14 }}>✕</button>
           </div>
 
           {/* Duration selector */}
@@ -427,20 +427,20 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                 }}>{pulso.status === "running" ? "PAUSAR" : "RETOMAR"}</button>
                 <button onClick={pulsoReset} style={{
                   padding: "8px 12px", fontFamily: "'DM Mono', monospace", fontSize: 10,
-                  border: "1px solid #333", color: "#555", background: "transparent", cursor: "pointer",
+                  border: "1px solid #333", color: "#999", background: "transparent", cursor: "pointer",
                 }}>↺</button>
               </>
             )}
             {pulso.status === "done" && (
               <button onClick={pulsoReset} style={{
                 flex: 1, padding: "8px 0", fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 2,
-                border: "1px solid #333", color: "#555", background: "transparent", cursor: "pointer",
+                border: "1px solid #333", color: "#999", background: "transparent", cursor: "pointer",
               }}>NOVA SESSÃO</button>
             )}
           </div>
 
           {pulso.streakCount > 0 && (
-            <div style={{ marginTop: 12, fontFamily: "'DM Mono', monospace", fontSize: 8, color: "#555", textAlign: "center", letterSpacing: 1 }}>
+            <div style={{ marginTop: 12, fontFamily: "'DM Mono', monospace", fontSize: 8, color: "#999", textAlign: "center", letterSpacing: 1 }}>
               STREAK: {pulso.streakCount} sessão{pulso.streakCount > 1 ? "ões" : ""}
             </div>
           )}
@@ -487,7 +487,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                   </div>
                   <div style={{
                     fontFamily: "'DM Mono', monospace", fontSize: 9,
-                    letterSpacing: 2, color: "#444", marginTop: 4,
+                    letterSpacing: 2, color: "#aaa", marginTop: 4,
                   }}>
                     {pendingCount === 0
                       ? "NENHUMA TASK PENDENTE"
@@ -498,7 +498,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                   onClick={() => setRotaOpen(false)}
                   style={{
                     background: "none", border: "1px solid #222",
-                    color: "#555", cursor: "pointer",
+                    color: "#999", cursor: "pointer",
                     width: 32, height: 32, display: "flex",
                     alignItems: "center", justifyContent: "center",
                     fontSize: 14, flexShrink: 0,
@@ -543,7 +543,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                     }}>
                       <div style={{
                         fontFamily: "'DM Mono', monospace", fontSize: 8,
-                        letterSpacing: 3, color: "#444", marginBottom: 12,
+                        letterSpacing: 3, color: "#aaa", marginBottom: 12,
                       }}>
                         NOVA TASK
                       </div>
@@ -571,7 +571,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                       <div style={{ marginBottom: 16 }}>
                         <div style={{
                           fontFamily: "'DM Mono', monospace", fontSize: 8,
-                          letterSpacing: 2, color: "#333", marginBottom: 8,
+                          letterSpacing: 2, color: "#777", marginBottom: 8,
                         }}>
                           DIFICULDADE
                         </div>
@@ -604,7 +604,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                       <div style={{ marginBottom: 16 }}>
                         <div style={{
                           fontFamily: "'DM Mono', monospace", fontSize: 8,
-                          letterSpacing: 2, color: "#333", marginBottom: 8,
+                          letterSpacing: 2, color: "#777", marginBottom: 8,
                         }}>
                           PRAZO
                         </div>
@@ -628,7 +628,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                         border: "1px solid #1a1a1a", marginBottom: 16,
                         display: "flex", justifyContent: "space-between", alignItems: "center",
                       }}>
-                        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, color: "#444", letterSpacing: 1 }}>
+                        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, color: "#aaa", letterSpacing: 1 }}>
                           RECOMPENSA SE NO PRAZO
                         </span>
                         <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#888", letterSpacing: 1 }}>
@@ -660,7 +660,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                           style={{
                             padding: "12px 16px",
                             fontFamily: "'DM Mono', monospace", fontSize: 9,
-                            border: "1px solid #222", color: "#444",
+                            border: "1px solid #222", color: "#aaa",
                             background: "transparent", cursor: "pointer",
                           }}
                         >
@@ -674,7 +674,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                       style={{
                         width: "100%", padding: "16px 24px", textAlign: "left",
                         fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 3,
-                        color: "#555", background: "transparent",
+                        color: "#999", background: "transparent",
                         border: "none", borderBottom: "1px solid #111",
                         cursor: "pointer", display: "flex", alignItems: "center", gap: 8,
                         transition: "color 0.2s",
@@ -700,13 +700,13 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                       </div>
                       <div style={{
                         fontFamily: "'DM Mono', monospace", fontSize: 9,
-                        letterSpacing: 2, color: "#333",
+                        letterSpacing: 2, color: "#777",
                       }}>
                         NENHUMA TASK PENDENTE
                       </div>
                       <div style={{
                         fontFamily: "'DM Mono', monospace", fontSize: 8,
-                        letterSpacing: 1, color: "#222", marginTop: 8,
+                        letterSpacing: 1, color: "#555", marginTop: 8,
                       }}>
                         Crie uma task para começar
                       </div>
@@ -781,7 +781,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                                   {!task.deadlineChanged && reward && (
                                     <span style={{
                                       fontFamily: "'DM Mono', monospace", fontSize: 8,
-                                      letterSpacing: 1, color: "#333",
+                                      letterSpacing: 1, color: "#777",
                                     }}>
                                       +{reward.xp} XP · ⬡{reward.glifos}
                                     </span>
@@ -816,7 +816,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                                   title="Remover task"
                                   style={{
                                     background: "none", border: "none",
-                                    color: "#333", cursor: "pointer",
+                                    color: "#777", cursor: "pointer",
                                     width: 28, height: 28, display: "flex",
                                     alignItems: "center", justifyContent: "center",
                                     fontSize: 12, transition: "color 0.2s",
@@ -835,7 +835,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                               }}>
                                 {/* Título */}
                                 <div style={{ marginBottom: 12 }}>
-                                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2, color: "#333", marginBottom: 6 }}>TÍTULO</div>
+                                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2, color: "#777", marginBottom: 6 }}>TÍTULO</div>
                                   <input
                                     value={editTitle}
                                     onChange={e => setEditTitle(e.target.value)}
@@ -851,7 +851,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                                 </div>
                                 {/* Dificuldade */}
                                 <div style={{ marginBottom: 12 }}>
-                                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2, color: "#333", marginBottom: 6 }}>DIFICULDADE</div>
+                                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2, color: "#777", marginBottom: 6 }}>DIFICULDADE</div>
                                   <div style={{ display: "flex", gap: 6 }}>
                                     {(["facil", "media", "dificil", "lendaria"] as const).map(d => {
                                       const dColors: Record<string, string> = { facil: "#3a8a3a", media: "#8a6a2a", dificil: "#8a3a3a", lendaria: "#6a3a8a" };
@@ -871,7 +871,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                                 </div>
                                 {/* Prazo */}
                                 <div style={{ marginBottom: 14 }}>
-                                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2, color: "#333", marginBottom: 6 }}>PRAZO</div>
+                                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2, color: "#777", marginBottom: 6 }}>PRAZO</div>
                                   <input
                                     type="date"
                                     value={editDeadline}
@@ -907,7 +907,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                                     style={{
                                       padding: "10px 16px",
                                       fontFamily: "'DM Mono', monospace", fontSize: 8, letterSpacing: 2,
-                                      border: "1px solid #222", color: "#444", background: "transparent",
+                                      border: "1px solid #222", color: "#aaa", background: "transparent",
                                       cursor: "pointer",
                                     }}
                                   >CANCELAR</button>
@@ -959,7 +959,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                       </div>
                       <div style={{
                         fontFamily: "'DM Mono', monospace", fontSize: 9,
-                        letterSpacing: 2, color: "#333",
+                        letterSpacing: 2, color: "#777",
                       }}>
                         NENHUMA TASK CONCLUÍDA
                       </div>
@@ -984,7 +984,7 @@ export function GlobalHeader({ currentPage }: { currentPage: "home" | "arquivo" 
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{
                                 fontFamily: "'DM Sans', sans-serif", fontSize: 12,
-                                color: "#555", overflow: "hidden",
+                                color: "#999", overflow: "hidden",
                                 textOverflow: "ellipsis", whiteSpace: "nowrap",
                               }}>
                                 {task.title}

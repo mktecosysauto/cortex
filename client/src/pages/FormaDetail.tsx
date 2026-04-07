@@ -24,10 +24,10 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_STYLES: Record<string, string> = {
-  draft: "text-[#555] border border-[#1a1a1a]",
+  draft: "text-[#999] border border-[#2a2a2a]",
   sent: "text-[#BA7517] border border-[rgba(186,117,23,0.3)]",
   answered: "text-white border border-[#333]",
-  archived: "text-[#333] border border-dashed border-[#1a1a1a] opacity-50",
+  archived: "text-[#777] border border-dashed border-[#2a2a2a] opacity-50",
 };
 
 export default function FormaDetail() {
@@ -106,7 +106,7 @@ export default function FormaDetail() {
       <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center" style={{ cursor: "none" }}>
         <GrainOverlay />
         <CustomCursor />
-        <span className="font-mono text-[9px] tracking-[3px] text-[#333] uppercase">CARREGANDO...</span>
+        <span className="font-mono text-[9px] tracking-[3px] text-[#777] uppercase">CARREGANDO...</span>
       </div>
     );
   }
@@ -116,7 +116,7 @@ export default function FormaDetail() {
       <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center" style={{ cursor: "none" }}>
         <GrainOverlay />
         <CustomCursor />
-        <span className="font-mono text-[9px] tracking-[3px] text-[#555] uppercase">Briefing não encontrado</span>
+        <span className="font-mono text-[9px] tracking-[3px] text-[#999] uppercase">Briefing não encontrado</span>
       </div>
     );
   }
@@ -133,18 +133,18 @@ export default function FormaDetail() {
 
       {/* Sub-header */}
       <div
-        className="border-b border-[#1a1a1a] bg-[#0a0a0a] z-40"
+        className="border-b border-[#2a2a2a] bg-[#0a0a0a] z-40"
         style={{ position: "sticky", top: 56 }}
       >
         <div className="max-w-5xl mx-auto px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={() => window.history.back()}
-              className="font-mono text-[9px] tracking-[2px] text-[#444] hover:text-white transition-colors uppercase"
+              className="font-mono text-[9px] tracking-[2px] text-[#aaa] hover:text-white transition-colors uppercase"
             >
               ← FORMA
             </button>
-            <span className="text-[#222]">·</span>
+            <span className="text-[#555]">·</span>
             <span className="font-mono text-[9px] tracking-[2px] text-[#666] truncate max-w-[200px]">
               {briefing.title}
             </span>
@@ -190,7 +190,7 @@ export default function FormaDetail() {
                     await navigator.clipboard.writeText(publicLink);
                     toast.success("Link copiado!");
                   }}
-                  className="font-mono text-[9px] tracking-[2px] uppercase px-4 py-2 border border-[#1a1a1a] text-[#555] hover:text-white hover:border-[#333] transition-colors"
+                  className="font-mono text-[9px] tracking-[2px] uppercase px-4 py-2 border border-[#2a2a2a] text-[#999] hover:text-white hover:border-[#333] transition-colors"
                 >
                   COPIAR LINK
                 </button>
@@ -211,7 +211,7 @@ export default function FormaDetail() {
                     await navigator.clipboard.writeText(publicLink);
                     toast.success("Link copiado!");
                   }}
-                  className="font-mono text-[9px] tracking-[2px] uppercase px-4 py-2 border border-[#1a1a1a] text-[#555] hover:text-white hover:border-[#333] transition-colors"
+                  className="font-mono text-[9px] tracking-[2px] uppercase px-4 py-2 border border-[#2a2a2a] text-[#999] hover:text-white hover:border-[#333] transition-colors"
                 >
                   COPIAR LINK
                 </button>
@@ -228,14 +228,14 @@ export default function FormaDetail() {
             )}
             <button
               onClick={openEdit}
-              className="font-mono text-[9px] tracking-[2px] uppercase text-[#444] hover:text-white transition-colors"
+              className="font-mono text-[9px] tracking-[2px] uppercase text-[#aaa] hover:text-white transition-colors"
             >
               EDITAR
             </button>
             {briefing.status !== "archived" && (
               <button
                 onClick={() => archiveMutation.mutate({ id })}
-                className="font-mono text-[9px] tracking-[2px] uppercase text-[#333] hover:text-[#555] transition-colors"
+                className="font-mono text-[9px] tracking-[2px] uppercase text-[#777] hover:text-[#999] transition-colors"
               >
                 ARQUIVAR
               </button>
@@ -247,59 +247,59 @@ export default function FormaDetail() {
         {editOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={() => setEditOpen(false)}>
             <div
-              className="bg-[#0f0f0f] border border-[#1a1a1a] w-full max-w-lg mx-4 p-8"
+              className="bg-[#0f0f0f] border border-[#2a2a2a] w-full max-w-lg mx-4 p-8"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-8">
-                <span className="font-mono text-[9px] tracking-[3px] text-[#555] uppercase">EDITAR BRIEFING</span>
-                <button onClick={() => setEditOpen(false)} className="font-mono text-[9px] text-[#333] hover:text-white">ESC</button>
+                <span className="font-mono text-[9px] tracking-[3px] text-[#999] uppercase">EDITAR BRIEFING</span>
+                <button onClick={() => setEditOpen(false)} className="font-mono text-[9px] text-[#777] hover:text-white">ESC</button>
               </div>
               <div className="space-y-5">
                 <div>
-                  <label className="font-mono text-[8px] tracking-[2px] text-[#444] uppercase block mb-2">NOME DO PROJETO</label>
+                  <label className="font-mono text-[8px] tracking-[2px] text-[#aaa] uppercase block mb-2">NOME DO PROJETO</label>
                   <input
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
-                    className="w-full bg-[#0a0a0a] border border-[#1a1a1a] text-white font-mono text-[11px] px-4 py-3 focus:outline-none focus:border-[#333]"
+                    className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white font-mono text-[11px] px-4 py-3 focus:outline-none focus:border-[#333]"
                     placeholder="Nome do projeto"
                   />
                 </div>
                 <div>
-                  <label className="font-mono text-[8px] tracking-[2px] text-[#444] uppercase block mb-2">NOME DO CLIENTE</label>
+                  <label className="font-mono text-[8px] tracking-[2px] text-[#aaa] uppercase block mb-2">NOME DO CLIENTE</label>
                   <input
                     value={editClientName}
                     onChange={(e) => setEditClientName(e.target.value)}
-                    className="w-full bg-[#0a0a0a] border border-[#1a1a1a] text-white font-mono text-[11px] px-4 py-3 focus:outline-none focus:border-[#333]"
+                    className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white font-mono text-[11px] px-4 py-3 focus:outline-none focus:border-[#333]"
                     placeholder="Nome do cliente"
                   />
                 </div>
                 <div>
-                  <label className="font-mono text-[8px] tracking-[2px] text-[#444] uppercase block mb-2">EMAIL DO CLIENTE</label>
+                  <label className="font-mono text-[8px] tracking-[2px] text-[#aaa] uppercase block mb-2">EMAIL DO CLIENTE</label>
                   <input
                     type="email"
                     value={editClientEmail}
                     onChange={(e) => setEditClientEmail(e.target.value)}
-                    className="w-full bg-[#0a0a0a] border border-[#1a1a1a] text-white font-mono text-[11px] px-4 py-3 focus:outline-none focus:border-[#333]"
+                    className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white font-mono text-[11px] px-4 py-3 focus:outline-none focus:border-[#333]"
                     placeholder="email@cliente.com"
                   />
                 </div>
                 <div>
-                  <label className="font-mono text-[8px] tracking-[2px] text-[#444] uppercase block mb-2">MENSAGEM DE ABERTURA</label>
+                  <label className="font-mono text-[8px] tracking-[2px] text-[#aaa] uppercase block mb-2">MENSAGEM DE ABERTURA</label>
                   <textarea
                     value={editOpeningMessage}
                     onChange={(e) => setEditOpeningMessage(e.target.value)}
                     rows={3}
-                    className="w-full bg-[#0a0a0a] border border-[#1a1a1a] text-white font-mono text-[11px] px-4 py-3 focus:outline-none focus:border-[#333] resize-none"
+                    className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white font-mono text-[11px] px-4 py-3 focus:outline-none focus:border-[#333] resize-none"
                     placeholder="Mensagem exibida ao cliente no início do formulário"
                   />
                 </div>
                 <div>
-                  <label className="font-mono text-[8px] tracking-[2px] text-[#444] uppercase block mb-2">MENSAGEM DE ENCERRAMENTO</label>
+                  <label className="font-mono text-[8px] tracking-[2px] text-[#aaa] uppercase block mb-2">MENSAGEM DE ENCERRAMENTO</label>
                   <textarea
                     value={editClosingMessage}
                     onChange={(e) => setEditClosingMessage(e.target.value)}
                     rows={3}
-                    className="w-full bg-[#0a0a0a] border border-[#1a1a1a] text-white font-mono text-[11px] px-4 py-3 focus:outline-none focus:border-[#333] resize-none"
+                    className="w-full bg-[#0a0a0a] border border-[#2a2a2a] text-white font-mono text-[11px] px-4 py-3 focus:outline-none focus:border-[#333] resize-none"
                     placeholder="Mensagem exibida ao cliente após responder"
                   />
                 </div>
@@ -321,7 +321,7 @@ export default function FormaDetail() {
                 </button>
                 <button
                   onClick={() => setEditOpen(false)}
-                  className="font-mono text-[9px] tracking-[2px] uppercase px-4 py-3 border border-[#1a1a1a] text-[#444] hover:text-white hover:border-[#333] transition-colors"
+                  className="font-mono text-[9px] tracking-[2px] uppercase px-4 py-3 border border-[#2a2a2a] text-[#aaa] hover:text-white hover:border-[#333] transition-colors"
                 >
                   CANCELAR
                 </button>
@@ -344,8 +344,8 @@ export default function FormaDetail() {
                   isActive
                     ? "border-white text-white"
                     : isDisabled
-                    ? "border-transparent text-[#222] cursor-not-allowed"
-                    : "border-transparent text-[#444] hover:text-[#666]"
+                    ? "border-transparent text-[#555] cursor-not-allowed"
+                    : "border-transparent text-[#aaa] hover:text-[#ccc]"
                 }`}
               >
                 {labels[tab]}
@@ -362,7 +362,7 @@ export default function FormaDetail() {
           <div className="grid grid-cols-2 gap-10">
             <div className="space-y-6">
               <div>
-                <p className="font-mono text-[8px] tracking-[3px] text-[#333] uppercase mb-1">PROJETO</p>
+                <p className="font-mono text-[8px] tracking-[3px] text-[#777] uppercase mb-1">PROJETO</p>
                 <p className="font-['Bebas_Neue'] text-4xl tracking-[2px] text-white">{briefing.title}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -373,15 +373,15 @@ export default function FormaDetail() {
                   { label: "PERGUNTAS", value: `${(briefing.questionIds as string[]).length} selecionadas` },
                 ].map(({ label, value }) => (
                   <div key={label}>
-                    <p className="font-mono text-[8px] tracking-[3px] text-[#333] uppercase mb-1">{label}</p>
+                    <p className="font-mono text-[8px] tracking-[3px] text-[#777] uppercase mb-1">{label}</p>
                     <p className="font-mono text-[11px] text-[#888]">{value}</p>
                   </div>
                 ))}
               </div>
 
               {briefing.status === "answered" && (
-                <div className="border border-[#1a1a1a] p-4 bg-white/[0.02]">
-                  <p className="font-mono text-[8px] tracking-[3px] text-[#333] uppercase mb-2">RESPONDIDO EM</p>
+                <div className="border border-[#2a2a2a] p-4 bg-white/[0.02]">
+                  <p className="font-mono text-[8px] tracking-[3px] text-[#777] uppercase mb-2">RESPONDIDO EM</p>
                   <p className="font-mono text-[11px] text-[#888]">
                     {briefing.answeredAt
                       ? new Date(briefing.answeredAt).toLocaleString("pt-BR")
@@ -426,9 +426,9 @@ export default function FormaDetail() {
 
             {/* Brand identity preview */}
             <div>
-              <p className="font-mono text-[8px] tracking-[3px] text-[#333] uppercase mb-4">IDENTIDADE DO FORMULÁRIO</p>
+              <p className="font-mono text-[8px] tracking-[3px] text-[#777] uppercase mb-4">IDENTIDADE DO FORMULÁRIO</p>
               <div
-                className="border border-[#1a1a1a] overflow-hidden"
+                className="border border-[#2a2a2a] overflow-hidden"
                 style={{ backgroundColor: briefing.brandColorSecondary ?? "#ffffff", minHeight: 200 }}
               >
                 <div
@@ -466,14 +466,14 @@ export default function FormaDetail() {
         {activeTab === "responses" && (
           <div className="space-y-6">
             {responses.length === 0 ? (
-              <p className="font-mono text-[10px] text-[#333] uppercase">Nenhuma resposta ainda</p>
+              <p className="font-mono text-[10px] text-[#777] uppercase">Nenhuma resposta ainda</p>
             ) : (
               responses.map((r, idx) => (
                 <div key={r.id} className="border-b border-[#0f0f0f] pb-6">
                   <div className="flex items-start gap-4">
-                    <span className="font-mono text-[9px] text-[#333] min-w-[24px] mt-1">{String(idx + 1).padStart(2, "0")}</span>
+                    <span className="font-mono text-[9px] text-[#777] min-w-[24px] mt-1">{String(idx + 1).padStart(2, "0")}</span>
                     <div className="flex-1">
-                      <p className="font-mono text-[10px] text-[#555] mb-3 leading-relaxed">{r.questionText}</p>
+                      <p className="font-mono text-[10px] text-[#999] mb-3 leading-relaxed">{r.questionText}</p>
                       <p className="font-sans text-[13px] text-[#aaa] leading-relaxed whitespace-pre-wrap">{r.answer}</p>
                     </div>
                   </div>
@@ -488,7 +488,7 @@ export default function FormaDetail() {
           <div>
             {!briefing.aiSummary ? (
               <div className="text-center py-16">
-                <p className="font-mono text-[9px] tracking-[3px] text-[#333] uppercase mb-6">
+                <p className="font-mono text-[9px] tracking-[3px] text-[#777] uppercase mb-6">
                   {briefing.status === "answered"
                     ? "ANÁLISE AINDA NÃO GERADA"
                     : "AGUARDANDO RESPOSTAS DO CLIENTE"}
@@ -507,32 +507,32 @@ export default function FormaDetail() {
               <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-8">
                   <div>
-                    <p className="font-mono text-[8px] tracking-[3px] text-[#333] uppercase mb-4">RESUMO EXECUTIVO</p>
+                    <p className="font-mono text-[8px] tracking-[3px] text-[#777] uppercase mb-4">RESUMO EXECUTIVO</p>
                     <div className="font-sans text-[13px] text-[#888] leading-relaxed">
                       <Streamdown>{briefing.aiSummary}</Streamdown>
                     </div>
                   </div>
                   <div>
-                    <p className="font-mono text-[8px] tracking-[3px] text-[#333] uppercase mb-4">CONCEITO CRIATIVO</p>
+                    <p className="font-mono text-[8px] tracking-[3px] text-[#777] uppercase mb-4">CONCEITO CRIATIVO</p>
                     <div className="font-sans text-[13px] text-[#888] leading-relaxed">
                       <Streamdown>{briefing.aiConcept ?? ""}</Streamdown>
                     </div>
                   </div>
                 </div>
                 <div>
-                  <p className="font-mono text-[8px] tracking-[3px] text-[#333] uppercase mb-4">PRÓXIMOS PASSOS</p>
+                  <p className="font-mono text-[8px] tracking-[3px] text-[#777] uppercase mb-4">PRÓXIMOS PASSOS</p>
                   <div className="font-sans text-[13px] text-[#888] leading-relaxed">
                     <Streamdown>{briefing.aiNextSteps ?? ""}</Streamdown>
                   </div>
                   {briefing.aiGeneratedAt && (
-                    <p className="font-mono text-[8px] text-[#222] mt-6">
+                    <p className="font-mono text-[8px] text-[#555] mt-6">
                       Gerado em {new Date(briefing.aiGeneratedAt).toLocaleString("pt-BR")}
                     </p>
                   )}
                   <button
                     onClick={() => generateAnalysisMutation.mutate({ id })}
                     disabled={generateAnalysisMutation.isPending}
-                    className="font-mono text-[8px] tracking-[2px] uppercase text-[#333] hover:text-[#555] transition-colors mt-4"
+                    className="font-mono text-[8px] tracking-[2px] uppercase text-[#777] hover:text-[#999] transition-colors mt-4"
                   >
                     {generateAnalysisMutation.isPending ? "REGENERANDO..." : "↺ REGENERAR"}
                   </button>
@@ -546,14 +546,14 @@ export default function FormaDetail() {
         {activeTab === "followup" && (
           <div className="space-y-6">
             <div>
-              <p className="font-mono text-[8px] tracking-[3px] text-[#333] uppercase mb-4">PERGUNTAS DE ACOMPANHAMENTO</p>
+              <p className="font-mono text-[8px] tracking-[3px] text-[#777] uppercase mb-4">PERGUNTAS DE ACOMPANHAMENTO</p>
               {followups.length === 0 ? (
-                <p className="font-mono text-[10px] text-[#222] italic mb-6">Nenhuma pergunta de acompanhamento ainda</p>
+                <p className="font-mono text-[10px] text-[#555] italic mb-6">Nenhuma pergunta de acompanhamento ainda</p>
               ) : (
                 <div className="space-y-3 mb-6">
                   {followups.map((f) => (
                     <div key={f.id} className="border border-[#111] p-4">
-                      <p className="font-mono text-[10px] text-[#555] mb-2">{f.question}</p>
+                      <p className="font-mono text-[10px] text-[#999] mb-2">{f.question}</p>
                       {f.answer ? (
                         <p className="font-sans text-[12px] text-[#888] leading-relaxed">{f.answer}</p>
                       ) : (
@@ -566,7 +566,7 @@ export default function FormaDetail() {
 
               {briefing.status !== "archived" && (
                 <div className="border-t border-[#111] pt-6">
-                  <p className="font-mono text-[8px] tracking-[3px] text-[#333] uppercase mb-3">NOVA PERGUNTA</p>
+                  <p className="font-mono text-[8px] tracking-[3px] text-[#777] uppercase mb-3">NOVA PERGUNTA</p>
                   <div className="flex gap-3">
                     <input
                       value={followupQuestion}
@@ -577,7 +577,7 @@ export default function FormaDetail() {
                         }
                       }}
                       placeholder="Digite uma pergunta de acompanhamento..."
-                      className="flex-1 bg-transparent border-b border-[#1a1a1a] text-white font-mono text-[12px] py-2 outline-none focus:border-[#444] placeholder:text-[#222] transition-colors"
+                      className="flex-1 bg-transparent border-b border-[#2a2a2a] text-white font-mono text-[12px] py-2 outline-none focus:border-[#444] placeholder:text-[#555] transition-colors"
                     />
                     <button
                       onClick={() => {
@@ -591,7 +591,7 @@ export default function FormaDetail() {
                       ENVIAR
                     </button>
                   </div>
-                  <p className="font-mono text-[8px] text-[#222] mt-2">
+                  <p className="font-mono text-[8px] text-[#555] mt-2">
                     O cliente receberá um link para responder as perguntas pendentes
                   </p>
                 </div>

@@ -137,7 +137,7 @@ export default function SplashScreen({ onDone }: SplashScreenProps) {
           fontFamily: "'DM Mono', monospace",
           fontSize: 10,
           letterSpacing: 4,
-          color: "#444",
+          color: "#aaa",
           textTransform: "uppercase",
           marginBottom: 40,
         }}
@@ -174,7 +174,7 @@ export default function SplashScreen({ onDone }: SplashScreenProps) {
           fontFamily: "'DM Mono', monospace",
           fontSize: 9,
           letterSpacing: 2,
-          color: "#333",
+          color: "#777",
           marginTop: 10,
         }}
       >

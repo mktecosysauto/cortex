@@ -106,7 +106,7 @@ function ThinkingDots({ label }: { label?: string }) {
       <span className="thinking-dot" />
       <span className="thinking-dot" />
       {label && (
-        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#666", marginLeft: 4 }}>
+        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#999", marginLeft: 4 }}>
           {label}
         </span>
       )}
@@ -133,11 +133,11 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
           <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, letterSpacing: 2, color: "#fff" }}>
             ⚙ CONFIGURAÇÕES DE API
           </h2>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "#666", fontSize: 18, cursor: "none" }}>✕</button>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "#999", fontSize: 18, cursor: "none" }}>✕</button>
         </div>
 
         <div style={{ marginBottom: 24 }}>
-          <label style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#666", letterSpacing: 1, display: "block", marginBottom: 8, textTransform: "uppercase" }}>
+          <label style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#999", letterSpacing: 1, display: "block", marginBottom: 8, textTransform: "uppercase" }}>
             Freepik API Key
           </label>
           <input
@@ -153,8 +153,8 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div style={{ marginBottom: 32 }}>
-          <label style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#666", letterSpacing: 1, display: "block", marginBottom: 8, textTransform: "uppercase" }}>
-            Anthropic API Key <span style={{ color: "#444" }}>(opcional)</span>
+          <label style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#999", letterSpacing: 1, display: "block", marginBottom: 8, textTransform: "uppercase" }}>
+            Anthropic API Key <span style={{ color: "#aaa" }}>(opcional)</span>
           </label>
           <input
             type="password"
@@ -258,7 +258,7 @@ function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: 
           <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, letterSpacing: 2, color: "#fff" }}>
             ADICIONAR REFERÊNCIA
           </h2>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "#666", fontSize: 18, cursor: "none" }}>✕</button>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "#999", fontSize: 18, cursor: "none" }}>✕</button>
         </div>
 
         {/* Drop zone */}
@@ -273,11 +273,11 @@ function UploadModal({ onClose, onSave }: { onClose: () => void; onSave: (item: 
           >
             <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
             <div style={{ fontSize: 24, color: "rgba(255,255,255,0.1)", marginBottom: 8 }}>↑</div>
-            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#666" }}>
+            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: "#999" }}>
               Arraste uma imagem ou clique para selecionar
             </p>
             {!getAnthKey() && (
-              <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#444", marginTop: 8 }}>
+              <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#aaa", marginTop: 8 }}>
                 ⚠ Configure a Anthropic API Key para gerar prompt automaticamente
               </p>
             )}
@@ -425,7 +425,7 @@ function FreepikPanel({ type, prompt, imgData, onUseImage }: FreepikPanelProps) 
 
   return (
     <div style={{ padding: "12px 14px", borderTop: "1px solid #2a2a2a" }}>
-      <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#666", letterSpacing: 1, marginBottom: 10, textTransform: "uppercase" }}>
+      <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#999", letterSpacing: 1, marginBottom: 10, textTransform: "uppercase" }}>
         {labels[type]}
       </div>
 
@@ -581,7 +581,7 @@ function PromptCard({ item, index, onDelete, onUpdateImg }: CardProps) {
         )}
 
         {/* Badge number */}
-        <div style={{ position: "absolute", top: 8, left: 8, fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#666", background: "rgba(0,0,0,0.7)", padding: "2px 6px", letterSpacing: 1 }}>
+        <div style={{ position: "absolute", top: 8, left: 8, fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#999", background: "rgba(0,0,0,0.7)", padding: "2px 6px", letterSpacing: 1 }}>
           {item.id.toString().padStart(2, "0")}
         </div>
 
@@ -589,7 +589,7 @@ function PromptCard({ item, index, onDelete, onUpdateImg }: CardProps) {
         {item.isUser && (
           <button
             onClick={handleDelete}
-            style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.8)", border: "1px solid #2a2a2a", color: "#666", width: 24, height: 24, cursor: "none", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center" }}
+            style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.8)", border: "1px solid #2a2a2a", color: "#999", width: 24, height: 24, cursor: "none", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center" }}
           >✕</button>
         )}
       </div>
@@ -639,7 +639,7 @@ function PromptCard({ item, index, onDelete, onUpdateImg }: CardProps) {
       {/* Edit Panel */}
       <div className={`collapse-panel${editOpen ? " open" : ""}`}>
         <div style={{ padding: "12px 14px", borderTop: "1px solid #2a2a2a" }}>
-          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#666", letterSpacing: 1, marginBottom: 8, textTransform: "uppercase" }}>
+          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#999", letterSpacing: 1, marginBottom: 8, textTransform: "uppercase" }}>
             Editar Prompt
           </div>
           <textarea
@@ -666,7 +666,7 @@ function PromptCard({ item, index, onDelete, onUpdateImg }: CardProps) {
 
           {editResult && (
             <>
-              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#666", letterSpacing: 1, marginBottom: 6, textTransform: "uppercase" }}>Resultado</div>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#999", letterSpacing: 1, marginBottom: 6, textTransform: "uppercase" }}>Resultado</div>
               <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#999", lineHeight: 1.6, marginBottom: 8 }}>{editResult}</p>
               <button
                 className="btn-cortex sm ghost"
@@ -777,7 +777,7 @@ export default function Arquivo() {
           {/* Left: back + title */}
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
             <button
-              style={{ background: "none", border: "none", color: "#666", fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 1, cursor: "none", display: "flex", alignItems: "center", gap: 6 }}
+              style={{ background: "none", border: "none", color: "#999", fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: 1, cursor: "none", display: "flex", alignItems: "center", gap: 6 }}
               data-hover
               onClick={() => navigateTo("/")}
             >
@@ -788,7 +788,7 @@ export default function Arquivo() {
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, letterSpacing: 2, color: "#fff", lineHeight: 1 }}>
                 ARQUIVO
               </div>
-              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#444", letterSpacing: 1 }}>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#aaa", letterSpacing: 1 }}>
                 galeria · v2.0
               </div>
             </div>
@@ -797,7 +797,7 @@ export default function Arquivo() {
           {/* Right: actions */}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {/* Badge */}
-            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 1, padding: "3px 8px", border: "1px solid #2a2a2a", color: "#666" }}>
+            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: 1, padding: "3px 8px", border: "1px solid #2a2a2a", color: "#999" }}>
               {allItems.length} REF
             </div>
             <NexusBadge />
@@ -842,7 +842,7 @@ export default function Arquivo() {
         <div style={{ maxWidth: 1400, margin: "0 auto" }}>
           {/* Gallery label */}
           <div style={{ marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#444", letterSpacing: 1 }}>
+            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#aaa", letterSpacing: 1 }}>
               galeria de referências · edite qualquer prompt em linguagem natural
             </span>
             <button
@@ -893,7 +893,7 @@ export default function Arquivo() {
                 fontSize: 20, color: "rgba(255,255,255,0.2)",
               }}>+</div>
               <div style={{ textAlign: "center" }}>
-                <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#444", letterSpacing: 1 }}>
+                <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: "#aaa", letterSpacing: 1 }}>
                   Adicionar imagem
                 </p>
                 <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#2a2a2a", marginTop: 4, letterSpacing: 0.5 }}>

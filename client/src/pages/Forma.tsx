@@ -17,10 +17,10 @@ const STATUS_LABELS: Record<BriefingStatus, string> = {
 };
 
 const STATUS_STYLES: Record<BriefingStatus, string> = {
-  draft: "text-[#555] border border-[#1a1a1a]",
+  draft: "text-[#999] border border-[#2a2a2a]",
   sent: "text-[#BA7517] border border-[rgba(186,117,23,0.3)]",
   answered: "text-white border border-[#333]",
-  archived: "text-[#333] border border-dashed border-[#1a1a1a] opacity-50",
+  archived: "text-[#777] border border-dashed border-[#2a2a2a] opacity-50",
 };
 
 const PROJECT_TYPES = [
@@ -57,14 +57,14 @@ export default function Forma() {
 
       {/* Sub-header */}
       <div
-        className="border-b border-[#1a1a1a] bg-[#0a0a0a] z-40"
+        className="border-b border-[#2a2a2a] bg-[#0a0a0a] z-40"
         style={{ position: "sticky", top: 56 }}
       >
         <div className="max-w-5xl mx-auto px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="font-mono text-[9px] tracking-[3px] text-[#444] uppercase">CÓRTEX / FORMA</span>
-            <span className="text-[#222]">·</span>
-            <span className="font-mono text-[9px] tracking-[2px] text-[#555] uppercase">Briefing inteligente</span>
+            <span className="font-mono text-[9px] tracking-[3px] text-[#aaa] uppercase">CÓRTEX / FORMA</span>
+            <span className="text-[#555]">·</span>
+            <span className="font-mono text-[9px] tracking-[2px] text-[#999] uppercase">Briefing inteligente</span>
           </div>
           <div className="flex items-center gap-3">
             {view === "list" && (
@@ -77,7 +77,7 @@ export default function Forma() {
                       className={`font-mono text-[8px] tracking-[2px] uppercase px-3 py-1 border transition-colors ${
                         filterStatus === s
                           ? "border-white text-white bg-white/5"
-                          : "border-[#1a1a1a] text-[#444] hover:text-[#666]"
+                          : "border-[#2a2a2a] text-[#aaa] hover:text-[#ccc]"
                       }`}
                     >
                       {s === "all" ? "TODOS" : STATUS_LABELS[s as BriefingStatus]}
@@ -95,7 +95,7 @@ export default function Forma() {
             {view === "new" && (
               <button
                 onClick={() => setView("list")}
-                className="font-mono text-[9px] tracking-[2px] uppercase text-[#444] hover:text-white transition-colors"
+                className="font-mono text-[9px] tracking-[2px] uppercase text-[#aaa] hover:text-white transition-colors"
               >
                 ← VOLTAR
               </button>
@@ -128,7 +128,7 @@ function BriefingList({ filterStatus, onNew }: { filterStatus: string; onNew: ()
   if (isLoading) {
     return (
       <div className="max-w-5xl mx-auto px-8 py-16 text-center">
-        <span className="font-mono text-[9px] tracking-[3px] text-[#333] uppercase">CARREGANDO...</span>
+        <span className="font-mono text-[9px] tracking-[3px] text-[#777] uppercase">CARREGANDO...</span>
       </div>
     );
   }
@@ -136,7 +136,7 @@ function BriefingList({ filterStatus, onNew }: { filterStatus: string; onNew: ()
   if (filtered.length === 0) {
     return (
       <div className="max-w-5xl mx-auto px-8 py-24 text-center">
-        <p className="font-mono text-[9px] tracking-[3px] text-[#333] uppercase mb-6">
+        <p className="font-mono text-[9px] tracking-[3px] text-[#777] uppercase mb-6">
           {filterStatus === "all" ? "NENHUM BRIEFING AINDA" : `NENHUM BRIEFING ${STATUS_LABELS[filterStatus as BriefingStatus]}`}
         </p>
         {filterStatus === "all" && (
@@ -157,11 +157,11 @@ function BriefingList({ filterStatus, onNew }: { filterStatus: string; onNew: ()
         <thead>
           <tr>
             {["PROJETO", "CLIENTE", "TIPO", "STATUS", "DATA"].map((h) => (
-              <th key={h} className="font-mono text-[8px] tracking-[3px] text-[#333] uppercase text-left py-2 border-b border-[#111]">
+              <th key={h} className="font-mono text-[9px] tracking-[2px] text-[#aaa] uppercase text-left py-2 border-b border-[#2a2a2a]">
                 {h}
               </th>
             ))}
-            <th className="font-mono text-[8px] tracking-[3px] text-[#333] uppercase text-left py-2 border-b border-[#111]">AÇÕES</th>
+            <th className="font-mono text-[9px] tracking-[2px] text-[#aaa] uppercase text-left py-2 border-b border-[#2a2a2a]">AÇÕES</th>
           </tr>
         </thead>
         <tbody>
@@ -174,8 +174,8 @@ function BriefingList({ filterStatus, onNew }: { filterStatus: string; onNew: ()
                   </span>
                 </Link>
               </td>
-              <td className="py-4 pr-4 font-mono text-[10px] text-[#555]">{b.clientName}</td>
-              <td className="py-4 pr-4 font-mono text-[10px] text-[#444] uppercase">
+              <td className="py-4 pr-4 font-mono text-[10px] text-[#999]">{b.clientName}</td>
+              <td className="py-4 pr-4 font-mono text-[10px] text-[#aaa] uppercase">
                 {PROJECT_TYPES.find((p) => p.value === b.projectType)?.label ?? b.projectType}
               </td>
               <td className="py-4 pr-4">
@@ -183,7 +183,7 @@ function BriefingList({ filterStatus, onNew }: { filterStatus: string; onNew: ()
                   {STATUS_LABELS[b.status as BriefingStatus] ?? b.status}
                 </span>
               </td>
-              <td className="py-4 pr-4 font-mono text-[10px] text-[#444]">
+              <td className="py-4 pr-4 font-mono text-[10px] text-[#aaa]">
                 {new Date(b.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}
               </td>
               <td className="py-4">
@@ -222,7 +222,7 @@ function BriefingList({ filterStatus, onNew }: { filterStatus: string; onNew: ()
                           await navigator.clipboard.writeText(link);
                           toast.success("Link copiado!");
                         }}
-                        className="font-mono text-[8px] tracking-[1px] uppercase text-[#555] hover:text-white transition-colors"
+                        className="font-mono text-[8px] tracking-[1px] uppercase text-[#999] hover:text-white transition-colors"
                       >
                         COPIAR LINK
                       </button>
@@ -231,7 +231,7 @@ function BriefingList({ filterStatus, onNew }: { filterStatus: string; onNew: ()
                   {b.status !== "archived" && (
                     <button
                       onClick={() => archiveMutation.mutate({ id: b.id })}
-                      className="font-mono text-[8px] tracking-[1px] uppercase text-[#333] hover:text-[#555] transition-colors"
+                      className="font-mono text-[8px] tracking-[1px] uppercase text-[#777] hover:text-[#999] transition-colors"
                     >
                       ARQUIVAR
                     </button>
@@ -417,13 +417,13 @@ function NewBriefing({ onSuccess, onCancel }: { onSuccess: () => void; onCancel:
                 step === s
                   ? "border-white text-white bg-white/10"
                   : step > s
-                  ? "border-[#333] text-[#555] bg-white/5"
-                  : "border-[#1a1a1a] text-[#333]"
+                  ? "border-[#333] text-[#999] bg-white/5"
+                  : "border-[#2a2a2a] text-[#777]"
               }`}
             >
               {s}
             </div>
-            <span className={`font-mono text-[8px] tracking-[2px] uppercase ${step === s ? "text-[#888]" : "text-[#333]"}`}>
+            <span className={`font-mono text-[8px] tracking-[2px] uppercase ${step === s ? "text-[#888]" : "text-[#777]"}`}>
               {s === 1 ? "PROJETO" : s === 2 ? "PERGUNTAS" : "IDENTIDADE"}
             </span>
             {s < 3 && <span className="text-[#1a1a1a] mx-1">—</span>}
@@ -442,18 +442,18 @@ function NewBriefing({ onSuccess, onCancel }: { onSuccess: () => void; onCancel:
               { label: "EMAIL DO CLIENTE", value: clientEmail, set: setClientEmail, placeholder: "ex: joao@empresa.com", type: "email" },
             ].map(({ label, value, set, placeholder, type }) => (
               <div key={label}>
-                <label className="block font-mono text-[8px] tracking-[3px] text-[#444] uppercase mb-2">{label}</label>
+                <label className="block font-mono text-[9px] tracking-[2px] text-[#bbb] uppercase mb-2">{label}</label>
                 <input
                   type={type ?? "text"}
                   value={value}
                   onChange={(e) => set(e.target.value)}
                   placeholder={placeholder}
-                  className="w-full bg-transparent border-b border-[#1a1a1a] text-white font-mono text-[12px] py-2 outline-none focus:border-[#444] placeholder:text-[#222] transition-colors"
+                  className="w-full bg-transparent border-b border-[#2a2a2a] text-white font-mono text-[12px] py-2 outline-none focus:border-[#444] placeholder:text-[#555] transition-colors"
                 />
               </div>
             ))}
             <div>
-              <label className="block font-mono text-[8px] tracking-[3px] text-[#444] uppercase mb-2">TIPO DE PROJETO</label>
+              <label className="block font-mono text-[9px] tracking-[2px] text-[#bbb] uppercase mb-2">TIPO DE PROJETO</label>
               <div className="grid grid-cols-3 gap-2">
                 {PROJECT_TYPES.map((pt) => (
                   <button
@@ -462,7 +462,7 @@ function NewBriefing({ onSuccess, onCancel }: { onSuccess: () => void; onCancel:
                     className={`font-mono text-[9px] tracking-[1px] uppercase px-3 py-2 border transition-colors ${
                       projectType === pt.value
                         ? "border-white text-white bg-white/10"
-                        : "border-[#1a1a1a] text-[#444] hover:border-[#333] hover:text-[#666]"
+                        : "border-[#2a2a2a] text-[#aaa] hover:border-[#333] hover:text-[#ccc]"
                     }`}
                   >
                     {pt.label}
@@ -487,16 +487,16 @@ function NewBriefing({ onSuccess, onCancel }: { onSuccess: () => void; onCancel:
           <h2 className="font-['Bebas_Neue'] text-3xl tracking-[3px] text-white mb-6">MONTAR FORMULÁRIO</h2>
           <div className="grid grid-cols-2 gap-8">
             {/* Left: question bank */}
-            <div className="border-r border-[#111] pr-8 max-h-[65vh] overflow-y-auto">
-              <p className="font-mono text-[8px] tracking-[3px] text-[#333] uppercase mb-4">BANCO DE PERGUNTAS</p>
+            <div className="border-r border-[#2a2a2a] pr-8 max-h-[65vh] overflow-y-auto">
+              <p className="font-mono text-[9px] tracking-[2px] text-[#aaa] uppercase mb-4">BANCO DE PERGUNTAS</p>
               {questionsBank &&
                 Object.entries(questionsBank as QuestionsBank).map(([cat, qs]) => (
                   <div key={cat} className="mb-5">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-mono text-[8px] tracking-[3px] text-[#333] uppercase">{CATEGORY_LABELS[cat] ?? cat}</span>
+                      <span className="font-mono text-[9px] tracking-[2px] text-[#aaa] uppercase">{CATEGORY_LABELS[cat] ?? cat}</span>
                       <button
                         onClick={() => addCategory(cat)}
-                        className="font-mono text-[7px] tracking-[1px] uppercase text-[#333] hover:text-[#666] transition-colors"
+                        className="font-mono text-[7px] tracking-[1px] uppercase text-[#777] hover:text-[#ccc] transition-colors"
                       >
                         + TODAS
                       </button>
@@ -504,14 +504,14 @@ function NewBriefing({ onSuccess, onCancel }: { onSuccess: () => void; onCancel:
                     {qs.map((q) => {
                       const isAdded = selectedQuestionIds.includes(q.id);
                       return (
-                        <div key={q.id} className="flex items-start gap-2 py-2 border-b border-[#111]">
-                          <span className="flex-1 font-mono text-[10px] text-[#444] leading-relaxed">{q.text}</span>
+                        <div key={q.id} className="flex items-start gap-2 py-2 border-b border-[#2a2a2a]">
+                          <span className="flex-1 font-mono text-[10px] text-[#aaa] leading-relaxed">{q.text}</span>
                           <button
                             onClick={() => toggleQuestion(q.id)}
                             className={`flex-shrink-0 w-5 h-5 flex items-center justify-center border text-[10px] transition-all ${
                               isAdded
                                 ? "bg-white text-black border-white"
-                                : "border-[#1a1a1a] text-[#333] hover:border-[#444] hover:text-[#666]"
+                                : "border-[#2a2a2a] text-[#777] hover:border-[#444] hover:text-[#ccc]"
                             }`}
                           >
                             {isAdded ? "✓" : "+"}
@@ -525,20 +525,20 @@ function NewBriefing({ onSuccess, onCancel }: { onSuccess: () => void; onCancel:
 
             {/* Right: selected questions */}
             <div>
-              <p className="font-mono text-[8px] tracking-[3px] text-[#333] uppercase mb-4">
+              <p className="font-mono text-[9px] tracking-[2px] text-[#aaa] uppercase mb-4">
                 SEU FORMULÁRIO ({selectedQuestionIds.length} perguntas)
               </p>
               {selectedQuestionIds.length === 0 ? (
-                <p className="font-mono text-[10px] text-[#222] italic">Adicione perguntas do banco ao lado →</p>
+                <p className="font-mono text-[10px] text-[#555] italic">Adicione perguntas do banco ao lado →</p>
               ) : (
                 <div className="space-y-1 max-h-[50vh] overflow-y-auto mb-4">
                   {selectedQuestionIds.map((id, idx) => (
-                    <div key={id} className="flex items-center gap-2 px-3 py-2 bg-[#0f0f0f] border border-[#111]">
-                      <span className="font-mono text-[9px] text-[#333] min-w-[20px]">{idx + 1}</span>
-                      <span className="flex-1 font-mono text-[10px] text-[#555] truncate">{getQuestionText(id)}</span>
+                    <div key={id} className="flex items-center gap-2 px-3 py-2 bg-[#0f0f0f] border border-[#2a2a2a]">
+                      <span className="font-mono text-[9px] text-[#777] min-w-[20px]">{idx + 1}</span>
+                      <span className="flex-1 font-mono text-[10px] text-[#999] truncate">{getQuestionText(id)}</span>
                       <div className="flex gap-1">
-                        <button onClick={() => moveQuestion(idx, -1)} className="text-[#222] hover:text-[#555] text-[10px]">↑</button>
-                        <button onClick={() => moveQuestion(idx, 1)} className="text-[#222] hover:text-[#555] text-[10px]">↓</button>
+                        <button onClick={() => moveQuestion(idx, -1)} className="text-[#555] hover:text-[#999] text-[10px]">↑</button>
+                        <button onClick={() => moveQuestion(idx, 1)} className="text-[#555] hover:text-[#999] text-[10px]">↓</button>
                         <button onClick={() => removeQuestion(id)} className="text-[#2a1010] hover:text-[#ff4444] text-[10px]">✕</button>
                       </div>
                     </div>
@@ -552,11 +552,11 @@ function NewBriefing({ onSuccess, onCancel }: { onSuccess: () => void; onCancel:
                   onChange={(e) => setCustomQuestion(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && addCustomQuestion()}
                   placeholder="+ Pergunta personalizada..."
-                  className="flex-1 bg-transparent border-b border-[#1a1a1a] text-white font-mono text-[11px] py-2 outline-none focus:border-[#333] placeholder:text-[#222] transition-colors"
+                  className="flex-1 bg-transparent border-b border-[#2a2a2a] text-white font-mono text-[11px] py-2 outline-none focus:border-[#333] placeholder:text-[#555] transition-colors"
                 />
                 <button
                   onClick={addCustomQuestion}
-                  className="font-mono text-[8px] tracking-[1px] uppercase text-[#444] hover:text-white transition-colors px-2"
+                  className="font-mono text-[8px] tracking-[1px] uppercase text-[#aaa] hover:text-white transition-colors px-2"
                 >
                   ADD
                 </button>
@@ -565,7 +565,7 @@ function NewBriefing({ onSuccess, onCancel }: { onSuccess: () => void; onCancel:
           </div>
 
           <div className="flex gap-3 mt-8">
-            <button onClick={() => setStep(1)} className="font-mono text-[9px] tracking-[2px] uppercase text-[#444] hover:text-white transition-colors">
+            <button onClick={() => setStep(1)} className="font-mono text-[9px] tracking-[2px] uppercase text-[#aaa] hover:text-white transition-colors">
               ← VOLTAR
             </button>
             <button
@@ -586,44 +586,44 @@ function NewBriefing({ onSuccess, onCancel }: { onSuccess: () => void; onCancel:
             <h2 className="font-['Bebas_Neue'] text-3xl tracking-[3px] text-white">IDENTIDADE VISUAL</h2>
 
             <div>
-              <label className="block font-mono text-[8px] tracking-[3px] text-[#444] uppercase mb-2">NOME EXIBIDO NO FORMULÁRIO</label>
+              <label className="block font-mono text-[9px] tracking-[2px] text-[#bbb] uppercase mb-2">NOME EXIBIDO NO FORMULÁRIO</label>
               <input
                 value={brandNameDisplay}
                 onChange={(e) => setBrandNameDisplay(e.target.value)}
                 placeholder="Como aparece para o cliente"
-                className="w-full bg-transparent border-b border-[#1a1a1a] text-white font-mono text-[12px] py-2 outline-none focus:border-[#444] placeholder:text-[#222] transition-colors"
+                className="w-full bg-transparent border-b border-[#2a2a2a] text-white font-mono text-[12px] py-2 outline-none focus:border-[#444] placeholder:text-[#555] transition-colors"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block font-mono text-[8px] tracking-[3px] text-[#444] uppercase mb-2">COR PRINCIPAL</label>
+                <label className="block font-mono text-[9px] tracking-[2px] text-[#bbb] uppercase mb-2">COR PRINCIPAL</label>
                 <div className="flex items-center gap-3">
                   <input
                     type="color"
                     value={brandColorPrimary}
                     onChange={(e) => setBrandColorPrimary(e.target.value)}
-                    className="w-8 h-8 border border-[#1a1a1a] bg-transparent cursor-pointer"
+                    className="w-8 h-8 border border-[#2a2a2a] bg-transparent cursor-pointer"
                   />
-                  <span className="font-mono text-[11px] text-[#555]">{brandColorPrimary}</span>
+                  <span className="font-mono text-[11px] text-[#999]">{brandColorPrimary}</span>
                 </div>
               </div>
               <div>
-                <label className="block font-mono text-[8px] tracking-[3px] text-[#444] uppercase mb-2">COR SECUNDÁRIA</label>
+                <label className="block font-mono text-[9px] tracking-[2px] text-[#bbb] uppercase mb-2">COR SECUNDÁRIA</label>
                 <div className="flex items-center gap-3">
                   <input
                     type="color"
                     value={brandColorSecondary}
                     onChange={(e) => setBrandColorSecondary(e.target.value)}
-                    className="w-8 h-8 border border-[#1a1a1a] bg-transparent cursor-pointer"
+                    className="w-8 h-8 border border-[#2a2a2a] bg-transparent cursor-pointer"
                   />
-                  <span className="font-mono text-[11px] text-[#555]">{brandColorSecondary}</span>
+                  <span className="font-mono text-[11px] text-[#999]">{brandColorSecondary}</span>
                 </div>
               </div>
             </div>
 
             <div>
-              <label className="block font-mono text-[8px] tracking-[3px] text-[#444] uppercase mb-2">LOGO DA MARCA</label>
+              <label className="block font-mono text-[9px] tracking-[2px] text-[#bbb] uppercase mb-2">LOGO DA MARCA</label>
               <input
                 ref={logoInputRef}
                 type="file"
@@ -640,7 +640,7 @@ function NewBriefing({ onSuccess, onCancel }: { onSuccess: () => void; onCancel:
               />
               <button
                 onClick={() => logoInputRef.current?.click()}
-                className="font-mono text-[9px] tracking-[2px] uppercase px-4 py-2 border border-[#1a1a1a] text-[#444] hover:border-[#333] hover:text-[#666] transition-colors"
+                className="font-mono text-[9px] tracking-[2px] uppercase px-4 py-2 border border-[#2a2a2a] text-[#aaa] hover:border-[#333] hover:text-[#ccc] transition-colors"
               >
                 {logoPreview ? "TROCAR LOGO" : "UPLOAD DE LOGO"}
               </button>
@@ -650,27 +650,27 @@ function NewBriefing({ onSuccess, onCancel }: { onSuccess: () => void; onCancel:
             </div>
 
             <div>
-              <label className="block font-mono text-[8px] tracking-[3px] text-[#444] uppercase mb-2">MENSAGEM DE ABERTURA</label>
+              <label className="block font-mono text-[9px] tracking-[2px] text-[#bbb] uppercase mb-2">MENSAGEM DE ABERTURA</label>
               <textarea
                 value={openingMessage}
                 onChange={(e) => setOpeningMessage(e.target.value)}
                 rows={3}
-                className="w-full bg-transparent border border-[#1a1a1a] text-white font-mono text-[11px] p-3 outline-none focus:border-[#333] placeholder:text-[#222] transition-colors resize-none"
+                className="w-full bg-transparent border border-[#2a2a2a] text-white font-mono text-[11px] p-3 outline-none focus:border-[#333] placeholder:text-[#555] transition-colors resize-none"
               />
             </div>
 
             <div>
-              <label className="block font-mono text-[8px] tracking-[3px] text-[#444] uppercase mb-2">MENSAGEM DE ENCERRAMENTO</label>
+              <label className="block font-mono text-[9px] tracking-[2px] text-[#bbb] uppercase mb-2">MENSAGEM DE ENCERRAMENTO</label>
               <textarea
                 value={closingMessage}
                 onChange={(e) => setClosingMessage(e.target.value)}
                 rows={3}
-                className="w-full bg-transparent border border-[#1a1a1a] text-white font-mono text-[11px] p-3 outline-none focus:border-[#333] placeholder:text-[#222] transition-colors resize-none"
+                className="w-full bg-transparent border border-[#2a2a2a] text-white font-mono text-[11px] p-3 outline-none focus:border-[#333] placeholder:text-[#555] transition-colors resize-none"
               />
             </div>
 
             <div className="flex gap-3 pt-2">
-              <button onClick={() => setStep(2)} className="font-mono text-[9px] tracking-[2px] uppercase text-[#444] hover:text-white transition-colors">
+              <button onClick={() => setStep(2)} className="font-mono text-[9px] tracking-[2px] uppercase text-[#aaa] hover:text-white transition-colors">
                 ← VOLTAR
               </button>
               <button
@@ -685,9 +685,9 @@ function NewBriefing({ onSuccess, onCancel }: { onSuccess: () => void; onCancel:
 
           {/* Preview */}
           <div>
-            <p className="font-mono text-[8px] tracking-[3px] text-[#333] uppercase mb-4">PREVIEW DO FORMULÁRIO</p>
+            <p className="font-mono text-[9px] tracking-[2px] text-[#aaa] uppercase mb-4">PREVIEW DO FORMULÁRIO</p>
             <div
-              className="border border-[#1a1a1a] rounded-none overflow-hidden"
+              className="border border-[#2a2a2a] rounded-none overflow-hidden"
               style={{ backgroundColor: brandColorSecondary, minHeight: 320 }}
             >
               {/* Header */}

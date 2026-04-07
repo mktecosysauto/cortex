@@ -203,7 +203,7 @@ function ModuleFrame({ number, name, subtitle, description, route, comingSoon, r
                   fontFamily: "'DM Mono', monospace",
                   fontSize: 8,
                   letterSpacing: 2,
-                  color: "#444",
+                  color: "#aaa",
                   border: "1px solid #222",
                   padding: "2px 7px",
                   textTransform: "uppercase",
@@ -235,7 +235,7 @@ function ModuleFrame({ number, name, subtitle, description, route, comingSoon, r
               style={{
                 fontFamily: "'DM Mono', monospace",
                 fontSize: 11,
-                color: "#555",
+                color: "#999",
                 marginTop: 10,
                 letterSpacing: 1,
               }}
@@ -278,7 +278,7 @@ function ModuleFrame({ number, name, subtitle, description, route, comingSoon, r
                   fontFamily: "'DM Mono', monospace",
                   fontSize: 9,
                   letterSpacing: 2,
-                  color: "#333",
+                  color: "#777",
                   textTransform: "uppercase",
                 }}
               >
@@ -477,7 +477,7 @@ function NexusFrame() {
               fontFamily: "'DM Mono', monospace",
               fontSize: 8,
               letterSpacing: 2,
-              color: "#444",
+              color: "#aaa",
               border: "1px solid #222",
               padding: "2px 7px",
               textTransform: "uppercase",
@@ -494,7 +494,7 @@ function NexusFrame() {
             <p style={{
               fontFamily: "'DM Mono', monospace",
               fontSize: 11,
-              color: "#555",
+              color: "#999",
               marginTop: 10,
               letterSpacing: 1,
             }}>Progressão · XP · Ranks · Conquistas</p>
@@ -512,7 +512,7 @@ function NexusFrame() {
             <button className="btn-cortex" data-hover onClick={() => navigateTo("/nexus")} style={{ borderColor: rank.color, color: rank.color }}>
               → Acessar NEXUS
             </button>
-            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#444", letterSpacing: 1 }}>
+            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: "#aaa", letterSpacing: 1 }}>
               {rank.name} · {nexus.xp} XP
             </span>
           </div>
@@ -634,7 +634,7 @@ export default function Home() {
             fontFamily: "'DM Mono', monospace",
             fontSize: 9,
             letterSpacing: 5,
-            color: "#333",
+            color: "#777",
             textTransform: "uppercase",
             marginBottom: 24,
             animation: "fadeIn 1s ease 0.1s both",
@@ -685,7 +685,7 @@ export default function Home() {
             style={{
               fontFamily: "'DM Mono', monospace",
               fontSize: "clamp(11px, 1.4vw, 14px)",
-              color: "#666",
+              color: "#999",
               lineHeight: 1.8,
               letterSpacing: 2,
               maxWidth: 420,
@@ -713,7 +713,7 @@ export default function Home() {
               fontFamily: "'DM Mono', monospace",
               fontSize: 8,
               letterSpacing: 3,
-              color: "#333",
+              color: "#777",
               textTransform: "uppercase",
             }}
           >
@@ -761,7 +761,7 @@ export default function Home() {
                 fontFamily: "'DM Mono', monospace",
                 fontSize: 9,
                 letterSpacing: 5,
-                color: "#333",
+                color: "#777",
                 textTransform: "uppercase",
               }}
             >
@@ -867,7 +867,7 @@ export default function Home() {
             style={{
               fontFamily: "'DM Mono', monospace",
               fontSize: 8,
-              color: "#333",
+              color: "#777",
               letterSpacing: 1,
               writingMode: "vertical-rl",
               marginTop: 6,
@@ -916,20 +916,20 @@ export default function Home() {
         <div style={{ marginTop: 24, display: "flex", alignItems: "center", justifyContent: "center", gap: 16 }}>
           {isAuthenticated ? (
             <>
-              <span style={{ fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 2, color: "#333" }}>
+              <span style={{ fontFamily: "DM Mono, monospace", fontSize: 9, letterSpacing: 2, color: "#777" }}>
                 {user?.name?.toUpperCase()}
               </span>
               {user?.role === "admin" && (
-                <button onClick={() => window.location.href = "/admin"} style={{ background: "none", border: "1px solid #222", cursor: "pointer", fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 3, color: "#555", padding: "4px 12px" }}>
+                <button onClick={() => window.location.href = "/admin"} style={{ background: "none", border: "1px solid #222", cursor: "pointer", fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 3, color: "#999", padding: "4px 12px" }}>
                   ADMIN
                 </button>
               )}
-              <button onClick={() => logout()} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 3, color: "#333", padding: 0 }}>
+              <button onClick={() => logout()} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 3, color: "#777", padding: 0 }}>
                 SAIR
               </button>
             </>
           ) : (
-            <a href={getLoginUrl()} style={{ fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 3, color: "#444", textDecoration: "none", border: "1px solid #1a1a1a", padding: "6px 16px" }}>
+            <a href={getLoginUrl()} style={{ fontFamily: "DM Mono, monospace", fontSize: 8, letterSpacing: 3, color: "#aaa", textDecoration: "none", border: "1px solid #1a1a1a", padding: "6px 16px" }}>
               ENTRAR
             </a>
           )}
