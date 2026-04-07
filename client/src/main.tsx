@@ -8,10 +8,14 @@ import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
 
-// ─── Public route prefixes: never redirect to login from these paths ──────────
+// ─── Public routes: never redirect to login from these paths ──────────────
+// "/" is exact-matched so only the root triggers the guard, not all routes.
+// "/sobre" is exact-matched. "/b/" uses prefix match for all briefing tokens.
 const PUBLIC_PATH_PREFIXES = ["/b/"];
+const PUBLIC_PATH_EXACT = ["/", "/sobre"];
 
 function isPublicPath(path: string): boolean {
+  if (PUBLIC_PATH_EXACT.includes(path)) return true;
   return PUBLIC_PATH_PREFIXES.some((prefix) => path.startsWith(prefix));
 }
 

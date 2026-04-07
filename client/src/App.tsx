@@ -23,27 +23,33 @@ import SplashScreen, { useSplashScreen } from "./components/SplashScreen";
 import RankUpOverlay from "./components/RankUpOverlay";
 import AchievementToastContainer from "./components/AchievementToast";
 
-// ─── Public routes that must NOT trigger auth redirect ────────────────────────
-const PUBLIC_PATHS = ["/b/", "/sobre"];
+// ─── Public route detection ───────────────────────────────────────────────────
+// Routes here are rendered WITHOUT NexusProvider to avoid protectedProcedure
+// calls from triggering the global auth redirect handler.
+const PUBLIC_PATH_PREFIXES = ["/b/", "/sobre"];
+const PUBLIC_PATH_EXACT = ["/"];
 
 function isPublicRoute(path: string): boolean {
-  return PUBLIC_PATHS.some((prefix) => path.startsWith(prefix));
+  if (PUBLIC_PATH_EXACT.includes(path)) return true;
+  return PUBLIC_PATH_PREFIXES.some((prefix) => path.startsWith(prefix));
 }
 
-// ─── HomeGuard: redireciona não logados para /sobre ─────────────────────────
-function HomeGuard() {
+// ─── HomeGate: runs outside NexusProvider ────────────────────────────────────
+// Only performs a redirect decision — never renders components that need Nexus.
+// Non-authenticated → /sobre (public presentation page)
+// Authenticated → /dashboard (enters the full authenticated app)
+function HomeGate() {
   const { isAuthenticated, loading } = useAuth();
-  // Enquanto carrega, não redireciona (evita flash)
   if (loading) return null;
   if (!isAuthenticated) return <Redirect to="/sobre" />;
-  return <Home />;
+  return <Redirect to="/dashboard" />;
 }
 
-// ─── Router ───────────────────────────────────────────────────────────────────
+// ─── Router (authenticated, inside NexusProvider) ────────────────────────────
 function Router() {
   return (
     <Switch>
-      <Route path={"/"} component={HomeGuard} />
+      <Route path={"/"} component={Home} />
       <Route path={"/arquivo"} component={Arquivo} />
       <Route path={"/nexus"} component={Nexus} />
       <Route path={"/dashboard"} component={Dashboard} />
@@ -83,13 +89,13 @@ function AppInner() {
   );
 }
 
-// ─── App root: separates public routes from authenticated app ─────────────────
+// ─── App root ─────────────────────────────────────────────────────────────────
+// Public routes (/, /sobre, /b/*) are rendered completely isolated from
+// NexusProvider. "/" only runs HomeGate which does a redirect — no Nexus needed.
+// Authenticated routes go through NexusProvider normally.
 function App() {
   const [location] = useLocation();
 
-  // Public route: render FormaBriefing completely isolated, without NexusProvider
-  // This prevents the protectedProcedure getProfile call from firing and
-  // triggering the global redirectToLoginIfUnauthorized handler.
   if (isPublicRoute(location)) {
     return (
       <ErrorBoundary>
@@ -97,6 +103,7 @@ function App() {
           <TooltipProvider>
             <Toaster />
             <Switch>
+              <Route path={"/"} component={HomeGate} />
               <Route path={"/b/:token"} component={FormaBriefing} />
               <Route path={"/sobre"} component={Sobre} />
               <Route component={NotFound} />
