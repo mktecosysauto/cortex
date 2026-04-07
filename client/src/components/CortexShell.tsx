@@ -3,22 +3,26 @@ import { useEffect, useRef } from "react";
 /**
  * CortexShell — Componentes globais de UI do CÓRTEX:
  * - Grain overlay (textura fotográfica)
- * - Cursor personalizado (círculo branco com mix-blend-mode: difference)
+ * - Cursor personalizado (mix-blend-mode: exclusion — visível em fundos claros e escuros)
  */
 export function GrainOverlay() {
   return <div className="grain-overlay" aria-hidden="true" />;
 }
 
 export function CustomCursor() {
-  const ref = useRef<HTMLDivElement>(null);
+  const dotRef = useRef<HTMLDivElement>(null);
+  const ringRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+    const dot = dotRef.current;
+    const ring = ringRef.current;
+    if (!dot || !ring) return;
 
     const onMove = (e: MouseEvent) => {
-      el.style.left = `${e.clientX}px`;
-      el.style.top = `${e.clientY}px`;
+      dot.style.left = `${e.clientX}px`;
+      dot.style.top = `${e.clientY}px`;
+      ring.style.left = `${e.clientX}px`;
+      ring.style.top = `${e.clientY}px`;
     };
 
     document.addEventListener("mousemove", onMove);
@@ -27,11 +31,18 @@ export function CustomCursor() {
 
   // Re-attach hover listeners after each render
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+    const dot = dotRef.current;
+    const ring = ringRef.current;
+    if (!dot || !ring) return;
 
-    const expand = () => el.classList.add("expanded");
-    const shrink = () => el.classList.remove("expanded");
+    const expand = () => {
+      ring.classList.add("expanded");
+      dot.classList.add("expanded");
+    };
+    const shrink = () => {
+      ring.classList.remove("expanded");
+      dot.classList.remove("expanded");
+    };
 
     const targets = document.querySelectorAll<Element>(
       "a, button, [data-hover], input, textarea, select"
@@ -49,5 +60,12 @@ export function CustomCursor() {
     };
   });
 
-  return <div ref={ref} className="custom-cursor" aria-hidden="true" />;
+  return (
+    <>
+      {/* Dot central — mix-blend-mode: exclusion funciona em claro e escuro */}
+      <div ref={dotRef} className="custom-cursor-dot" aria-hidden="true" />
+      {/* Anel externo */}
+      <div ref={ringRef} className="custom-cursor-ring" aria-hidden="true" />
+    </>
+  );
 }

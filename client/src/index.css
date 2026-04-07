@@ -359,18 +359,31 @@
     background-repeat: repeat;
   }
 
-  .custom-cursor {
+  /* Custom cursor — dot + ring, mix-blend-mode: exclusion funciona em claro e escuro */
+  .custom-cursor-dot {
     position: fixed;
-    width: 12px; height: 12px;
+    width: 6px; height: 6px;
     background: #fff;
     border-radius: 50%;
     pointer-events: none;
     z-index: 99999;
     transform: translate(-50%, -50%);
-    transition: width 0.2s ease, height 0.2s ease;
-    mix-blend-mode: difference;
+    transition: width 0.15s ease, height 0.15s ease;
+    mix-blend-mode: exclusion;
   }
-  .custom-cursor.expanded { width: 28px; height: 28px; }
+  .custom-cursor-dot.expanded { width: 8px; height: 8px; }
+  .custom-cursor-ring {
+    position: fixed;
+    width: 28px; height: 28px;
+    border: 1.5px solid rgba(255,255,255,0.8);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99998;
+    transform: translate(-50%, -50%);
+    transition: width 0.25s ease, height 0.25s ease, border-color 0.25s ease;
+    mix-blend-mode: exclusion;
+  }
+  .custom-cursor-ring.expanded { width: 44px; height: 44px; border-color: rgba(255,255,255,0.5); }
 
   .panel-scroll::-webkit-scrollbar { width: 3px; }
   .panel-scroll::-webkit-scrollbar-track { background: #0d0d0d; }
@@ -613,19 +626,31 @@
     background-repeat: repeat;
   }
 
-  /* Custom cursor */
-  .custom-cursor {
+  /* Custom cursor — dot + ring, mix-blend-mode: exclusion funciona em claro e escuro */
+  .custom-cursor-dot {
     position: fixed;
-    width: 12px; height: 12px;
+    width: 6px; height: 6px;
     background: #fff;
     border-radius: 50%;
     pointer-events: none;
     z-index: 99999;
     transform: translate(-50%, -50%);
-    transition: width 0.2s ease, height 0.2s ease;
-    mix-blend-mode: difference;
+    transition: width 0.15s ease, height 0.15s ease;
+    mix-blend-mode: exclusion;
   }
-  .custom-cursor.expanded { width: 28px; height: 28px; }
+  .custom-cursor-dot.expanded { width: 8px; height: 8px; }
+  .custom-cursor-ring {
+    position: fixed;
+    width: 28px; height: 28px;
+    border: 1.5px solid rgba(255,255,255,0.8);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99998;
+    transform: translate(-50%, -50%);
+    transition: width 0.25s ease, height 0.25s ease, border-color 0.25s ease;
+    mix-blend-mode: exclusion;
+  }
+  .custom-cursor-ring.expanded { width: 44px; height: 44px; border-color: rgba(255,255,255,0.5); }
 
   /* Scrollbar in panels */
   .panel-scroll::-webkit-scrollbar { width: 3px; }
@@ -654,12 +679,14 @@
     .fp-bar-btn { padding: 6px 2px; font-size: 8px; }
     .tag-pill { font-size: 8px; padding: 1px 5px; }
     .grain-overlay { opacity: 0.02; }
-    .custom-cursor { display: none; }
+    .custom-cursor-dot { display: none; }
+    .custom-cursor-ring { display: none; }
   }
 
   /* Restore cursor on touch devices */
   @media (hover: none) {
-    .custom-cursor { display: none; }
+    .custom-cursor-dot { display: none; }
+    .custom-cursor-ring { display: none; }
     body { cursor: auto; }
     button, a, input, textarea, select, [role="button"] { cursor: pointer; }
   }
