@@ -241,7 +241,7 @@ function ModuleCarousel() {
                 borderRadius: 3,
                 background: i === active ? mod.accent : "rgba(255,255,255,0.15)",
                 border: "none",
-                cursor: "pointer",
+                cursor: "none",
                 padding: 0,
                 transition: "width 0.3s ease, background 0.3s ease",
               }}
@@ -259,7 +259,7 @@ function ModuleCarousel() {
               background: "none",
               border: "1px solid rgba(255,255,255,0.12)",
               color: "rgba(255,255,255,0.6)",
-              cursor: "pointer",
+              cursor: "none",
               fontFamily: "'DM Mono', monospace",
               fontSize: 14,
               display: "flex",
@@ -278,7 +278,7 @@ function ModuleCarousel() {
               background: "none",
               border: "1px solid rgba(255,255,255,0.12)",
               color: "rgba(255,255,255,0.6)",
-              cursor: "pointer",
+              cursor: "none",
               fontFamily: "'DM Mono', monospace",
               fontSize: 14,
               display: "flex",
@@ -339,7 +339,7 @@ export default function Sobre() {
             style={{
               background: "none",
               border: "none",
-              cursor: "pointer",
+              cursor: "none",
               fontFamily: "'Bebas Neue', sans-serif",
               fontSize: 22,
               letterSpacing: 4,
@@ -535,7 +535,7 @@ export default function Sobre() {
                   background: "none",
                   border: "1px solid rgba(255,255,255,0.12)",
                   padding: "14px 36px",
-                  cursor: "pointer",
+                  cursor: "none",
                   transition: "color 0.2s, border-color 0.2s",
                 }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#fff"; (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.35)"; }}

@@ -7,6 +7,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { PageTransitionProvider } from "./contexts/PageTransitionContext";
 import { NexusProvider, useNexus } from "./contexts/NexusContext";
+import { CustomCursor } from "./components/CortexShell";
 import Home from "./pages/Home";
 import Arquivo from "./pages/Arquivo";
 import Nexus from "./pages/Nexus";
@@ -101,6 +102,8 @@ function App() {
       <ErrorBoundary>
         <ThemeProvider defaultTheme="dark">
           <TooltipProvider>
+            {/* CustomCursor global — cobre /sobre e /b/:token */}
+            <CustomCursor />
             <Toaster />
             <Switch>
               <Route path={"/"} component={HomeGate} />
