@@ -566,12 +566,30 @@ function PromptCard({ item, index, onDelete, onUpdateImg }: CardProps) {
         </div>
       </div>
       {/* Action buttons */}
-      <div style={{ padding: "0 14px 10px", display: "flex", gap: 8 }}>
+      <div style={{ padding: "0 14px 6px", display: "flex", gap: 8 }}>
         <button className="btn-cortex sm ghost" style={{ flex: 1, justifyContent: "center" }} onClick={toggleEdit}>
           ✦ Editar
         </button>
         <button className="btn-cortex sm ghost" onClick={() => setPromptExpanded((p) => !p)}>
           {promptExpanded ? "Menos" : "Ver tudo"}
+        </button>
+        <button
+          className="btn-cortex sm ghost"
+          title="Copiar prompt original"
+          onClick={() => { navigator.clipboard.writeText(item.prompt); showToast("Prompt copiado!", "success"); }}
+          style={{ minWidth: 32, justifyContent: "center" }}
+        >
+          ⊞
+        </button>
+      </div>
+      {/* Melhorar button */}
+      <div style={{ padding: "0 14px 10px" }}>
+        <button
+          className="btn-cortex sm ghost"
+          style={{ width: "100%", justifyContent: "center", opacity: activeFpPanel === "improve" ? 1 : 0.7 }}
+          onClick={() => toggleFp("improve")}
+        >
+          ⚡ {activeFpPanel === "improve" ? "Fechar Melhorar" : "Melhorar Prompt"}
         </button>
       </div>
       {/* Edit Panel */}
@@ -596,23 +614,7 @@ function PromptCard({ item, index, onDelete, onUpdateImg }: CardProps) {
           )}
         </div>
       </div>
-      {/* Freepik Bar */}
-      <div className="fp-bar" style={{ borderTop: "1px solid #2a2a2a" }}>
-        {(["improve", "generate", "upscale", "animate"] as FpPanelType[]).map((panel) => {
-          const icons: Record<NonNullable<FpPanelType>, string> = { improve: "⚡", generate: "🎨", upscale: "✨", animate: "▶" };
-          const labels: Record<NonNullable<FpPanelType>, string> = { improve: "Melhorar", generate: "Gerar", upscale: "Upscale", animate: "Animar" };
-          return (
-            <button
-              key={panel}
-              className="fp-bar-btn"
-              style={{ color: activeFpPanel === panel ? "#fff" : undefined, background: activeFpPanel === panel ? "#1a1a1a" : undefined }}
-              onClick={() => toggleFp(panel)}
-            >
-              {icons[panel!]} {labels[panel!]}
-            </button>
-          );
-        })}
-      </div>
+      {/* Freepik Bar removida; Melhorar movido para acima do painel */}
       {/* Freepik Panels */}
       <div className={`collapse-panel${activeFpPanel ? " open" : ""}`}>
         {activeFpPanel && (
