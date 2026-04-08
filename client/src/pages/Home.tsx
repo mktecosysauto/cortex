@@ -30,6 +30,55 @@ function ToastContainer() {
   );
 }
 
+// ─── SplitTitle ──────────────────────────────────────────────────────────────
+function SplitTitle({
+  text,
+  visible,
+  baseDelay = 0,
+  fontSize = "clamp(80px, 16vw, 200px)",
+  opacity = 1,
+  paddingLeft,
+}: {
+  text: string;
+  visible: boolean;
+  baseDelay?: number;
+  fontSize?: string;
+  opacity?: number;
+  paddingLeft?: string;
+}) {
+  const letters = text.split("");
+  const PER = 0.048;
+  return (
+    <div style={{ overflow: "hidden", paddingLeft }}>
+      <div style={{ display: "flex", lineHeight: 0.88 }}>
+        {letters.map((char, i) => (
+          <span
+            key={i}
+            style={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontSize,
+              lineHeight: 0.88,
+              display: "inline-block",
+              color: `rgba(255,255,255,${opacity})`,
+              opacity: visible ? 1 : 0,
+              letterSpacing: visible ? (i === letters.length - 1 ? -2 : 0) : "-0.35em",
+              transform: visible ? "translateY(0)" : "translateY(70%)",
+              transition: [
+                `opacity 0.5s ease ${baseDelay + i * PER}s`,
+                `letter-spacing 0.75s cubic-bezier(0.16,1,0.3,1) ${baseDelay + i * PER}s`,
+                `transform 0.75s cubic-bezier(0.16,1,0.3,1) ${baseDelay + i * PER}s`,
+              ].join(", "),
+              minWidth: char === " " ? "0.28em" : undefined,
+            }}
+          >
+            {char === " " ? "\u00a0" : char}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── useReveal hook ───────────────────────────────────────────────────────────
 function useReveal(threshold = 0.2) {
   const ref = useRef<HTMLDivElement>(null);
@@ -569,7 +618,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Main title — asymmetric, massive */}
+        {/* Main title — letter-by-letter animated */}
         <div style={{ position: "relative", zIndex: 2 }}>
           {/* Halo */}
           <div style={{
@@ -587,45 +636,22 @@ export default function Home() {
             pointerEvents: "none",
           }} />
 
-          {/* Line 1 — left aligned */}
-          <div style={{ overflow: "hidden" }}>
-            <div style={{
-              fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: "clamp(80px, 16vw, 200px)",
-              lineHeight: 0.88,
-              letterSpacing: -2,
-              color: "#fff",
-              transform: heroVisible ? "translateY(0)" : "translateY(110%)",
-              transition: "transform 1s cubic-bezier(0.16,1,0.3,1) 0.1s",
-            }}>CÓRTEX</div>
-          </div>
+          {/* Line 1 — CÓRTEX, left aligned */}
+          <SplitTitle
+            text="CÓRTEX"
+            visible={heroVisible}
+            baseDelay={0.1}
+            opacity={1}
+          />
 
-          {/* Line 2 — indented */}
-          <div style={{ overflow: "hidden", paddingLeft: "clamp(16px, 4vw, 60px)" }}>
-            <div style={{
-              fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: "clamp(80px, 16vw, 200px)",
-              lineHeight: 0.88,
-              letterSpacing: -2,
-              color: "rgba(255,255,255,0.85)",
-              transform: heroVisible ? "translateY(0)" : "translateY(110%)",
-              transition: "transform 1s cubic-bezier(0.16,1,0.3,1) 0.18s",
-            }}>SYSTEM.</div>
-          </div>
-
-          {/* Line 3 — right aligned, with period */}
-          <div style={{ overflow: "hidden", display: "flex", justifyContent: "flex-end" }}>
-            <div style={{
-              fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: "clamp(80px, 16vw, 200px)",
-              lineHeight: 0.88,
-              letterSpacing: -2,
-              color: "rgba(255,255,255,0.7)",
-              transform: heroVisible ? "translateY(0)" : "translateY(110%)",
-              transition: "transform 1s cubic-bezier(0.16,1,0.3,1) 0.26s",
-              display: "none",
-            }}>DE DESIGN.</div>
-          </div>
+          {/* Line 2 — SYSTEM., indented */}
+          <SplitTitle
+            text="SYSTEM."
+            visible={heroVisible}
+            baseDelay={0.28}
+            opacity={0.85}
+            paddingLeft="clamp(16px, 4vw, 60px)"
+          />
         </div>
 
         {/* Bottom row */}
