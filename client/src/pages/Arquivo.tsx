@@ -169,6 +169,7 @@ function UploadModal({ onClose, onSave }: UploadModalProps) {
   const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const reverseEngineerMut = trpc.arquivo.reverseEngineer.useMutation();
+  const uploadImageMut = trpc.arquivo.uploadImage.useMutation();
 
   const handleFile = (file: File) => {
     const reader = new FileReader();
@@ -223,11 +224,19 @@ function UploadModal({ onClose, onSave }: UploadModalProps) {
     if (!prompt.trim()) { showToast("Gere ou escreva um prompt", "error"); return; }
     setSaving(true);
     try {
+      // Upload image to S3 first (avoid storing base64 in DB)
+      let imgUrl: string | undefined;
+      if (imgData) {
+        const base64 = imgData.split(",")[1];
+        const mediaType = imgData.split(";")[0].split(":")[1] || "image/jpeg";
+        const { url } = await uploadImageMut.mutateAsync({ imageBase64: base64, mediaType });
+        imgUrl = url;
+      }
       await onSave({
         title: vehicle.toUpperCase(),
         tags: [],
         prompt,
-        imgUrl: imgData ?? undefined,
+        imgUrl,
       });
       showToast("Referência salva na galeria", "success");
       onClose();

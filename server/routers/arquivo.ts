@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { router, protectedProcedure, publicProcedure } from "../_core/trpc";
 import { invokeLLM } from "../_core/llm";
+import { storagePut } from "../storage";
 import {
   getCollections,
   getCollection,
@@ -71,6 +72,22 @@ export const arquivoRouter = router({
     .input(z.object({ collectionId: z.number() }))
     .query(async ({ ctx, input }) => {
       return getPrompts(ctx.user.id, input.collectionId);
+    }),
+
+  /** Upload image base64 to S3 and return CDN URL */
+  uploadImage: protectedProcedure
+    .input(
+      z.object({
+        imageBase64: z.string(),
+        mediaType: z.string().default("image/jpeg"),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const buffer = Buffer.from(input.imageBase64, "base64");
+      const ext = input.mediaType.split("/")[1] ?? "jpg";
+      const key = `arquivo/${ctx.user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { url } = await storagePut(key, buffer, input.mediaType);
+      return { url };
     }),
 
   createPrompt: protectedProcedure
