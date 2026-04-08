@@ -1203,6 +1203,16 @@ footer p,
   }
 }
 
+/* ── SplashScreen keyframes ───────────────────────────────────────────────────────── */
+@keyframes cortex-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.65; transform: scale(0.95); }
+}
+@keyframes cortex-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 /* ── 11.2 Respeitar prefers-reduced-motion ── */
 @media (prefers-reduced-motion: reduce) {
   *,
