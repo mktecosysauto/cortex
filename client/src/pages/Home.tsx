@@ -30,6 +30,111 @@ function ToastContainer() {
   );
 }
 
+// ─── ParticleCanvas ───────────────────────────────────────────────────────────
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  radius: number;
+  opacity: number;
+  opacityDir: number;
+  opacitySpeed: number;
+}
+
+function ParticleCanvas() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animId: number;
+    let particles: Particle[] = [];
+
+    function resize() {
+      if (!canvas) return;
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    }
+
+    function createParticles() {
+      if (!canvas) return;
+      const count = Math.round((canvas.width * canvas.height) / 28000);
+      particles = Array.from({ length: Math.max(18, Math.min(count, 40)) }, () => ({
+        x: Math.random() * canvas!.width,
+        y: Math.random() * canvas!.height,
+        vx: (Math.random() - 0.5) * 0.18,
+        vy: (Math.random() - 0.5) * 0.14 - 0.06, // leve drift para cima
+        radius: Math.random() * 1.2 + 0.4,
+        opacity: Math.random() * 0.35 + 0.08,
+        opacityDir: Math.random() > 0.5 ? 1 : -1,
+        opacitySpeed: Math.random() * 0.003 + 0.001,
+      }));
+    }
+
+    function draw() {
+      if (!canvas || !ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (const p of particles) {
+        // mover
+        p.x += p.vx;
+        p.y += p.vy;
+
+        // pulsar opacidade
+        p.opacity += p.opacityDir * p.opacitySpeed;
+        if (p.opacity > 0.45) { p.opacity = 0.45; p.opacityDir = -1; }
+        if (p.opacity < 0.04) { p.opacity = 0.04; p.opacityDir = 1; }
+
+        // wrap nas bordas
+        if (p.x < -4) p.x = canvas.width + 4;
+        if (p.x > canvas.width + 4) p.x = -4;
+        if (p.y < -4) p.y = canvas.height + 4;
+        if (p.y > canvas.height + 4) p.y = -4;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${p.opacity})`;
+        ctx.fill();
+      }
+
+      animId = requestAnimationFrame(draw);
+    }
+
+    resize();
+    createParticles();
+    draw();
+
+    const ro = new ResizeObserver(() => {
+      resize();
+      createParticles();
+    });
+    ro.observe(canvas);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      ro.disconnect();
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+        zIndex: 1,
+      }}
+    />
+  );
+}
+
 // ─── SplitTitle ──────────────────────────────────────────────────────────────
 function SplitTitle({
   text,
@@ -578,7 +683,7 @@ export default function Home() {
       <GlobalHeader currentPage="home" />
       <ToastContainer />
 
-      {/* ── HERO ──────────────────────────────────────────────────────────── */}
+      {/* ── HERO ────────────────────────────────────────────────────────────────── */}
       <section style={{
         minHeight: "100vh",
         background: "#000",
@@ -590,6 +695,9 @@ export default function Home() {
         padding: "0 clamp(24px, 6vw, 80px) clamp(48px, 8vh, 80px)",
         zIndex: 2,
       }}>
+        {/* Partículas flutuantes */}
+        <ParticleCanvas />
+
         {/* Top-right label */}
         <div style={{
           position: "absolute",
