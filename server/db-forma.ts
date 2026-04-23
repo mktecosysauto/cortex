@@ -128,9 +128,14 @@ export async function updateBriefingByToken(
 export async function deleteBriefing(id: number, userId: number) {
   const db = await getDb();
   if (!db) return;
-  await db
-    .delete(formaBriefings)
-    .where(and(eq(formaBriefings.id, id), eq(formaBriefings.userId, userId)));
+  // Verify ownership before deleting
+  const rows = await db.select({ id: formaBriefings.id }).from(formaBriefings)
+    .where(and(eq(formaBriefings.id, id), eq(formaBriefings.userId, userId))).limit(1);
+  if (!rows[0]) return;
+  // Cascade delete child rows first
+  await db.delete(formaResponses).where(eq(formaResponses.briefingId, id));
+  await db.delete(formaFollowups).where(eq(formaFollowups.briefingId, id));
+  await db.delete(formaBriefings).where(eq(formaBriefings.id, id));
 }
 
 // ─── Responses ────────────────────────────────────────────────────────────────

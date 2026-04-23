@@ -75,7 +75,7 @@ export async function sendBriefingEmail(data: BriefingEmailData): Promise<{ ok: 
 
   try {
     const result = await client.emails.send({
-      from: "CÓRTEX <briefing@cortexdesign.app>",
+      from: "CÓRTEX <onboarding@resend.dev>",
       to: data.clientEmail,
       subject: `Briefing: ${data.projectName} — ${data.senderName}`,
       html,

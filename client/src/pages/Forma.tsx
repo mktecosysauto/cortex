@@ -353,7 +353,7 @@ function NewBriefing({ onSuccess, onCancel }: { onSuccess: () => void; onCancel:
         reader.onload = () => resolve((reader.result as string).split(",")[1]);
         reader.readAsDataURL(logoFile);
       });
-      // We'll upload after creating the briefing
+      // Create briefing first, then upload logo
       try {
         const tempResult = await createMutation.mutateAsync({
           title,
@@ -367,16 +367,19 @@ function NewBriefing({ onSuccess, onCancel }: { onSuccess: () => void; onCancel:
           closingMessage,
           questionIds: selectedQuestionIds,
         });
-        // Upload logo
-        const logoResult = await uploadLogoMutation.mutateAsync({
+        // Upload logo to S3 and update briefing
+        await uploadLogoMutation.mutateAsync({
           briefingId: tempResult.id,
           fileBase64: base64,
           mimeType: logoFile.type,
         });
-        brandLogoUrl = logoResult.url;
+        addXP("forma_create");
+        toast.success("Briefing criado! Rascunho salvo com sucesso.");
+        onSuccess();
         return;
       } catch (e) {
         console.error(e);
+        toast.error("Erro ao criar briefing. Tente novamente.");
         return;
       }
     }
