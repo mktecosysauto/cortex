@@ -134,6 +134,65 @@ Responda APENAS com o JSON válido, sem markdown ou texto adicional.`;
   }
 }
 
+// ─── AI Form Suggestion ─────────────────────────────────────────────────────
+async function generateFormSuggestion(description: string) {
+  // Build a flat list of all question IDs and texts for the AI to choose from
+  const allIds = Object.entries(FORMA_QUESTIONS_BANK).flatMap(([, qs]) =>
+    qs.map((q) => `${q.id}: ${q.text}`)
+  );
+
+  const projectTypes = [
+    "identidade_visual", "naming", "campanha", "social_media",
+    "publicidade", "email_marketing", "fotografia", "video", "web", "outro"
+  ];
+
+  const prompt = `Você é um assistente especializado em criação de briefings criativos.
+O profissional de design descreveu o que precisa saber do cliente:
+
+"${description}"
+
+Com base nessa descrição, gere:
+1. Um título curto e profissional para o projeto (máx. 60 caracteres)
+2. O tipo de projeto mais adequado (escolha UM da lista: ${projectTypes.join(", ")})
+3. Uma lista de IDs de perguntas do banco abaixo que melhor atendem à necessidade descrita (escolha entre 5 e 12 perguntas, priorizando as mais relevantes)
+
+BANCO DE PERGUNTAS DISPONÍVEIS:
+${allIds.join("\n")}
+
+Responda APENAS com JSON válido no formato:
+{
+  "title": "string",
+  "projectType": "string",
+  "questionIds": ["id1", "id2", ...]
+}`;
+
+  const result = await invokeLLM({
+    messages: [{ role: "user", content: prompt }],
+    response_format: {
+      type: "json_schema",
+      json_schema: {
+        name: "form_suggestion",
+        strict: true,
+        schema: {
+          type: "object",
+          properties: {
+            title: { type: "string" },
+            projectType: { type: "string" },
+            questionIds: { type: "array", items: { type: "string" } },
+          },
+          required: ["title", "projectType", "questionIds"],
+          additionalProperties: false,
+        },
+      },
+    },
+  });
+
+  const rawContent = result?.choices?.[0]?.message?.content;
+  const content = typeof rawContent === "string" ? rawContent : null;
+  if (!content) throw new Error("No AI response");
+  return JSON.parse(content) as { title: string; projectType: string; questionIds: string[] };
+}
+
 // ─── Router ───────────────────────────────────────────────────────────────────
 export const formaRouter = router({
   // List all briefings for the current user
@@ -259,6 +318,19 @@ export const formaRouter = router({
   getQuestionsBank: publicProcedure.query(() => {
     return FORMA_QUESTIONS_BANK;
   }),
+
+  // AI: Generate form suggestion from a free-text description
+  suggestForm: protectedProcedure
+    .input(z.object({ description: z.string().min(10) }))
+    .mutation(async ({ input }) => {
+      const suggestion = await generateFormSuggestion(input.description);
+      // Filter questionIds to only valid ones from the bank
+      const validIds = new Set(
+        Object.values(FORMA_QUESTIONS_BANK).flatMap((qs) => qs.map((q) => q.id))
+      );
+      const filteredIds = suggestion.questionIds.filter((id) => validIds.has(id));
+      return { ...suggestion, questionIds: filteredIds };
+    }),
 
   // Generate AI analysis for a briefing
   generateAnalysis: protectedProcedure

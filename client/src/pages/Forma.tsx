@@ -254,9 +254,13 @@ function BriefingList({ filterStatus, onNew }: { filterStatus: string; onNew: ()
   );
 }
 
-// ─── New Briefing (3 steps) ───────────────────────────────────────────────────
 function NewBriefing({ onSuccess, onCancel }: { onSuccess: () => void; onCancel: () => void }) {
-  const [step, setStep] = useState(1);
+  // step 0 = AI description, step 1 = project info, step 2 = questions, step 3 = identity
+  const [step, setStep] = useState(0);
+
+  // Step 0 fields
+  const [aiDescription, setAiDescription] = useState("");
+  const suggestMutation = trpc.forma.suggestForm.useMutation();
   const { addXP } = useNexus();
 
   // Step 1 fields
@@ -413,7 +417,7 @@ function NewBriefing({ onSuccess, onCancel }: { onSuccess: () => void; onCancel:
     <div className="max-w-5xl mx-auto px-8 py-8">
       {/* Step indicator */}
       <div className="flex items-center gap-4 mb-10">
-        {[1, 2, 3].map((s) => (
+        {[0, 1, 2, 3].map((s) => (
           <div key={s} className="flex items-center gap-2">
             <div
               className={`w-6 h-6 flex items-center justify-center font-mono text-[9px] border transition-colors ${
@@ -424,15 +428,64 @@ function NewBriefing({ onSuccess, onCancel }: { onSuccess: () => void; onCancel:
                   : "border-[#2a2a2a] text-[#777]"
               }`}
             >
-              {s}
+              {s === 0 ? "★" : s}
             </div>
             <span className={`font-mono text-[8px] tracking-[2px] uppercase ${step === s ? "text-[#888]" : "text-[#777]"}`}>
-              {s === 1 ? "PROJETO" : s === 2 ? "PERGUNTAS" : "IDENTIDADE"}
+              {s === 0 ? "IA" : s === 1 ? "PROJETO" : s === 2 ? "PERGUNTAS" : "IDENTIDADE"}
             </span>
             {s < 3 && <span className="text-[#1a1a1a] mx-1">—</span>}
           </div>
         ))}
       </div>
+
+      {/* Step 0 — AI description */}
+      {step === 0 && (
+        <div className="max-w-xl space-y-6">
+          <div>
+            <h2 className="font-['Bebas_Neue'] text-3xl tracking-[3px] text-white mb-1">DESCREVA O PROJETO</h2>
+            <p className="font-mono text-[9px] tracking-[1px] text-[#555] uppercase">A IA vai gerar o título e pré-selecionar as perguntas para você revisar</p>
+          </div>
+          <div>
+            <label className="block font-mono text-[9px] tracking-[2px] text-[#bbb] uppercase mb-2">
+              O QUE VOCÊ PRECISA SABER DO CLIENTE?
+            </label>
+            <textarea
+              value={aiDescription}
+              onChange={(e) => setAiDescription(e.target.value)}
+              placeholder="Ex: Quero criar uma identidade visual para uma marca de moda sustentável voltada para jovens. Preciso entender o posicionamento, referências visuais e onde a marca vai ser aplicada."
+              rows={6}
+              className="w-full bg-transparent border border-[#2a2a2a] text-white font-mono text-[11px] py-3 px-4 outline-none focus:border-[#444] placeholder:text-[#444] transition-colors resize-none leading-relaxed"
+            />
+            <p className="font-mono text-[8px] text-[#444] mt-1">{aiDescription.length} caracteres — mínimo 10</p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={async () => {
+                if (aiDescription.length < 10) return;
+                try {
+                  const suggestion = await suggestMutation.mutateAsync({ description: aiDescription });
+                  setTitle(suggestion.title);
+                  setProjectType(suggestion.projectType);
+                  setSelectedQuestionIds(suggestion.questionIds);
+                  setStep(1);
+                } catch {
+                  toast.error("Erro ao gerar sugestão. Tente novamente.");
+                }
+              }}
+              disabled={aiDescription.length < 10 || suggestMutation.isPending}
+              className="font-mono text-[9px] tracking-[2px] uppercase px-6 py-3 bg-white text-black hover:opacity-85 disabled:opacity-30 transition-opacity"
+            >
+              {suggestMutation.isPending ? "GERANDO..." : "★ GERAR COM IA"}
+            </button>
+            <button
+              onClick={() => setStep(1)}
+              className="font-mono text-[9px] tracking-[2px] uppercase px-6 py-3 border border-[#2a2a2a] text-[#888] hover:border-[#444] hover:text-[#aaa] transition-colors"
+            >
+              PREENCHER MANUALMENTE
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Step 1 */}
       {step === 1 && (
