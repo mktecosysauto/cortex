@@ -15,6 +15,9 @@ import {
   getFollowups,
   createFollowup,
   answerFollowup,
+  getAttachments,
+  createAttachment,
+  deleteAttachment,
 } from "../db-forma";
 import { storagePut } from "../storage";
 import { sendBriefingEmail } from "../email";
@@ -478,6 +481,74 @@ export const formaRouter = router({
       const briefing = await getBriefingByToken(input.token);
       if (!briefing) throw new TRPCError({ code: "NOT_FOUND" });
       await answerFollowup(input.followupId, briefing.id, input.answer);
+      return { ok: true };
+    }),
+
+  // Upload a file attachment (public form — token-based)
+  uploadAttachment: publicProcedure
+    .input(z.object({
+      token: z.string(),
+      fileBase64: z.string(),
+      fileName: z.string(),
+      mimeType: z.string(),
+      size: z.number(),
+    }))
+    .mutation(async ({ input }) => {
+      const briefing = await getBriefingByToken(input.token);
+      if (!briefing) throw new TRPCError({ code: "NOT_FOUND" });
+      if (input.size > 10 * 1024 * 1024) throw new TRPCError({ code: "BAD_REQUEST", message: "Arquivo muito grande. Limite: 10MB" });
+      const ext = input.fileName.split(".").pop() ?? "bin";
+      const fileKey = `forma/${briefing.id}/attachments/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const buffer = Buffer.from(input.fileBase64, "base64");
+      const { url } = await storagePut(fileKey, buffer, input.mimeType);
+      const id = await createAttachment({
+        briefingId: briefing.id,
+        type: "file",
+        name: input.fileName,
+        url,
+        fileKey,
+        mimeType: input.mimeType,
+        size: input.size,
+      });
+      return { id, url, name: input.fileName };
+    }),
+
+  // Add a URL attachment (public form — token-based)
+  addUrlAttachment: publicProcedure
+    .input(z.object({
+      token: z.string(),
+      url: z.string().url(),
+      name: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const briefing = await getBriefingByToken(input.token);
+      if (!briefing) throw new TRPCError({ code: "NOT_FOUND" });
+      const name = input.name?.trim() || input.url;
+      const id = await createAttachment({
+        briefingId: briefing.id,
+        type: "url",
+        name,
+        url: input.url,
+      });
+      return { id, url: input.url, name };
+    }),
+
+  // Get attachments for a briefing (authenticated — owner only)
+  getAttachments: protectedProcedure
+    .input(z.object({ briefingId: z.number() }))
+    .query(async ({ input, ctx }) => {
+      const briefing = await getBriefing(input.briefingId, ctx.user.id);
+      if (!briefing) throw new TRPCError({ code: "NOT_FOUND" });
+      return getAttachments(input.briefingId);
+    }),
+
+  // Delete an attachment (authenticated — owner only)
+  deleteAttachment: protectedProcedure
+    .input(z.object({ id: z.number(), briefingId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const briefing = await getBriefing(input.briefingId, ctx.user.id);
+      if (!briefing) throw new TRPCError({ code: "NOT_FOUND" });
+      await deleteAttachment(input.id, input.briefingId);
       return { ok: true };
     }),
 });

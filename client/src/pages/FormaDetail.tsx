@@ -7,6 +7,13 @@ import { GrainOverlay, CustomCursor } from "@/components/CortexShell";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
 
+// ─── Helpers ────────────────────────────────────────────────────────────────
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 const PROJECT_TYPE_LABELS: Record<string, string> = {
   identidade_visual: "Identidade Visual",
   naming: "Naming",
@@ -35,7 +42,7 @@ export default function FormaDetail() {
   const id = parseInt(params.id ?? "0");
   const { addXP } = useNexus();
 
-  const [activeTab, setActiveTab] = useState<"overview" | "responses" | "analysis" | "followup">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "responses" | "analysis" | "followup" | "attachments">("overview");
   const [followupQuestion, setFollowupQuestion] = useState("");
   const [editOpen, setEditOpen] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -45,6 +52,11 @@ export default function FormaDetail() {
   const [editClosingMessage, setEditClosingMessage] = useState("");
 
   const { data, isLoading, refetch } = trpc.forma.get.useQuery({ id }, { enabled: !!id });
+  const { data: attachmentsData, refetch: refetchAttachments } = trpc.forma.getAttachments.useQuery(
+    { briefingId: id },
+    { enabled: !!id }
+  );
+  const attachments = attachmentsData ?? [];
   const sendMutation = trpc.forma.send.useMutation({
     onSuccess: (result) => {
       refetch();
@@ -332,8 +344,8 @@ export default function FormaDetail() {
 
         {/* Tabs */}
         <div className="max-w-5xl mx-auto px-8 flex gap-0 border-t border-[#111]">
-          {(["overview", "responses", "analysis", "followup"] as const).map((tab) => {
-            const labels = { overview: "VISÃO GERAL", responses: `RESPOSTAS (${responses.length})`, analysis: "ANÁLISE IA", followup: `ACOMPANHAMENTO (${followups.length})` };
+          {(["overview", "responses", "analysis", "followup", "attachments"] as const).map((tab) => {
+            const labels = { overview: "VISÃO GERAL", responses: `RESPOSTAS (${responses.length})`, analysis: "ANÁLISE IA", followup: `ACOMPANHAMENTO (${followups.length})`, attachments: `ANEXOS (${attachments.length})` };
             const isActive = activeTab === tab;
             const isDisabled = (tab === "responses" && responses.length === 0) || (tab === "analysis" && !briefing.aiSummary) || (tab === "followup" && briefing.status === "draft");
             return (
@@ -538,6 +550,91 @@ export default function FormaDetail() {
                   </button>
                 </div>
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Attachments */}
+        {activeTab === "attachments" && (
+          <div className="space-y-4">
+            {attachments.length === 0 ? (
+              <div className="text-center py-16">
+                <p className="font-mono text-[9px] tracking-[3px] text-[#777] uppercase">Nenhum anexo enviado</p>
+                <p className="font-mono text-[8px] text-[#555] mt-2">O cliente não enviou materiais de referência</p>
+              </div>
+            ) : (
+              <>
+                <p className="font-mono text-[8px] tracking-[3px] text-[#777] uppercase mb-6">
+                  {attachments.length} {attachments.length === 1 ? "MATERIAL" : "MATERIAIS"} DE REFERÊNCIA
+                </p>
+                <div className="grid grid-cols-1 gap-3">
+                  {attachments.map((att) => {
+                    const isImage = att.mimeType?.startsWith("image/");
+                    const isUrl = att.type === "url";
+                    const isPdf = att.mimeType === "application/pdf";
+                    const sizeLabel = att.size ? formatFileSize(att.size) : null;
+                    return (
+                      <div key={att.id} className="border border-[#1a1a1a] p-4 flex items-start gap-4 bg-white/[0.01] hover:bg-white/[0.02] transition-colors">
+                        {/* Preview / Icon */}
+                        <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center border border-[#2a2a2a] overflow-hidden">
+                          {isImage ? (
+                            <img src={att.url} alt={att.name} className="w-full h-full object-cover" />
+                          ) : isUrl ? (
+                            <span className="font-mono text-[16px] text-[#4a9eff]">↗</span>
+                          ) : isPdf ? (
+                            <span className="font-mono text-[10px] text-[#ff6b6b] font-bold">PDF</span>
+                          ) : (
+                            <span className="font-mono text-[16px] text-[#777]">⊡</span>
+                          )}
+                        </div>
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-mono text-[11px] text-white truncate mb-1">{att.name}</p>
+                          <div className="flex items-center gap-3">
+                            {att.mimeType && (
+                              <span className="font-mono text-[8px] text-[#555] uppercase">{att.mimeType.split("/")[1]}</span>
+                            )}
+                            {sizeLabel && (
+                              <span className="font-mono text-[8px] text-[#555]">{sizeLabel}</span>
+                            )}
+                            <span className="font-mono text-[8px] text-[#555]">
+                              {new Date(att.createdAt).toLocaleString("pt-BR")}
+                            </span>
+                          </div>
+                          {isUrl && (
+                            <p className="font-mono text-[9px] text-[#4a9eff] truncate mt-1">{att.url}</p>
+                          )}
+                          {isImage && (
+                            <div className="mt-3 border border-[#2a2a2a] overflow-hidden max-w-xs">
+                              <img src={att.url} alt={att.name} className="w-full object-contain max-h-48" />
+                            </div>
+                          )}
+                        </div>
+                        {/* Actions */}
+                        <div className="flex-shrink-0 flex flex-col gap-2">
+                          <a
+                            href={att.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-[8px] tracking-[1px] uppercase px-3 py-2 border border-[#2a2a2a] text-[#aaa] hover:text-white hover:border-[#333] transition-colors text-center"
+                          >
+                            {isUrl ? "ABRIR ↗" : "VER ↗"}
+                          </a>
+                          {!isUrl && (
+                            <a
+                              href={att.url}
+                              download={att.name}
+                              className="font-mono text-[8px] tracking-[1px] uppercase px-3 py-2 border border-[#2a2a2a] text-[#aaa] hover:text-white hover:border-[#333] transition-colors text-center"
+                            >
+                              BAIXAR
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </div>
         )}

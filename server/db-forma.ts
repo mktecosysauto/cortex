@@ -1,6 +1,6 @@
 import { eq, and, desc } from "drizzle-orm";
 import { getDb } from "./db";
-import { formaBriefings, formaResponses, formaFollowups } from "../drizzle/schema";
+import { formaBriefings, formaResponses, formaFollowups, formaAttachments } from "../drizzle/schema";
 import { randomBytes } from "crypto";
 
 function generateToken(): string {
@@ -135,6 +135,7 @@ export async function deleteBriefing(id: number, userId: number) {
   // Cascade delete child rows first
   await db.delete(formaResponses).where(eq(formaResponses.briefingId, id));
   await db.delete(formaFollowups).where(eq(formaFollowups.briefingId, id));
+  await db.delete(formaAttachments).where(eq(formaAttachments.briefingId, id));
   await db.delete(formaBriefings).where(eq(formaBriefings.id, id));
 }
 
@@ -197,4 +198,47 @@ export async function answerFollowup(id: number, briefingId: number, answer: str
     .update(formaFollowups)
     .set({ answer, status: "answered", answeredAt: new Date() })
     .where(and(eq(formaFollowups.id, id), eq(formaFollowups.briefingId, briefingId)));
+}
+
+// ─── Attachments ──────────────────────────────────────────────────────────────
+
+export async function getAttachments(briefingId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(formaAttachments)
+    .where(eq(formaAttachments.briefingId, briefingId))
+    .orderBy(formaAttachments.createdAt);
+}
+
+export async function createAttachment(data: {
+  briefingId: number;
+  type: string;
+  name: string;
+  url: string;
+  fileKey?: string;
+  mimeType?: string;
+  size?: number;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(formaAttachments).values({
+    briefingId: data.briefingId,
+    type: data.type,
+    name: data.name,
+    url: data.url,
+    fileKey: data.fileKey ?? null,
+    mimeType: data.mimeType ?? null,
+    size: data.size ?? null,
+  });
+  return (result as unknown as [{ insertId: number }])[0].insertId;
+}
+
+export async function deleteAttachment(id: number, briefingId: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .delete(formaAttachments)
+    .where(and(eq(formaAttachments.id, id), eq(formaAttachments.briefingId, briefingId)));
 }

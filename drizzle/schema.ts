@@ -235,3 +235,18 @@ export const arquivoPrompts = mysqlTable("arquivo_prompts", {
 
 export type ArquivoPrompt = typeof arquivoPrompts.$inferSelect;
 export type InsertArquivoPrompt = typeof arquivoPrompts.$inferInsert;
+
+// ─── FORMA — Attachments ───────────────────────────────────────────────────
+export const formaAttachments = mysqlTable("forma_attachments", {
+  id: int("id").autoincrement().primaryKey(),
+  briefingId: int("briefingId").notNull().references(() => formaBriefings.id),
+  type: varchar("type", { length: 10 }).notNull().default("file"), // "file" | "url"
+  name: varchar("name", { length: 500 }).notNull(),
+  url: text("url").notNull(),
+  fileKey: varchar("fileKey", { length: 500 }),
+  mimeType: varchar("mimeType", { length: 100 }),
+  size: int("size"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type FormaAttachment = typeof formaAttachments.$inferSelect;
+export type InsertFormaAttachment = typeof formaAttachments.$inferInsert;

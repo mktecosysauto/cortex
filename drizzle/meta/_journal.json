@@ -43,6 +43,13 @@
       "when": 1775586903378,
       "tag": "0005_careful_spyke",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1776945469414,
+      "tag": "0006_tearful_white_queen",
+      "breakpoints": true
     }
   ]
 }

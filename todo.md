@@ -374,3 +374,24 @@
 - [x] Atualizar imagem do prompt (imgUrl) no banco
 - [x] Rota /arquivo/:id registrada no App.tsx
 - [x] Seed automático da coleção AUTOMOTIVOS na primeira visita do usuário
+
+## Módulo FORMA — Animações e Melhorias (v16)
+- [x] Cursor personalizado nas páginas públicas (/sobre, /b/:token) via App.tsx
+- [x] Cursor redesenhado com mix-blend-mode: exclusion (funciona em fundo claro e escuro)
+- [x] ELEMENTO 01: SplashScreen com símbolo SVG pulsante, contador 000-100, iris clip-path
+- [x] ELEMENTO 02: SplitTitle — animação letra a letra no hero da landing
+- [x] ELEMENTO 03: ParticleCanvas — partículas brancas flutuantes no hero
+- [x] Botões PromptCard reestruturados (Copiar, Editar, Ver tudo, Melhorar)
+- [x] Upload de imagem no ARQUIVO corrigido: S3 em vez de base64 no banco
+
+## Módulo FORMA — Auditoria e Correções (v17)
+- [x] Email sender corrigido: onboarding@resend.dev (sandbox, funciona imediatamente)
+- [x] handleSubmit com logo corrigido (toast + onSuccess)
+- [x] deleteBriefing com cascade delete em respostas e followups
+- [x] Step 0 "IA" no wizard de criação: descrever projeto → IA sugere título + perguntas
+- [x] Procedure suggestForm adicionada ao router forma.ts
+- [x] Tabela forma_attachments criada no schema e migration aplicada
+- [x] Helpers addAttachment, getAttachments, deleteAttachment em db-forma.ts
+- [x] Procedures uploadAttachment e addUrlAttachment no router forma.ts
+- [x] FormaBriefing.tsx reescrito com tela "Materiais de referência" antes do envio
+- [x] FormaDetail.tsx atualizado com aba ANEXOS (preview de imagens, ícones PDF/doc, links, download)
